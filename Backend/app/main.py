@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
-from app.routers import auth, inventory, warehouses, categories, analytics
+from app.routers import auth, inventory, warehouses, categories, analytics, analysis, prediction, recommendations, reports
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -36,6 +36,10 @@ app.include_router(inventory.router, prefix=settings.API_V1_STR)
 app.include_router(warehouses.router, prefix=settings.API_V1_STR)
 app.include_router(categories.router, prefix=settings.API_V1_STR)
 app.include_router(analytics.router, prefix=settings.API_V1_STR)
+app.include_router(analysis.router, prefix=settings.API_V1_STR)
+app.include_router(prediction.router, prefix=settings.API_V1_STR)
+app.include_router(recommendations.router, prefix=settings.API_V1_STR)
+app.include_router(reports.router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():

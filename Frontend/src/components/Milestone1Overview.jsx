@@ -18,25 +18,27 @@ export default function Milestone1Overview() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
       {/* Banner */}
-      <div className="glass-card" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.1))', borderColor: 'rgba(16, 185, 129, 0.4)' }}>
+      <div className="linear-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem' }}>
           <span style={{ fontSize: '1.8rem' }}>📊</span>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Milestone 1 Implementation & Datasets Guide</h2>
+          <h2 className="linear-text-gradient" style={{ fontSize: '1.45rem', fontWeight: 600 }}>
+            Milestone 1 Implementation & Datasets Guide
+          </h2>
         </div>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+        <p style={{ fontSize: '0.88rem', color: 'var(--linear-fg-muted)', fontWeight: 400 }}>
           Comprehensive summary of Milestone 1 technical execution, dataset organization, and 10-slide presentation framework.
         </p>
       </div>
 
       {/* Grid of Sections */}
-      <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
         
         {/* Section 1: Milestone 1 Accomplishments */}
-        <div className="glass-card">
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#10b981', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>✅</span> Milestone 1 Implementation Accomplishments
+        <div className="linear-card">
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#34D399', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>✅</span> Milestone 1 Accomplishments
           </h3>
-          <ul style={{ paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.88rem', color: 'var(--text-main)' }}>
+          <ul style={{ paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.85rem', color: 'var(--linear-fg)' }}>
             <li><strong>Dynamic Auth Pages:</strong> Created role-based login & registration supporting all 5 PRD roles with custom metadata.</li>
             <li><strong>Cloud MongoDB Integration:</strong> Deployed document schemas for <code>users</code>, <code>warehouses</code>, <code>categories</code>, <code>food_batches</code> on Cloud MongoDB Atlas.</li>
             <li><strong>FastAPI Microservice APIs:</strong> Endpoints for registration, JWT login, batch tagging, inventory search, and retail purchasing.</li>
@@ -46,24 +48,24 @@ export default function Milestone1Overview() {
         </div>
 
         {/* Section 2: Datasets Collection */}
-        <div className="glass-card">
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#3b82f6', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="linear-card">
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--linear-accent)', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>🖼️</span> Food Freshness Image Datasets
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: 8 }}>
-              <div style={{ fontWeight: 700, color: '#3b82f6', marginBottom: 2 }}>1. Fruits Freshness Dataset (Kaggle)</div>
-              <p style={{ color: 'var(--text-muted)' }}>Contains 13,500+ images of fresh vs. spoiled apples, bananas, and oranges. Used for computer vision binary classification and freshness scoring.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.82rem' }}>
+            <div style={{ background: '#09090C', padding: '10px', borderRadius: '8px', border: '1px solid var(--linear-border-default)' }}>
+              <div style={{ fontWeight: 600, color: 'var(--linear-accent)', marginBottom: 2 }}>1. Fruits Freshness Dataset (Kaggle)</div>
+              <p style={{ color: 'var(--linear-fg-muted)' }}>Contains 13,500+ images of fresh vs. spoiled apples, bananas, and oranges. Used for computer vision binary classification and freshness scoring.</p>
             </div>
 
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: 8 }}>
-              <div style={{ fontWeight: 700, color: '#10b981', marginBottom: 2 }}>2. Vegetable Freshness Dataset</div>
-              <p style={{ color: 'var(--text-muted)' }}>Includes fresh and wilted spinach, tomatoes, carrots, and potatoes with mold and surface defect annotations.</p>
+            <div style={{ background: '#09090C', padding: '10px', borderRadius: '8px', border: '1px solid var(--linear-border-default)' }}>
+              <div style={{ fontWeight: 600, color: '#34D399', marginBottom: 2 }}>2. Vegetable Freshness Dataset</div>
+              <p style={{ color: 'var(--linear-fg-muted)' }}>Includes fresh and wilted spinach, tomatoes, carrots, and potatoes with mold and surface defect annotations.</p>
             </div>
 
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: 8 }}>
-              <div style={{ fontWeight: 700, color: '#f59e0b', marginBottom: 2 }}>3. Food-101 Multi-Category Dataset</div>
-              <p style={{ color: 'var(--text-muted)' }}>101 food categories with 101,000 images for broad product taxonomy and multi-category identification support.</p>
+            <div style={{ background: '#09090C', padding: '10px', borderRadius: '8px', border: '1px solid var(--linear-border-default)' }}>
+              <div style={{ fontWeight: 600, color: '#FBBF24', marginBottom: 2 }}>3. Food-101 Multi-Category Dataset</div>
+              <p style={{ color: 'var(--linear-fg-muted)' }}>101 food categories with 101,000 images for broad product taxonomy and multi-category identification support.</p>
             </div>
           </div>
         </div>
@@ -71,18 +73,18 @@ export default function Milestone1Overview() {
       </div>
 
       {/* Section 3: 10-Slide PPT Presentation Structure */}
-      <div className="glass-card">
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#8b5cf6', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>📽️</span> Milestone 1 PPT Presentation Structure (Slide-by-Slide Outline)
+      <div className="linear-card">
+        <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: '#C084FC', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>📽️</span> Milestone 1 Presentation Outline
         </h3>
         
-        <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
           {slides.map((s, idx) => (
-            <div key={idx} style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid var(--border-color)', padding: '1rem', borderRadius: 12 }}>
-              <div style={{ fontSize: '0.78rem', color: '#8b5cf6', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+            <div key={idx} style={{ background: '#09090C', padding: '0.9rem', borderRadius: '8px', border: '1px solid var(--linear-border-default)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--linear-accent)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>
                 {s.title}
               </div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--linear-fg)', lineHeight: 1.4 }}>
                 {s.content}
               </p>
             </div>

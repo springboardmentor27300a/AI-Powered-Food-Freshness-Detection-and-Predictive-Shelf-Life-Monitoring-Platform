@@ -32,6 +32,14 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr = Field(..., example="alice@example.com")
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr = Field(..., example="alice@example.com")
+    verification_code: str = Field(..., example="854912")
+    new_password: str = Field(..., min_length=6, example="newpassword123")
+
 class UserResponse(BaseModel):
     id: str
     name: str

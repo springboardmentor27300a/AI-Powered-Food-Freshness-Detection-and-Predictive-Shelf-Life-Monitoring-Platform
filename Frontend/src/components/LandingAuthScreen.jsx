@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
 
 export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
-  const [isLogin, setIsLogin] = useState(false); // Default to Sign Up
+  // Auth Form Mode: 'signup' | 'login' | 'forgot_password'
+  const [mode, setMode] = useState('signup');
   const [role, setRole] = useState('Retail Manager');
   
   // Interactive Scanner State
   const [activeSample, setActiveSample] = useState(0);
   const [isScanning, setIsScanning] = useState(false);
 
-  // Email Verification State
+  // Email Verification / Reset OTP State
   const [sendingCode, setSendingCode] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [demoCode, setDemoCode] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
+
+  // Password Reset Fields
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // Sample Produce for Scanner Simulator
   const sampleItems = [
@@ -67,7 +74,7 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
     }, 1200);
   };
 
-  // Form fields
+  // Standard Form fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -86,7 +93,7 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
     setError('');
   };
 
-  // Trigger Email Verification Code API
+  // Trigger Registration Email Verification Code API
   const handleSendVerificationCode = async () => {
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address before requesting verification code.');
@@ -109,7 +116,7 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
 
       setCodeSent(true);
       setDemoCode(data.verification_code);
-      setVerificationCode(data.verification_code); // Auto-fill for convenience
+      setVerificationCode(data.verification_code);
       setSuccessMsg(`📧 Verification code sent to ${email}! Demo Code: ${data.verification_code}`);
     } catch (err) {
       setError(err.message);
@@ -118,18 +125,99 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
     }
   };
 
+  // Trigger Password Reset OTP API
+  const handleSendResetCode = async () => {
+    if (!resetEmail || !resetEmail.includes('@')) {
+      setError('Please enter your registered email address first.');
+      return;
+    }
+    setError('');
+    setSendingCode(true);
+
+    try {
+      const res = await fetch('/api/auth/send-reset-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || 'Failed to send password reset code.');
+      }
+
+      setCodeSent(true);
+      setDemoCode(data.verification_code);
+      setResetCode(data.verification_code);
+      setSuccessMsg(`🔑 Password Reset OTP sent to ${resetEmail}! Demo OTP Code: ${data.verification_code}`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
+  // Submit Password Reset
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
+
+    if (newPassword !== confirmPassword) {
+      setError('New password and confirm password do not match.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: resetEmail,
+          verification_code: resetCode.trim(),
+          new_password: newPassword
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || 'Failed to reset password.');
+      }
+
+      setSuccessMsg('✅ Password reset successfully! Please sign in with your new password.');
+      setEmail(resetEmail);
+      setPassword('');
+      setTimeout(() => {
+        setMode('login');
+      }, 1500);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Standard Login / Registration submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
 
-    if (!isLogin && !verificationCode) {
+    if (mode === 'signup' && !verificationCode) {
       setError('Please enter the 6-digit email verification code.');
       return;
     }
 
     setLoading(true);
 
+    const isLogin = mode === 'login';
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
     const selectedWarehouse = warehouses.find(w => w.code === warehouseId || w.name === warehouseId);
 
@@ -140,7 +228,7 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
           email,
           password,
           role,
-          verification_code: verificationCode.trim() || '123456',
+          verification_code: verificationCode.trim(),
           organization: organization || (role === 'Retail Manager' ? 'FreshMart Stores' : ''),
           warehouse_id: warehouseId || (warehouses[0] ? warehouses[0].code : 'WH-CENTRAL-01'),
           warehouse_name: selectedWarehouse ? selectedWarehouse.name : 'GreenValley Central Cold Storage',
@@ -182,44 +270,56 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
     setError('');
     
     const demoAccounts = {
-      'Warehouse Operator': { email: 'operator.john@wh.com', password: 'password123', name: 'John Miller (WH Operator)', role: 'Warehouse Operator', verification_code: '123456', warehouse_id: 'WH-CENTRAL-01', warehouse_name: 'GreenValley Central Cold Storage' },
-      'Retail Manager': { email: 'retailer.alex@freshmart.com', password: 'password123', name: 'Alex Retailer', role: 'Retail Manager', verification_code: '123456', organization: 'FreshMart Hypermarket #104' },
-      'Food Quality Inspector': { email: 'inspector.sarah@agri.gov', password: 'password123', name: 'Sarah Inspector', role: 'Food Quality Inspector', verification_code: '123456', badge_id: 'INSP-99201' },
-      'Consumer': { email: 'consumer.david@gmail.com', password: 'password123', name: 'David Consumer', role: 'Consumer', verification_code: '123456' },
-      'Administrator': { email: 'admin@freshsense.ai', password: 'password123', name: 'System Admin', role: 'Administrator', verification_code: '123456' }
+      'Warehouse Operator': { email: 'operator.john@wh.com', password: 'password123', name: 'John Miller (WH Operator)', role: 'Warehouse Operator', warehouse_id: 'WH-CENTRAL-01', warehouse_name: 'GreenValley Central Cold Storage' },
+      'Retail Manager': { email: 'retailer.alex@freshmart.com', password: 'password123', name: 'Alex Retailer', role: 'Retail Manager', organization: 'FreshMart Hypermarket #104' },
+      'Food Quality Inspector': { email: 'inspector.sarah@agri.gov', password: 'password123', name: 'Sarah Inspector', role: 'Food Quality Inspector', badge_id: 'INSP-99201' },
+      'Consumer': { email: 'consumer.david@gmail.com', password: 'password123', name: 'David Consumer', role: 'Consumer' },
+      'Administrator': { email: 'admin@freshsense.ai', password: 'password123', name: 'System Admin', role: 'Administrator', admin_key: 'admin123' }
     };
 
     const demoUser = demoAccounts[demoRole] || demoAccounts['Retail Manager'];
 
     try {
-      const res = await fetch('/api/auth/register', {
+      // First attempt direct login
+      const loginRes = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(demoUser)
+        body: JSON.stringify({ email: demoUser.email, password: demoUser.password })
       });
-      const data = await res.json();
+      const loginData = await loginRes.json();
 
-      let userObj = data.user;
-      let token = data.access_token;
-
-      if (!res.ok) {
-        const loginRes = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: demoUser.email, password: demoUser.password })
-        });
-        const loginData = await loginRes.json();
-        if (loginRes.ok) {
-          userObj = loginData.user;
-          token = loginData.access_token;
-        } else {
-          throw new Error('Demo login failed');
-        }
+      if (loginRes.ok) {
+        localStorage.setItem('freshsense_token', loginData.access_token);
+        localStorage.setItem('freshsense_user', JSON.stringify(loginData.user));
+        onAuthSuccess(loginData.user);
+        return;
       }
 
-      localStorage.setItem('freshsense_token', token);
-      localStorage.setItem('freshsense_user', JSON.stringify(userObj));
-      onAuthSuccess(userObj);
+      // If user doesn't exist yet, request dynamic OTP code then register
+      const otpRes = await fetch('/api/auth/send-verification-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: demoUser.email })
+      });
+      const otpData = await otpRes.json();
+
+      const regRes = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...demoUser,
+          verification_code: otpData.verification_code
+        })
+      });
+      const regData = await regRes.json();
+
+      if (regRes.ok) {
+        localStorage.setItem('freshsense_token', regData.access_token);
+        localStorage.setItem('freshsense_user', JSON.stringify(regData.user));
+        onAuthSuccess(regData.user);
+      } else {
+        throw new Error(regData.detail || 'Demo registration failed');
+      }
 
     } catch (err) {
       const fallbackUser = { id: 'demo_123', name: demoUser.name, email: demoUser.email, role: demoUser.role, organization: demoUser.organization, warehouse_name: demoUser.warehouse_name };
@@ -231,61 +331,56 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: '3.5rem', padding: '2rem 1.5rem 5rem 1.5rem', maxWidth: 1380, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: '3.5rem', padding: '2rem 1.5rem 5rem 1.5rem', maxWidth: 1400, margin: '0 auto' }}>
       
-      {/* HERO SECTION */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '3rem', alignItems: 'center' }}>
+      {/* HERO SECTION - LINEAR GLASS & GRADIENT TYPOGRAPHY */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '2.5rem', alignItems: 'start' }}>
         
-        {/* LEFT COLUMN: AI Scanner Simulator */}
-        <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
+        {/* LEFT COLUMN: Hero Heading & Interactive Scanner */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
           
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '6px 18px', borderRadius: 30, width: 'fit-content' }}>
-            <span className="pulse-glow" style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
-            <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#10b981', letterSpacing: '0.5px' }}>
-              EMAIL VERIFIED CLOUD MONGO DB PLATFORM
-            </span>
+          <div className="linear-badge linear-badge-fresh" style={{ width: 'fit-content', padding: '0.4rem 1rem' }}>
+            ✨ EMAIL VERIFIED CLOUD MONGO DB PLATFORM
           </div>
 
-          <h1 className="gradient-animated-text" style={{ fontSize: '3.1rem', fontWeight: 800, lineHeight: 1.12, letterSpacing: '-1px' }}>
-            Next-Gen AI Food Freshness & Cold Chain Platform
-          </h1>
+          <div>
+            <h1 className="linear-text-gradient" style={{ fontSize: '3.2rem', fontWeight: 600, lineHeight: 1.12, letterSpacing: '-0.03em' }}>
+              Next-Gen <span className="linear-accent-gradient">AI Food Freshness</span> & Cold Chain Platform
+            </h1>
+          </div>
 
-          <p style={{ fontSize: '1.08rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '1.05rem', color: 'var(--linear-fg-muted)', lineHeight: 1.6, fontWeight: 400 }}>
             Eliminate supply chain food waste with real-time computer vision freshness scoring, Batch ID tags, cold-chain environmental tracking, and double-purchase locking.
           </p>
 
-          {/* Interactive AI Scanner Viewport */}
-          <div className="ux4g-glass-card" style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(17, 24, 39, 0.95))', borderColor: 'rgba(16, 185, 129, 0.35)' }}>
+          {/* Interactive AI Scanner Simulator Linear Glass Card */}
+          <div className="linear-card" style={{ padding: '1.4rem' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="pulse-glow" style={{ fontSize: '1.2rem', color: '#10b981' }}>📡</span>
-                <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-main)' }}>Interactive AI Freshness Scanner Simulator</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '8px', background: 'rgba(94, 106, 210, 0.2)', color: 'var(--linear-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', border: '1px solid var(--linear-border-accent)' }}>
+                  📡
+                </div>
+                <span style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--linear-fg)' }}>Interactive AI Freshness Scanner Simulator</span>
               </div>
-              <span style={{ fontSize: '0.75rem', background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.4)', padding: '2px 10px', borderRadius: 20, fontWeight: 800 }}>
+
+              <span className="linear-badge linear-badge-warning" style={{ fontSize: '0.68rem' }}>
                 CLICK SAMPLE TO SCAN
               </span>
             </div>
 
             {/* Sample Buttons */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '1.2rem' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '1.1rem', flexWrap: 'wrap' }}>
               {sampleItems.map((item, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => handleSelectSample(idx)}
+                  className={`linear-btn ${activeSample === idx ? 'linear-btn-primary' : 'linear-btn-secondary'}`}
                   style={{
-                    background: activeSample === idx ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.05)',
-                    border: '1px solid ' + (activeSample === idx ? '#10b981' : 'var(--border-color)'),
-                    color: activeSample === idx ? '#10b981' : 'var(--text-muted)',
-                    padding: '6px 12px',
-                    borderRadius: 10,
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px'
+                    padding: '0.35rem 0.85rem',
+                    fontSize: '0.75rem',
+                    borderRadius: '6px'
                   }}
                 >
                   <span>{idx === 0 ? '🍎' : idx === 1 ? '🥬' : '🍅'}</span>
@@ -295,41 +390,42 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
             </div>
 
             {/* Viewport Box */}
-            <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '1.2rem', alignItems: 'center', background: 'rgba(0,0,0,0.4)', padding: '1rem', borderRadius: 14, border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: '1.2rem', alignItems: 'center', background: '#09090C', padding: '1rem', borderRadius: '12px', border: '1px solid var(--linear-border-default)', position: 'relative', overflow: 'hidden' }}>
               
-              <div className="scanner-laser-line" />
-
-              <div style={{ height: 110, borderRadius: 12, overflow: 'hidden', position: 'relative' }}>
+              <div style={{ height: 110, borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
                 <img src={currentSample.image} alt={currentSample.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', bottom: 4, left: 4, background: 'rgba(0,0,0,0.7)', padding: '2px 6px', borderRadius: 4, fontSize: '0.65rem', fontFamily: 'monospace', color: '#10b981', fontWeight: 800 }}>
+                <div style={{ position: 'absolute', bottom: 4, left: 4, background: 'rgba(5, 5, 6, 0.85)', color: '#ffffff', padding: '2px 6px', borderRadius: 4, fontSize: '0.65rem', fontWeight: 500, border: '1px solid rgba(255,255,255,0.1)' }}>
                   {currentSample.tag}
                 </div>
               </div>
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-main)' }}>{currentSample.name}</span>
-                  <span className={`ux4g-badge-pill ${currentSample.score >= 90 ? 'ux4g-badge-fresh' : 'ux4g-badge-good'}`} style={{ fontSize: '0.75rem' }}>
-                    {currentSample.score}/100 {currentSample.status}
+                  <span style={{ fontWeight: 500, fontSize: '1rem', color: 'var(--linear-fg)' }}>{currentSample.name}</span>
+                  <span className={`linear-badge ${currentSample.score >= 90 ? 'linear-badge-fresh' : 'linear-badge-good'}`}>
+                    {currentSample.score}/100
                   </span>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.78rem', marginTop: '6px' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: 6 }}>
-                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>Shelf-Life Window</span>
-                    <strong style={{ color: '#10b981' }}>⏳ {currentSample.daysLeft} Days Left</strong>
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--linear-border-default)' }}>
+                    <span style={{ color: 'var(--linear-fg-muted)', display: 'block', fontSize: '0.65rem' }}>Shelf Window</span>
+                    <strong style={{ color: '#34D399' }}>⏳ {currentSample.daysLeft} Days Left</strong>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: 6 }}>
-                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>Surface Decay Index</span>
-                    <strong style={{ color: '#3b82f6' }}>🔍 {currentSample.discoloration}</strong>
+
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--linear-border-default)' }}>
+                    <span style={{ color: 'var(--linear-fg-muted)', display: 'block', fontSize: '0.65rem' }}>Decay Index</span>
+                    <strong style={{ color: 'var(--linear-accent)' }}>🔍 {currentSample.discoloration}</strong>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: 6 }}>
-                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>Optimal Storage Temp</span>
-                    <strong>🌡️ {currentSample.temp}</strong>
+
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--linear-border-default)' }}>
+                    <span style={{ color: 'var(--linear-fg-muted)', display: 'block', fontSize: '0.65rem' }}>Storage Temp</span>
+                    <strong style={{ color: 'var(--linear-fg)' }}>🌡️ {currentSample.temp}</strong>
                   </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: 6 }}>
-                    <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.68rem' }}>Relative Humidity</span>
-                    <strong>💧 {currentSample.humidity}</strong>
+
+                  <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--linear-border-default)' }}>
+                    <span style={{ color: 'var(--linear-fg-muted)', display: 'block', fontSize: '0.65rem' }}>Humidity</span>
+                    <strong style={{ color: 'var(--linear-fg)' }}>💧 {currentSample.humidity}</strong>
                   </div>
                 </div>
 
@@ -339,29 +435,22 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
 
           </div>
 
-          {/* Quick Demo Sign In */}
-          <div style={{ paddingTop: '0.5rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              ⚡ Instant One-Click Persona Demo Sign In:
+          {/* Persona Quick Access Strip */}
+          <div style={{ paddingTop: '0.4rem' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.5rem', letterSpacing: '0.02em' }}>
+              ⚡ ONE-CLICK PERSONA DEMO SIGN IN:
             </span>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {['Retail Manager', 'Warehouse Operator', 'Food Quality Inspector', 'Consumer', 'Administrator'].map((r) => (
                 <button
                   key={r}
+                  type="button"
                   onClick={() => handleQuickDemoLogin(r)}
+                  className="linear-btn linear-btn-secondary"
                   style={{
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid var(--border-color)',
-                    color: 'var(--text-main)',
-                    padding: '7px 14px',
-                    borderRadius: '10px',
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    transition: 'all 0.25s'
+                    padding: '0.4rem 0.85rem',
+                    fontSize: '0.74rem'
                   }}
-                  onMouseOver={(e) => e.target.style.borderColor = '#10b981'}
-                  onMouseOut={(e) => e.target.style.borderColor = 'var(--border-color)'}
                 >
                   Demo {r}
                 </button>
@@ -371,77 +460,152 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
 
         </div>
 
-        {/* RIGHT COLUMN: Sign Up / Sign In Form with Email Verification */}
-        <div className="animate-fade-in" style={{ width: '100%' }}>
+        {/* RIGHT COLUMN: Sign Up / Sign In / Forgot Password Linear Glass Card */}
+        <div className="linear-card" style={{ padding: '1.8rem' }}>
           
-          <div className="ux4g-glass-card" style={{ padding: '2.4rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', boxShadow: '0 25px 65px rgba(0,0,0,0.6)' }}>
-            
-            {/* Header Switcher */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.8rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-              <div>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 800 }}>
-                  {isLogin ? '🔐 Account Sign In' : '📝 Create New Account'}
-                </h2>
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-                  {isLogin ? 'Enter credentials to open your role workspace' : 'Verify your email to create a Cloud MongoDB profile'}
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', background: 'rgba(0,0,0,0.35)', padding: '4px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
-                <button
-                  type="button"
-                  onClick={() => { setIsLogin(false); setError(''); }}
-                  style={{
-                    background: !isLogin ? 'linear-gradient(135deg, #10b981, #14b8a6)' : 'transparent',
-                    color: !isLogin ? '#fff' : 'var(--text-muted)',
-                    border: 'none',
-                    padding: '7px 16px',
-                    borderRadius: 8,
-                    fontWeight: 800,
-                    fontSize: '0.84rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Sign Up
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setIsLogin(true); setError(''); }}
-                  style={{
-                    background: isLogin ? 'linear-gradient(135deg, #10b981, #14b8a6)' : 'transparent',
-                    color: isLogin ? '#fff' : 'var(--text-muted)',
-                    border: 'none',
-                    padding: '7px 16px',
-                    borderRadius: 8,
-                    fontWeight: 800,
-                    fontSize: '0.84rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Sign In
-                </button>
-              </div>
+          {/* Header Switcher */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--linear-border-default)', paddingBottom: '0.9rem' }}>
+            <div>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--linear-fg)' }}>
+                {mode === 'login' ? '🔐 Portal Sign In' : mode === 'signup' ? '📝 Create Profile' : '🔑 Password Reset'}
+              </h2>
+              <p style={{ fontSize: '0.8rem', color: 'var(--linear-fg-muted)' }}>
+                {mode === 'login' ? 'Enter credentials to open workspace' : mode === 'signup' ? 'Verify email for Cloud MongoDB profile' : 'Enter registered email & 6-digit OTP'}
+              </p>
             </div>
 
-            {/* Error/Success Alerts */}
-            {error && (
-              <div style={{ background: 'rgba(244, 63, 94, 0.15)', border: '1px solid rgba(244, 63, 94, 0.4)', color: '#f43f5e', padding: '0.85rem', borderRadius: 10, fontSize: '0.85rem', marginBottom: '1.2rem', fontWeight: 800 }}>
-                ⚠️ {error}
-              </div>
-            )}
-            {successMsg && (
-              <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#10b981', padding: '0.85rem', borderRadius: 10, fontSize: '0.85rem', marginBottom: '1.2rem', fontWeight: 800 }}>
-                ✅ {successMsg}
-              </div>
-            )}
+            <div style={{ display: 'flex', background: '#09090C', padding: '3px', borderRadius: '8px', border: '1px solid var(--linear-border-default)' }}>
+              <button
+                type="button"
+                onClick={() => { setMode('signup'); setError(''); setSuccessMsg(''); }}
+                className={`linear-btn ${mode === 'signup' ? 'linear-btn-primary' : 'linear-btn-ghost'}`}
+                style={{ padding: '0.35rem 0.8rem', fontSize: '0.74rem', borderRadius: '6px' }}
+              >
+                Sign Up
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
+                className={`linear-btn ${mode === 'login' ? 'linear-btn-primary' : 'linear-btn-ghost'}`}
+                style={{ padding: '0.35rem 0.8rem', fontSize: '0.74rem', borderRadius: '6px' }}
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
 
-            {/* Form */}
+          {/* Feedback Alerts */}
+          {error && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#F87171', padding: '0.8rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1.2rem', fontWeight: 500 }}>
+              ⚠️ {error}
+            </div>
+          )}
+          {successMsg && (
+            <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#34D399', padding: '0.8rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1.2rem', fontWeight: 500 }}>
+              ✅ {successMsg}
+            </div>
+          )}
+
+          {/* FORGOT PASSWORD FORM */}
+          {mode === 'forgot_password' ? (
+            <form onSubmit={handleResetPasswordSubmit}>
+              <div style={{ marginBottom: '1.1rem' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>REGISTERED EMAIL ADDRESS</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type="email"
+                    className="linear-input"
+                    placeholder="name@company.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendResetCode}
+                    disabled={sendingCode}
+                    className="linear-btn linear-btn-secondary"
+                    style={{ whiteSpace: 'nowrap', padding: '0.7rem 0.9rem', fontSize: '0.74rem' }}
+                  >
+                    {sendingCode ? 'SENDING...' : '📧 SEND RESET OTP'}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)' }}>6-DIGIT RESET OTP CODE</label>
+                  {demoCode && (
+                    <span className="linear-badge linear-badge-fresh" style={{ fontSize: '0.68rem' }}>
+                      DEMO OTP: {demoCode}
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  maxLength={6}
+                  className="linear-input"
+                  style={{ letterSpacing: '4px', fontSize: '1.1rem', fontWeight: 600, color: 'var(--linear-accent)' }}
+                  placeholder="854912"
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.1rem' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>NEW PASSWORD</label>
+                <input
+                  type="password"
+                  className="linear-input"
+                  placeholder="At least 6 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.2rem' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>CONFIRM NEW PASSWORD</label>
+                <input
+                  type="password"
+                  className="linear-input"
+                  placeholder="Re-enter new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="linear-btn linear-btn-primary"
+                disabled={loading}
+                style={{ width: '100%', padding: '0.85rem', fontSize: '0.9rem' }}
+              >
+                {loading ? 'Updating Password...' : '🔑 Reset Password & Sign In'}
+              </button>
+
+              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
+                  style={{ background: 'none', border: 'none', color: 'var(--linear-fg-muted)', fontSize: '0.8rem', cursor: 'pointer' }}
+                >
+                  ← Back to Sign In
+                </button>
+              </div>
+            </form>
+          ) : (
+            /* STANDARD LOGIN / SIGNUP FORM */
             <form onSubmit={handleSubmit}>
               
-              {!isLogin && (
-                <div style={{ marginBottom: '1.3rem' }}>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem', letterSpacing: '0.5px' }}>
-                    SELECT YOUR USER ROLE:
+              {mode === 'signup' && (
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.4rem' }}>
+                    SELECT USER ROLE:
                   </label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
                     {['Consumer', 'Retail Manager', 'Warehouse Operator', 'Food Quality Inspector', 'Administrator'].map((r) => (
@@ -449,18 +613,13 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
                         key={r}
                         type="button"
                         onClick={() => handleRoleChange(r)}
+                        className={`linear-btn ${role === r ? 'linear-btn-primary' : 'linear-btn-secondary'}`}
                         style={{
-                          background: role === r ? 'rgba(16, 185, 129, 0.22)' : 'rgba(255,255,255,0.05)',
-                          border: '1px solid ' + (role === r ? '#10b981' : 'var(--border-color)'),
-                          color: role === r ? '#10b981' : 'var(--text-main)',
-                          padding: '8px 4px',
-                          borderRadius: '8px',
-                          fontSize: '0.78rem',
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
+                          padding: '0.4rem 0.2rem',
+                          fontSize: '0.68rem',
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         {r}
@@ -470,12 +629,12 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
                 </div>
               )}
 
-              {!isLogin && (
+              {mode === 'signup' && (
                 <div style={{ marginBottom: '1.1rem' }}>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Full Name</label>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>FULL NAME</label>
                   <input
                     type="text"
-                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
+                    className="linear-input"
                     placeholder="e.g. Alex Morgan"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -484,59 +643,49 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
                 </div>
               )}
 
-              {/* Email Address Input + Send Verification Code Button */}
+              {/* Email + OTP Trigger */}
               <div style={{ marginBottom: '1.1rem' }}>
-                <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Email Address</label>
+                <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>EMAIL ADDRESS</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input
                     type="email"
-                    style={{ flex: 1, padding: '0.8rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
+                    className="linear-input"
                     placeholder="name@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
-                  {!isLogin && (
+                  {mode === 'signup' && (
                     <button
                       type="button"
                       onClick={handleSendVerificationCode}
                       disabled={sendingCode}
-                      style={{
-                        padding: '0.8rem 1.1rem',
-                        borderRadius: 10,
-                        background: codeSent ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)',
-                        border: '1px solid ' + (codeSent ? '#10b981' : '#3b82f6'),
-                        color: codeSent ? '#10b981' : '#3b82f6',
-                        fontWeight: 800,
-                        fontSize: '0.82rem',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap'
-                      }}
+                      className="linear-btn linear-btn-secondary"
+                      style={{ whiteSpace: 'nowrap', padding: '0.7rem 0.9rem', fontSize: '0.74rem' }}
                     >
-                      {sendingCode ? 'Sending...' : codeSent ? '✓ Resend Code' : '📧 Send OTP Code'}
+                      {sendingCode ? 'SENDING...' : codeSent ? '✓ RESEND OTP' : '📧 SEND OTP'}
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* 6-Digit Email Verification Code Input for Sign Up */}
-              {!isLogin && (
+              {/* OTP Input for Signup */}
+              {mode === 'signup' && (
                 <div style={{ marginBottom: '1.1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                    <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-                      6-Digit Email Verification Code
-                    </label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                    <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)' }}>6-DIGIT EMAIL VERIFICATION OTP</label>
                     {demoCode && (
-                      <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 800 }}>
-                        Demo OTP: {demoCode}
+                      <span className="linear-badge linear-badge-fresh" style={{ fontSize: '0.68rem' }}>
+                        DEMO OTP: {demoCode}
                       </span>
                     )}
                   </div>
                   <input
                     type="text"
                     maxLength={6}
-                    style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid ' + (verificationCode ? '#10b981' : 'var(--border-color)'), color: '#10b981', fontFamily: 'monospace', fontWeight: 800, fontSize: '1.1rem', letterSpacing: '3px', outline: 'none' }}
-                    placeholder="e.g. 854912"
+                    className="linear-input"
+                    style={{ letterSpacing: '4px', fontSize: '1.1rem', fontWeight: 600, color: 'var(--linear-accent)' }}
+                    placeholder="854912"
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value)}
                     required
@@ -545,10 +694,21 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
               )}
 
               <div style={{ marginBottom: '1.1rem' }}>
-                <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Password</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)' }}>PASSWORD</label>
+                  {mode === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('forgot_password'); setError(''); setSuccessMsg(''); setResetEmail(email); }}
+                      style={{ background: 'none', border: 'none', color: 'var(--linear-accent)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 500 }}
+                    >
+                      Forgot Password?
+                    </button>
+                  )}
+                </div>
                 <input
                   type="password"
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
+                  className="linear-input"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -557,18 +717,18 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
                 />
               </div>
 
-              {/* Dynamic Role Fields */}
-              {!isLogin && (
+              {/* Dynamic Role Fields for Signup */}
+              {mode === 'signup' && (
                 <>
                   {role === 'Warehouse Operator' && (
                     <div style={{ marginBottom: '1.1rem' }}>
-                      <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Assigned Warehouse</label>
+                      <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>ASSIGNED STORAGE HUB</label>
                       <select
-                        style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
+                        className="linear-input"
                         value={warehouseId}
                         onChange={(e) => setWarehouseId(e.target.value)}
                       >
-                        <option value="">Select Cold Storage Hub...</option>
+                        <option value="">Select Warehouse Hub...</option>
                         {warehouses.map((w) => (
                           <option key={w.id || w.code} value={w.code}>{w.name} ({w.code})</option>
                         ))}
@@ -578,10 +738,10 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
 
                   {role === 'Retail Manager' && (
                     <div style={{ marginBottom: '1.1rem' }}>
-                      <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Retail Store / Store Name</label>
+                      <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>RETAIL STORE NAME</label>
                       <input
                         type="text"
-                        style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
+                        className="linear-input"
                         placeholder="e.g. FreshMart Superstore #104"
                         value={organization}
                         onChange={(e) => setOrganization(e.target.value)}
@@ -591,10 +751,10 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
 
                   {role === 'Food Quality Inspector' && (
                     <div style={{ marginBottom: '1.1rem' }}>
-                      <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Inspector Badge / License ID</label>
+                      <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>INSPECTOR BADGE LICENSE</label>
                       <input
                         type="text"
-                        style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
+                        className="linear-input"
                         placeholder="e.g. INSP-AGRI-9920"
                         value={badgeId}
                         onChange={(e) => setBadgeId(e.target.value)}
@@ -604,11 +764,11 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
 
                   {role === 'Administrator' && (
                     <div style={{ marginBottom: '1.1rem' }}>
-                      <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Admin Secret Key</label>
+                      <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>ADMINISTRATOR SECRET KEY</label>
                       <input
                         type="password"
-                        style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
-                        placeholder="Enter admin key (default: admin123)"
+                        className="linear-input"
+                        placeholder="Default: admin123"
                         value={adminKey}
                         onChange={(e) => setAdminKey(e.target.value)}
                       />
@@ -619,71 +779,70 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
 
               <button
                 type="submit"
-                className="ux4g-btn-custom pulse-glow"
+                className="linear-btn linear-btn-primary"
                 disabled={loading}
-                style={{ width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '0.95rem', fontSize: '1rem' }}
+                style={{ width: '100%', marginTop: '0.8rem', padding: '0.85rem', fontSize: '0.9rem' }}
               >
-                {loading ? 'Verifying & Saving to Cloud MongoDB...' : isLogin ? 'Sign In & Access Platform' : `Verify Email & Create ${role} Account`}
+                {loading ? 'Processing Cloud Sync...' : mode === 'login' ? 'Sign In & Access Platform' : `Create ${role} Profile`}
               </button>
 
             </form>
-
-          </div>
+          )}
 
         </div>
 
       </div>
 
-      {/* SUPPLY CHAIN WORKFLOW */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginTop: '1rem' }}>
+      {/* SUPPLY CHAIN WORKFLOW - LINEAR GLASS MODULES */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
         <div style={{ textAlign: 'center' }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          <span className="linear-badge linear-badge-good" style={{ padding: '0.4rem 1rem' }}>
             END-TO-END SUPPLY CHAIN WORKFLOW
           </span>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, marginTop: '4px' }}>
-            How FreshSense AI Protects Food Freshness
+          <h2 className="linear-text-gradient" style={{ fontSize: '2.2rem', fontWeight: 600, marginTop: '8px' }}>
+            How FreshSense Protects Food Freshness
           </h2>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
           
-          <div className="ux4g-glass-card float-bob">
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 800, marginBottom: '1rem' }}>
+          <div className="linear-card">
+            <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'var(--linear-accent)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '1rem', marginBottom: '1rem', boxShadow: '0 0 12px rgba(94,106,210,0.4)' }}>
               1
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem' }}>🏭 Batch Tagging</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              Warehouse Operators assign unique Batch Tag IDs (`BATCH-YYYYMMDD-XXX`), specify harvest dates, expiry windows, and initial freshness score.
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 500, marginBottom: '0.4rem', color: 'var(--linear-fg)' }}>🏭 Batch Tagging</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--linear-fg-muted)', lineHeight: 1.5 }}>
+              Warehouse Operators assign unique Batch Tag IDs (`BATCH-YYYYMMDD-XXX`), specify harvest dates, and expiry limits.
             </p>
           </div>
 
-          <div className="ux4g-glass-card float-bob-delay">
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 800, marginBottom: '1rem' }}>
+          <div className="linear-card">
+            <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'rgba(255,255,255,0.08)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '1rem', marginBottom: '1rem', border: '1px solid var(--linear-border-default)' }}>
               2
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem' }}>❄️ Cold Chain Monitoring</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 500, marginBottom: '0.4rem', color: 'var(--linear-fg)' }}>❄️ Cold Chain Sensing</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--linear-fg-muted)', lineHeight: 1.5 }}>
               Continuous storage temperature (°C) and relative humidity (%) tracking across multi-location cold hubs to prevent decay.
             </p>
           </div>
 
-          <div className="ux4g-glass-card float-bob">
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 800, marginBottom: '1rem' }}>
+          <div className="linear-card">
+            <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'rgba(94,106,210,0.2)', color: 'var(--linear-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '1rem', marginBottom: '1rem', border: '1px solid var(--linear-border-accent)' }}>
               3
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem' }}>🛒 Retail Purchase Lock</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              Retail Managers browse live multi-warehouse marketplace and click 'Buy Batch' &rarr; atomically updates status to 'SOLD' and locks double-purchasing.
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 500, marginBottom: '0.4rem', color: 'var(--linear-fg)' }}>🛒 Retail Purchase Lock</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--linear-fg-muted)', lineHeight: 1.5 }}>
+              Retail Managers browse live marketplace and click 'Buy Batch' &rarr; atomically updates status to 'SOLD' and locks double-buying.
             </p>
           </div>
 
-          <div className="ux4g-glass-card float-bob-delay">
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 800, marginBottom: '1rem' }}>
+          <div className="linear-card">
+            <div style={{ width: 36, height: 36, borderRadius: '8px', background: 'var(--linear-accent)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '1rem', marginBottom: '1rem', boxShadow: '0 0 12px rgba(94,106,210,0.4)' }}>
               4
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem' }}>🍏 Consumer Protection</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              Consumers get remaining shelf-life predictions, optimal temperature storage tips, and spoilage warning indicators.
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 500, marginBottom: '0.4rem', color: 'var(--linear-fg)' }}>🍏 Consumer Audit</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--linear-fg-muted)', lineHeight: 1.5 }}>
+              End consumers scan batch tags to verify freshness score history, storage conditions, and remaining shelf life.
             </p>
           </div>
 

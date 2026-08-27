@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialRole = 'Retail Manager', warehouses = [] }) {
   if (!isOpen) return null;
 
-  const [isLogin, setIsLogin] = useState(true);
+  // Form Mode: 'login' | 'signup' | 'forgot_password'
+  const [mode, setMode] = useState('login');
   const [role, setRole] = useState(initialRole);
   
   // Form fields
@@ -16,6 +17,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialRole 
   const [phone, setPhone] = useState('');
   const [adminKey, setAdminKey] = useState('');
 
+  // Forgot password state
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [sendingCode, setSendingCode] = useState(false);
+  const [demoCode, setDemoCode] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -25,12 +34,86 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialRole 
     setError('');
   };
 
+  // Trigger Reset Code
+  const handleSendResetCode = async () => {
+    if (!resetEmail || !resetEmail.includes('@')) {
+      setError('Please enter your registered email address.');
+      return;
+    }
+    setError('');
+    setSendingCode(true);
+
+    try {
+      const res = await fetch('/api/auth/send-reset-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || 'Failed to send reset code.');
+      }
+
+      setDemoCode(data.verification_code);
+      setResetCode(data.verification_code);
+      setSuccessMsg(`🔑 Password Reset OTP sent! Demo Code: ${data.verification_code}`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
+  // Submit Password Reset
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
+
+    if (newPassword !== confirmPassword) {
+      setError('New password and confirm password do not match.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: resetEmail,
+          verification_code: resetCode.trim() || '123456',
+          new_password: newPassword
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || 'Failed to reset password.');
+      }
+
+      setSuccessMsg('✅ Password reset successfully! Please sign in with your new password.');
+      setEmail(resetEmail);
+      setTimeout(() => {
+        setMode('login');
+      }, 1200);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
     setLoading(true);
 
+    const isLogin = mode === 'login';
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
     const selectedWarehouse = warehouses.find(w => w.code === warehouseId || w.name === warehouseId);
     
@@ -78,192 +161,202 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialRole 
   };
 
   return (
-    <div className="ux4g-modal-overlay" onClick={onClose}>
-      <div className="ux4g-modal-box animate-fade-in" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 540 }}>
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(5, 5, 6, 0.8)',
+      backdropFilter: 'blur(10px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '1rem'
+    }} onClick={onClose}>
+      
+      <div className="linear-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520, width: '100%', borderRadius: 16 }}>
         
         {/* Modal Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.4rem', borderBottom: '1px solid var(--linear-border-default)', paddingBottom: '0.8rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-main)' }}>
-              {isLogin ? '🔐 Portal Authentication' : '📝 Dynamic User Registration'}
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--linear-fg)' }}>
+              {mode === 'login' ? '🔐 Portal Authentication' : mode === 'signup' ? '📝 Dynamic User Registration' : '🔑 Password Reset'}
             </h2>
-            <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-              {isLogin ? 'Access your UX4G role-based freshness workspace' : 'Register your profile directly into Cloud MongoDB Atlas'}
+            <p style={{ fontSize: '0.8rem', color: 'var(--linear-fg-muted)' }}>
+              {mode === 'login' ? 'Access your role-based workspace' : mode === 'signup' ? 'Register your profile in Cloud MongoDB' : 'Reset your password using 6-digit OTP'}
             </p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.5rem', cursor: 'pointer' }}>
+          <button onClick={onClose} className="linear-btn linear-btn-secondary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.9rem' }}>
             ✕
           </button>
         </div>
 
-        {/* Role Selection Tabs for Registration */}
-        {!isLogin && (
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
-              SELECT USER ROLE:
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
-              {['Consumer', 'Retail Manager', 'Warehouse Operator', 'Food Quality Inspector', 'Administrator'].map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => handleRoleChange(r)}
-                  style={{
-                    background: role === r ? 'rgba(16, 185, 129, 0.22)' : 'rgba(255,255,255,0.05)',
-                    border: '1px solid ' + (role === r ? '#10b981' : 'var(--border-color)'),
-                    color: role === r ? '#10b981' : 'var(--text-main)',
-                    padding: '8px 4px',
-                    borderRadius: '8px',
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Alerts */}
         {error && (
-          <div style={{ background: 'rgba(244, 63, 94, 0.15)', border: '1px solid rgba(244, 63, 94, 0.4)', color: '#f43f5e', padding: '0.8rem', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1.2rem', fontWeight: 700 }}>
-            ⚠️ {error}
+          <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#F87171', padding: '0.8rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1.2rem', fontWeight: 500 }}>
+            ⚠️ ALERT: {error}
           </div>
         )}
         {successMsg && (
-          <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#10b981', padding: '0.8rem', borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1.2rem', fontWeight: 700 }}>
-            ✅ {successMsg}
+          <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#34D399', padding: '0.8rem', borderRadius: '8px', fontSize: '0.82rem', marginBottom: '1.2rem', fontWeight: 500 }}>
+            ✅ STATUS: {successMsg}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          
-          {!isLogin && (
+        {/* FORGOT PASSWORD FORM */}
+        {mode === 'forgot_password' ? (
+          <form onSubmit={handleResetSubmit}>
             <div style={{ marginBottom: '1.1rem' }}>
-              <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Full Name</label>
+              <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>REGISTERED EMAIL ADDRESS</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="email"
+                  className="linear-input"
+                  placeholder="name@company.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={handleSendResetCode}
+                  disabled={sendingCode}
+                  className="linear-btn linear-btn-secondary"
+                  style={{ whiteSpace: 'nowrap', padding: '0.7rem 0.9rem', fontSize: '0.74rem' }}
+                >
+                  {sendingCode ? 'SENDING...' : '📧 SEND OTP'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1.1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)' }}>RESET OTP CODE</label>
+                {demoCode && (
+                  <span className="linear-badge linear-badge-fresh" style={{ fontSize: '0.68rem' }}>
+                    DEMO OTP: {demoCode}
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
-                style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
-                placeholder="e.g. Alex Morgan"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                maxLength={6}
+                className="linear-input"
+                style={{ letterSpacing: '4px', fontSize: '1.1rem', fontWeight: 600, color: 'var(--linear-accent)' }}
+                placeholder="854912"
+                value={resetCode}
+                onChange={(e) => setResetCode(e.target.value)}
                 required
               />
             </div>
-          )}
 
-          <div style={{ marginBottom: '1.1rem' }}>
-            <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Email Address</label>
-            <input
-              type="email"
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
-              placeholder="name@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+            <div style={{ marginBottom: '1.1rem' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>NEW PASSWORD</label>
+              <input
+                type="password"
+                className="linear-input"
+                placeholder="At least 6 characters"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
 
-          <div style={{ marginBottom: '1.1rem' }}>
-            <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Password</label>
-            <input
-              type="password"
-              style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-          </div>
+            <div style={{ marginBottom: '1.2rem' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>CONFIRM NEW PASSWORD</label>
+              <input
+                type="password"
+                className="linear-input"
+                placeholder="Re-enter new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
 
-          {/* Dynamic Role Fields */}
-          {!isLogin && (
-            <>
-              {role === 'Warehouse Operator' && (
-                <div style={{ marginBottom: '1.1rem' }}>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Assigned Cold Storage Warehouse</label>
-                  <select
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
-                    value={warehouseId}
-                    onChange={(e) => setWarehouseId(e.target.value)}
-                  >
-                    <option value="">Select Warehouse...</option>
-                    {warehouses.map((w) => (
-                      <option key={w.id || w.code} value={w.code}>{w.name} ({w.code})</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {role === 'Retail Manager' && (
-                <div style={{ marginBottom: '1.1rem' }}>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Retail Store / Hypermarket Chain</label>
-                  <input
-                    type="text"
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
-                    placeholder="e.g. FreshMart Superstore #104"
-                    value={organization}
-                    onChange={(e) => setOrganization(e.target.value)}
-                  />
-                </div>
-              )}
-
-              {role === 'Food Quality Inspector' && (
-                <div style={{ marginBottom: '1.1rem' }}>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Inspector Badge / License ID</label>
-                  <input
-                    type="text"
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
-                    placeholder="e.g. INSP-AGRI-9920"
-                    value={badgeId}
-                    onChange={(e) => setBadgeId(e.target.value)}
-                  />
-                </div>
-              )}
-
-              {role === 'Administrator' && (
-                <div style={{ marginBottom: '1.1rem' }}>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Admin Secret Key</label>
-                  <input
-                    type="password"
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
-                    placeholder="Enter admin key (default: admin123)"
-                    value={adminKey}
-                    onChange={(e) => setAdminKey(e.target.value)}
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          <button
-            type="submit"
-            className="ux4g-btn-custom"
-            disabled={loading}
-            style={{ width: '100%', justifyContent: 'center', marginTop: '1rem', padding: '0.9rem' }}
-          >
-            {loading ? 'Processing...' : isLogin ? 'Sign In' : `Register as ${role}`}
-          </button>
-        </form>
-
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            {isLogin ? "Don't have an account yet?" : 'Already registered?'}
             <button
-              type="button"
-              onClick={() => { setIsLogin(!isLogin); setError(''); }}
-              style={{ background: 'none', border: 'none', color: '#10b981', fontWeight: 800, marginLeft: 6, cursor: 'pointer' }}
+              type="submit"
+              className="linear-btn linear-btn-primary"
+              disabled={loading}
+              style={{ width: '100%', padding: '0.85rem', fontSize: '0.85rem' }}
             >
-              {isLogin ? 'Register New Account' : 'Sign In'}
+              {loading ? 'RESETTING...' : '🔑 Reset Password'}
             </button>
-          </p>
-        </div>
+
+            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
+                style={{ background: 'none', border: 'none', color: 'var(--linear-fg-muted)', fontSize: '0.8rem', cursor: 'pointer' }}
+              >
+                ← Back to Sign In
+              </button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            
+            {mode === 'signup' && (
+              <div style={{ marginBottom: '1.1rem' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>FULL NAME</label>
+                <input
+                  type="text"
+                  className="linear-input"
+                  placeholder="e.g. Alex Morgan"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
+            <div style={{ marginBottom: '1.1rem' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>EMAIL ADDRESS</label>
+              <input
+                type="email"
+                className="linear-input"
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)' }}>PASSWORD</label>
+                {mode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => { setMode('forgot_password'); setError(''); setSuccessMsg(''); setResetEmail(email); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--linear-accent)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 500 }}
+                  >
+                    Forgot Password?
+                  </button>
+                )}
+              </div>
+              <input
+                type="password"
+                className="linear-input"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="linear-btn linear-btn-primary"
+              disabled={loading}
+              style={{ width: '100%', marginTop: '0.8rem', padding: '0.85rem', fontSize: '0.85rem' }}
+            >
+              {loading ? 'PROCESSING...' : mode === 'login' ? 'SIGN IN' : `REGISTER AS ${role.toUpperCase()}`}
+            </button>
+          </form>
+        )}
 
       </div>
     </div>

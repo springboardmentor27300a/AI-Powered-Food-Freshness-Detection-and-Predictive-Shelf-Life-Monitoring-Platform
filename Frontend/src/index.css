@@ -1,333 +1,334 @@
 @import 'ux4g-web-components/styles.css';
 
+/* ==========================================================================
+   DESIGN SYSTEM: LINEAR / MODERN (CINEMATIC DEVELOPER-TOOL AESTHETIC)
+   ========================================================================== */
+
 :root {
-  --bg-primary: #070a12;
-  --bg-secondary: #0f172a;
-  --bg-card: rgba(15, 23, 42, 0.78);
-  --bg-card-hover: rgba(30, 41, 59, 0.92);
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-color: rgba(255, 255, 255, 0.12);
-  --accent-emerald: #10b981;
-  --accent-teal: #14b8a6;
-  --accent-blue: #3b82f6;
-  --accent-amber: #f59e0b;
-  --accent-rose: #f43f5e;
-  --accent-purple: #8b5cf6;
-  --radius-lg: 20px;
-  --radius-md: 12px;
-  --shadow-glow: 0 12px 40px -5px rgba(16, 185, 129, 0.3);
+  /* Linear Deep Space Dark Color Tokens */
+  --linear-bg-deep: #020203;          /* Absolute Darkest Base */
+  --linear-bg-base: #050506;          /* Primary Page Canvas */
+  --linear-bg-elevated: #0a0a0c;      /* Elevated Interfaces */
+  --linear-surface: rgba(255, 255, 255, 0.04);
+  --linear-surface-hover: rgba(255, 255, 255, 0.08);
+  
+  /* Text & Foreground */
+  --linear-fg: #EDEDEF;               /* Off-white Primary Text */
+  --linear-fg-muted: #8A8F98;         /* Muted Secondary Text */
+  --linear-fg-subtle: rgba(255, 255, 255, 0.60);
+  
+  /* Indigo Accent System */
+  --linear-accent: #5E6AD2;           /* Primary Indigo Interactive Accent */
+  --linear-accent-bright: #6872D9;    /* Hover State Accent */
+  --linear-accent-glow: rgba(94, 106, 210, 0.3);
+  
+  /* Hairline Borders */
+  --linear-border-default: rgba(255, 255, 255, 0.06);
+  --linear-border-hover: rgba(255, 255, 255, 0.12);
+  --linear-border-accent: rgba(94, 106, 210, 0.35);
+
+  /* Status Colors */
+  --linear-success: #10B981;
+  --linear-warning: #F59E0B;
+  --linear-error: #EF4444;
+
+  /* Precision Easing (Expo-Out) */
+  --linear-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 [data-theme="light"] {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.92);
-  --bg-card-hover: #ffffff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-color: rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 12px 35px -5px rgba(16, 185, 129, 0.18);
+  /* Modern Clean Dark Hybrid for Light Toggle */
+  --linear-bg-deep: #09090b;
+  --linear-bg-base: #0c0c0e;
+  --linear-bg-elevated: #121215;
+  --linear-surface: rgba(255, 255, 255, 0.06);
+  --linear-surface-hover: rgba(255, 255, 255, 0.1);
+  --linear-fg: #F4F4F5;
+  --linear-fg-muted: #A1A1AA;
 }
 
+/* Base Reset & Typography */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+  font-family: var(--font-inter);
 }
 
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-main);
+  background-color: var(--linear-bg-base);
+  color: var(--linear-fg);
   min-height: 100vh;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.18) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.16) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
-  background-attachment: fixed;
+  position: relative;
+  background-image: radial-gradient(ellipse at top, #0a0a0f 0%, #050506 50%, #020203 100%);
 }
 
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(22px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* 64px Grid Overlay & Ambient Blobs System */
+.linear-bg-grid {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-size: 64px 64px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(16, 185, 129, 0.7);
-  }
+.linear-blob-1 {
+  position: fixed;
+  top: -150px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(94, 106, 210, 0.22) 0%, rgba(94, 106, 210, 0) 70%);
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBlob1 10s var(--linear-easing) infinite alternate;
 }
 
-@keyframes floatBob {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+.linear-blob-2 {
+  position: fixed;
+  bottom: -200px;
+  left: -100px;
+  width: 700px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(104, 114, 217, 0.15) 0%, rgba(5, 5, 6, 0) 70%);
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBlob2 12s var(--linear-easing) infinite alternate;
 }
 
-@keyframes laserScan {
-  0% {
-    top: 0%;
-    opacity: 0.8;
-  }
-  50% {
-    top: 92%;
-    opacity: 1;
-  }
-  100% {
-    top: 0%;
-    opacity: 0.8;
-  }
+@keyframes floatBlob1 {
+  0% { transform: translateX(-50%) translateY(0); }
+  100% { transform: translateX(-50%) translateY(30px); }
 }
 
-@keyframes gradientText {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+@keyframes floatBlob2 {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-40px); }
 }
 
-.animate-fade-in {
-  animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.float-bob {
-  animation: floatBob 4s ease-in-out infinite;
-}
-
-.float-bob-delay {
-  animation: floatBob 4.5s ease-in-out 1.5s infinite;
-}
-
-.pulse-glow {
-  animation: pulseGlow 2.5s infinite ease-in-out;
-}
-
-.gradient-animated-text {
-  background: linear-gradient(135deg, #ffffff 0%, #10b981 35%, #3b82f6 70%, #8b5cf6 100%);
-  background-size: 200% 200%;
-  animation: gradientText 6s ease infinite;
+/* Gradient Typography */
+.linear-text-gradient {
+  background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 60%, rgba(255, 255, 255, 0.65) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* UX4G Custom Extensions & Glassmorphism Cards */
-.ux4g-glass-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+.linear-accent-gradient {
+  background: linear-gradient(135deg, #5E6AD2 0%, #818CF8 50%, #C084FC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ==========================================================================
+   LINEAR / MODERN COMPONENT UTILITIES
+   ========================================================================== */
+
+/* 1. Linear Glass Card Surface (16px radius + 3-Layer Shadow) */
+.linear-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid var(--linear-border-default);
+  border-radius: 16px; /* 16px precise radius */
   padding: 1.6rem;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 2px 20px rgba(0, 0, 0, 0.4),
+    0 0 40px rgba(0, 0, 0, 0.2);
+  transition: all 250ms var(--linear-easing);
+  backdrop-filter: blur(12px);
   position: relative;
   overflow: hidden;
 }
 
-.ux4g-glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.6), transparent);
-  opacity: 0;
-  transition: opacity 0.35s ease;
+.linear-card:hover {
+  border-color: var(--linear-border-hover);
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 30px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(94, 106, 210, 0.12);
+  transform: translateY(-4px); /* Precision subtle move */
 }
 
-.ux4g-glass-card:hover {
-  background: var(--bg-card-hover);
-  border-color: rgba(16, 185, 129, 0.45);
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-glow);
-}
-
-.ux4g-glass-card:hover::before {
-  opacity: 1;
-}
-
-/* Scanner Beam Effect */
-.scanner-laser-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, #10b981, #3b82f6, #10b981, transparent);
-  box-shadow: 0 0 15px #10b981, 0 0 25px #3b82f6;
-  animation: laserScan 2.8s ease-in-out infinite;
-  z-index: 10;
-}
-
-/* UX4G Button Custom Styles */
-.ux4g-btn-custom {
-  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-  color: #ffffff !important;
+/* 2. Linear Buttons (8px radius + Inset Highlight + Glow) */
+.linear-btn {
+  font-family: var(--font-inter);
+  font-weight: 500;
+  font-size: 0.88rem;
+  letter-spacing: -0.01em;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px; /* 8px precision radius */
   border: none;
-  padding: 0.8rem 1.7rem;
-  border-radius: var(--radius-md);
-  font-weight: 800;
-  font-size: 0.95rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.38);
-  letter-spacing: 0.3px;
+  transition: all 200ms var(--linear-easing);
+  user-select: none;
+  text-decoration: none;
+  position: relative;
 }
 
-.ux4g-btn-custom:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 28px rgba(16, 185, 129, 0.55);
-  filter: brightness(1.12);
+.linear-btn:active {
+  transform: scale(0.98); /* Tactile press feedback */
 }
 
-.ux4g-btn-buy {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: #ffffff !important;
-  border: none;
-  padding: 0.7rem 1.4rem;
-  border-radius: var(--radius-md);
-  font-weight: 800;
+/* Primary Indigo Button */
+.linear-btn-primary {
+  background: var(--linear-accent);
+  color: #FFFFFF;
+  box-shadow: 
+    0 0 0 1px rgba(94, 106, 210, 0.6),
+    0 4px 16px rgba(94, 106, 210, 0.35),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+
+.linear-btn-primary:hover {
+  background: var(--linear-accent-bright);
+  box-shadow: 
+    0 0 0 1px rgba(94, 106, 210, 0.8),
+    0 6px 20px rgba(94, 106, 210, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Secondary Glass Button */
+.linear-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--linear-fg);
+  border: 1px solid var(--linear-border-default);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.linear-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--linear-border-hover);
+  color: #FFFFFF;
+}
+
+/* Ghost Button */
+.linear-btn-ghost {
+  background: transparent;
+  color: var(--linear-fg-muted);
+}
+
+.linear-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--linear-fg);
+}
+
+/* 3. Sleek Dark Form Inputs */
+.linear-input {
+  background: #0F0F12;
+  border: 1px solid var(--linear-border-default);
+  border-radius: 8px;
+  padding: 0.75rem 1.1rem;
+  color: var(--linear-fg);
+  font-family: var(--font-inter);
   font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.38);
+  outline: none;
+  width: 100%;
+  transition: all 200ms var(--linear-easing);
 }
 
-.ux4g-btn-buy:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.55);
+.linear-input:focus {
+  border-color: var(--linear-accent);
+  box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.25);
+  background: #131317;
 }
 
-.ux4g-btn-buy:disabled {
-  background: #475569 !important;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+.linear-input::placeholder {
+  color: var(--linear-fg-muted);
   opacity: 0.7;
 }
 
-/* UX4G Badges */
-.ux4g-badge-pill {
-  padding: 0.38rem 0.9rem;
+/* 4. Badges & Chips */
+.linear-badge {
+  font-family: var(--font-inter);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.3rem 0.8rem;
   border-radius: 9999px;
-  font-size: 0.78rem;
-  font-weight: 800;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  gap: 0.4rem;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--linear-border-default);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.ux4g-badge-fresh {
-  background: rgba(16, 185, 129, 0.18);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.45);
+.linear-badge-fresh {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34D399;
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
-.ux4g-badge-good {
-  background: rgba(20, 184, 166, 0.18);
-  color: #14b8a6;
-  border: 1px solid rgba(20, 184, 166, 0.45);
+.linear-badge-good {
+  background: rgba(94, 106, 210, 0.15);
+  color: #818CF8;
+  border-color: rgba(94, 106, 210, 0.3);
 }
 
-.ux4g-badge-acceptable {
-  background: rgba(245, 158, 11, 0.18);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.45);
+.linear-badge-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #FBBF24;
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
-.ux4g-badge-spoilage {
-  background: rgba(244, 63, 94, 0.18);
-  color: #f43f5e;
-  border: 1px solid rgba(244, 63, 94, 0.45);
+.linear-badge-spoilage {
+  background: rgba(239, 68, 68, 0.12);
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
-.ux4g-badge-available {
-  background: rgba(59, 130, 246, 0.18);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.45);
-}
-
-.ux4g-badge-sold {
-  background: rgba(239, 68, 68, 0.22);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.6);
-  font-weight: 800;
-}
-
-/* Custom Table */
-.ux4g-custom-table {
+/* 5. Precision Tables */
+.linear-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
 }
 
-.ux4g-custom-table th {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-muted);
-  font-weight: 800;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 1px;
-  padding: 1rem 1.2rem;
+.linear-table th {
+  font-family: var(--font-inter);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--linear-fg-muted);
+  padding: 0.85rem 1.1rem;
   text-align: left;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.ux4g-custom-table td {
-  padding: 1.1rem 1.2rem;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 0.9rem;
-}
-
-.ux4g-custom-table tr:hover td {
   background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--linear-border-default);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Modals */
-.ux4g-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(14px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
+.linear-table td {
+  padding: 0.95rem 1.1rem;
+  border-bottom: 1px solid var(--linear-border-default);
+  font-size: 0.88rem;
+  background: rgba(255, 255, 255, 0.015);
 }
 
-.ux4g-modal-box {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 580px;
-  max-height: 92vh;
-  overflow-y: auto;
-  padding: 2.2rem;
-  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.65);
-  animation: fadeInUp 0.3s ease-out;
+.linear-table tr:hover td {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--linear-bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
 }

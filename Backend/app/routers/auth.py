@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Header
 from app.models.schemas import (
     UserRegister, UserLogin, TokenResponse, UserResponse,
-    EmailVerificationRequest, EmailVerificationResponse
+    EmailVerificationRequest, EmailVerificationResponse,
+    ForgotPasswordRequest, ResetPasswordRequest
 )
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.core.config import settings
@@ -10,9 +11,13 @@ from app.db.mongodb import get_database
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from bson import ObjectId
-import random
+import secrets
 
 router = APIRouter(prefix="/auth", tags=["Authentication & Email Verification"])
+
+def generate_unique_otp() -> str:
+    """Generates a cryptographically secure, unique 6-digit random OTP code."""
+    return f"{secrets.randbelow(900000) + 100000}"
 
 def format_user_doc(user_doc) -> UserResponse:
     return UserResponse(
@@ -41,8 +46,8 @@ async def send_verification_code(req: EmailVerificationRequest):
             detail=f"An account with email address '{email_clean}' is already registered. Please sign in instead."
         )
 
-    # Generate 6-digit OTP verification code
-    code = f"{random.randint(100000, 999999)}"
+    # Generate unique 6-digit OTP verification code
+    code = generate_unique_otp()
     
     # Store or update verification code in Cloud MongoDB Atlas 'email_verifications' collection
     now = datetime.utcnow()
@@ -63,7 +68,7 @@ async def send_verification_code(req: EmailVerificationRequest):
     # Attempt real SMTP email dispatch to inbox
     email_sent = send_otp_email(email_clean, code)
 
-    msg = f"Verification OTP code sent directly to {email_clean}!" if email_sent else f"Verification OTP code generated for {email_clean}. Use code '{code}' to verify."
+    msg = f"Verification OTP code sent directly to {email_clean}!" if email_sent else f"Unique verification OTP code generated for {email_clean}. Use code '{code}' to verify."
 
     return EmailVerificationResponse(
         email=email_clean,
@@ -88,21 +93,18 @@ async def register(user_in: UserRegister):
     # Verify 6-digit OTP Code against MongoDB 'email_verifications' collection
     verify_record = await db.email_verifications.find_one({"email": email_clean})
     
-    preset_codes = ["123456", "654321", "854912", "784912"]
-    
-    if not verify_record and user_in.verification_code not in preset_codes:
+    if not verify_record:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No verification code request found for this email. Please click 'Send Verification Code' first."
         )
 
-    if verify_record:
-        expected_code = verify_record.get("verification_code")
-        if expected_code != user_in.verification_code.strip() and user_in.verification_code not in preset_codes:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid email verification code. Expected code for '{email_clean}' is '{expected_code}'."
-            )
+    expected_code = verify_record.get("verification_code")
+    if expected_code != user_in.verification_code.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid email verification code for '{email_clean}'."
+        )
     
     # Validate Admin key if Administrator role selected
     if user_in.role == "Administrator":
@@ -189,3 +191,89 @@ async def get_current_user(authorization: str = Header(None)):
         raise HTTPException(status_code=404, detail="User not found.")
         
     return format_user_doc(user_doc)
+
+@router.post("/send-reset-code", response_model=EmailVerificationResponse)
+async def send_reset_code(req: ForgotPasswordRequest):
+    db = get_database()
+    email_clean = req.email.lower().strip()
+    
+    # Check if user exists
+    user_doc = await db.users.find_one({"email": email_clean})
+    if not user_doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No registered account found with email address '{email_clean}'."
+        )
+
+    # Generate unique 6-digit OTP reset code
+    code = generate_unique_otp()
+    
+    # Store or update verification code in Cloud MongoDB Atlas 'email_verifications' collection
+    now = datetime.utcnow()
+    await db.email_verifications.update_one(
+        {"email": email_clean},
+        {
+            "$set": {
+                "email": email_clean,
+                "verification_code": code,
+                "created_at": now,
+                "expires_at": now + timedelta(minutes=5),
+                "verified": False
+            }
+        },
+        upsert=True
+    )
+
+    # Dispatch OTP email
+    email_sent = send_otp_email(email_clean, code)
+    msg = f"Password reset OTP code sent to {email_clean}!" if email_sent else f"Unique password reset OTP generated. Use code '{code}' to reset password."
+
+    return EmailVerificationResponse(
+        email=email_clean,
+        message=msg,
+        verification_code=code,
+        expires_in_seconds=300
+    )
+
+@router.post("/reset-password")
+async def reset_password(req: ResetPasswordRequest):
+    db = get_database()
+    email_clean = req.email.lower().strip()
+    
+    # Verify user exists
+    user_doc = await db.users.find_one({"email": email_clean})
+    if not user_doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No registered account found with this email address."
+        )
+
+    # Verify 6-digit OTP Code against MongoDB 'email_verifications' collection
+    verify_record = await db.email_verifications.find_one({"email": email_clean})
+    
+    if not verify_record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No password reset code request found. Please click 'Send Reset OTP' first."
+        )
+
+    expected_code = verify_record.get("verification_code")
+    if expected_code != req.verification_code.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid verification code for '{email_clean}'."
+        )
+
+    # Hash new password and update user document
+    new_hashed_pwd = get_password_hash(req.new_password)
+    await db.users.update_one(
+        {"email": email_clean},
+        {"$set": {"password_hash": new_hashed_pwd}}
+    )
+
+    # Mark OTP as verified
+    await db.email_verifications.update_one({"email": email_clean}, {"$set": {"verified": True}})
+
+    return {"message": "Password reset successfully! You can now sign in with your new password."}
+
+

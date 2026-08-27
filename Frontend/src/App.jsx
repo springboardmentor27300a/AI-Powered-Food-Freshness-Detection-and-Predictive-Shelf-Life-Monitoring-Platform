@@ -38,6 +38,13 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Lock Active Workspace Role strictly to User Role upon Auth
+  useEffect(() => {
+    if (user && user.role) {
+      setRole(user.role);
+    }
+  }, [user]);
+
   // Fetch API Data from Backend
   const fetchData = async () => {
     setLoading(true);
@@ -121,9 +128,14 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       
-      {/* UX4G Header */}
+      {/* Linear Ambient Background Grid & Floating Light Blobs */}
+      <div className="linear-bg-grid" />
+      <div className="linear-blob-1" />
+      <div className="linear-blob-2" />
+
+      {/* Linear Header */}
       <Navbar
         user={user}
         role={role}
@@ -134,7 +146,7 @@ export default function App() {
       />
 
       {/* Main Workspace Body */}
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1, position: 'relative', zIndex: 1 }}>
         {!user ? (
           // Dedicated Sign Up & Login Landing Screen
           <LandingAuthScreen
@@ -182,9 +194,23 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--border-color)', padding: '1.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)', background: 'var(--bg-secondary)' }}>
-        FreshSense AI Platform • Powered by UX4G Design System & Cloud MongoDB Atlas
+      {/* Linear Precision Footer */}
+      <footer style={{
+        borderTop: '1px solid var(--linear-border-default)',
+        padding: '1.5rem',
+        textAlign: 'center',
+        fontSize: '0.82rem',
+        color: 'var(--linear-fg-muted)',
+        background: 'rgba(5, 5, 6, 0.95)',
+        backdropFilter: 'blur(16px)',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', marginBottom: '0.3rem' }}>
+          <span className="linear-badge linear-badge-fresh" style={{ fontSize: '0.68rem' }}>CLOUD SYNC OK</span>
+          <span style={{ fontWeight: 500, color: 'var(--linear-fg)' }}>FRESHSENSE AI • LINEAR / MODERN DESIGN SYSTEM</span>
+        </div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--linear-fg-muted)' }}>LAYERED AMBIENT LIGHTING • CLOUD MONGODB ATLAS CONNECTED</div>
       </footer>
 
     </div>

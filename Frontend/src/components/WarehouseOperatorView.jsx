@@ -66,126 +66,131 @@ export default function WarehouseOperatorView({ batches, warehouses, categories,
   };
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
-      {/* Hero Banner */}
-      <div className="ux4g-glass-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.2rem', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(20, 184, 166, 0.06))', borderColor: 'rgba(16, 185, 129, 0.35)' }}>
+      {/* Hero Container */}
+      <div className="linear-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.2rem' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem' }}>
             <span style={{ fontSize: '1.8rem' }}>🏭</span>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Warehouse Inventory & Produce Tagging Hub</h2>
+            <h2 className="linear-text-gradient" style={{ fontSize: '1.45rem', fontWeight: 600 }}>
+              Warehouse Inventory & Produce Tagging Hub
+            </h2>
           </div>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: '0.88rem', color: 'var(--linear-fg-muted)', fontWeight: 400 }}>
             Tag produce batches with unique Batch IDs, select cold-storage locations, specify expiry limits, and upload storage conditions.
           </p>
         </div>
 
         <button
-          className="ux4g-btn-custom pulse-glow"
+          className="linear-btn linear-btn-primary"
           onClick={() => { setShowModal(true); handleAutoBatchId(); }}
-          style={{ padding: '0.9rem 1.8rem', fontSize: '0.95rem' }}
+          style={{ padding: '0.8rem 1.4rem', fontSize: '0.88rem' }}
         >
-          ➕ Register New Food Batch
+          ➕ Register New Produce Batch
         </button>
       </div>
 
-      {/* UX4G Warehouse Cards */}
+      {/* Warehouse Capacity Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
         {warehouses.map((wh) => (
-          <div key={wh.id || wh.code} className="ux4g-glass-card">
+          <div key={wh.id || wh.code} className="linear-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem' }}>
-              <span className="ux4g-badge-pill ux4g-badge-fresh" style={{ fontSize: '0.75rem' }}>
+              <span className="linear-badge linear-badge-fresh" style={{ fontSize: '0.7rem' }}>
                 {wh.code}
               </span>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{wh.temperature_range_c}</span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--linear-fg-muted)', fontWeight: 500 }}>{wh.temperature_range_c}</span>
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.3rem' }}>{wh.name}</h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.9rem' }}>📍 {wh.location}</p>
-            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, overflow: 'hidden', height: 8, marginBottom: '0.5rem' }}>
-              <div style={{ width: `${Math.min(100, ((wh.current_utilization_kg || 0) / wh.capacity_kg) * 100)}%`, background: 'linear-gradient(90deg, #10b981, #3b82f6)', height: '100%' }} />
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.3rem', color: 'var(--linear-fg)' }}>{wh.name}</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--linear-fg-muted)', marginBottom: '0.9rem' }}>📍 {wh.location}</p>
+            
+            <div style={{ background: 'rgba(255, 255, 255, 0.05)', borderRadius: '9999px', overflow: 'hidden', height: 8, marginBottom: '0.6rem' }}>
+              <div style={{ width: `${Math.min(100, ((wh.current_utilization_kg || 0) / wh.capacity_kg) * 100)}%`, background: 'var(--linear-accent)', height: '100%' }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700 }}>
-              <span>Capacity: {wh.capacity_kg.toLocaleString()} kg</span>
-              <span style={{ color: '#10b981' }}>{(wh.current_utilization_kg || 0).toLocaleString()} kg used</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', fontWeight: 500 }}>
+              <span>Cap: {wh.capacity_kg.toLocaleString()} kg</span>
+              <span style={{ color: 'var(--linear-accent)' }}>{(wh.current_utilization_kg || 0).toLocaleString()} kg used</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Inventory Table Card */}
-      <div className="ux4g-glass-card">
+      {/* Active Batches Table Card */}
+      <div className="linear-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>📦 Active Warehouse Produce Batches</h3>
-          <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 800, background: 'rgba(16, 185, 129, 0.12)', padding: '4px 12px', borderRadius: 20 }}>
-            Total Items: {batches.length}
+          <h3 className="linear-text-gradient" style={{ fontSize: '1.2rem', fontWeight: 600 }}>
+            📦 Active Warehouse Produce Batches
+          </h3>
+          <span className="linear-badge linear-badge-good" style={{ fontSize: '0.75rem' }}>
+            ITEMS: {batches.length}
           </span>
         </div>
 
         {loading ? (
-          <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading Cloud MongoDB inventory...</p>
+          <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--linear-fg-muted)' }}>Loading Cloud MongoDB inventory...</p>
         ) : batches.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--linear-fg-muted)' }}>
             <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.5rem' }}>📦</span>
-            <p>No food batches registered yet. Click "Register New Food Batch" above.</p>
+            <p style={{ fontWeight: 500 }}>No food batches registered yet. Click "Register New Produce Batch" above.</p>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="ux4g-custom-table">
+          <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid var(--linear-border-default)' }}>
+            <table className="linear-table">
               <thead>
                 <tr>
                   <th>Batch ID & Produce Name</th>
                   <th>Category</th>
                   <th>Warehouse Location</th>
-                  <th>Qty (kg) & Unit Price</th>
+                  <th>Qty & Price</th>
                   <th>Harvest & Expiry Date</th>
                   <th>Storage Metrics</th>
                   <th>Freshness Score</th>
-                  <th>Availability Status</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {batches.map((b) => {
-                  let statusClass = 'ux4g-badge-available';
-                  if (b.status === 'Sold') statusClass = 'ux4g-badge-sold';
+                  let statusClass = 'linear-badge-fresh';
+                  if (b.status === 'Sold') statusClass = 'linear-badge-spoilage';
                   
-                  let scoreClass = 'ux4g-badge-fresh';
-                  if (b.freshness_score < 75) scoreClass = 'ux4g-badge-acceptable';
+                  let scoreClass = 'linear-badge-fresh';
+                  if (b.freshness_score < 75) scoreClass = 'linear-badge-warning';
 
                   return (
                     <tr key={b.id || b.batch_id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                          <img src={b.image_url || "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80"} alt={b.product_name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover' }} />
+                          <img src={b.image_url || "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80"} alt={b.product_name} style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--linear-border-default)' }} />
                           <div>
-                            <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '0.95rem' }}>{b.product_name}</div>
-                            <div style={{ fontSize: '0.78rem', fontFamily: 'monospace', color: '#10b981', fontWeight: 800 }}>{b.batch_id}</div>
+                            <div style={{ fontWeight: 600, color: 'var(--linear-fg)', fontSize: '0.9rem' }}>{b.product_name}</div>
+                            <div style={{ fontSize: '0.76rem', color: 'var(--linear-accent)', fontWeight: 600 }}>{b.batch_id}</div>
                           </div>
                         </div>
                       </td>
-                      <td><span style={{ fontWeight: 700 }}>{b.category}</span></td>
+                      <td><span style={{ fontWeight: 500 }}>{b.category}</span></td>
                       <td>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{b.warehouse_name}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>ID: {b.warehouse_id}</div>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 500 }}>{b.warehouse_name}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--linear-fg-muted)' }}>ID: {b.warehouse_id}</div>
                       </td>
                       <td>
-                        <div style={{ fontWeight: 800 }}>{b.quantity_kg} kg</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>${b.unit_price_per_kg.toFixed(2)}/kg</div>
+                        <div style={{ fontWeight: 500 }}>{b.quantity_kg} kg</div>
+                        <div style={{ fontSize: '0.76rem', color: 'var(--linear-accent)' }}>${b.unit_price_per_kg.toFixed(2)}/kg</div>
                       </td>
                       <td>
-                        <div style={{ fontSize: '0.82rem' }}>🌾 {b.harvest_date}</div>
-                        <div style={{ fontSize: '0.82rem', color: '#f43f5e', fontWeight: 800 }}>⏳ {b.expiry_date}</div>
+                        <div style={{ fontSize: '0.8rem' }}>🌾 {b.harvest_date}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#F87171', fontWeight: 600 }}>⏳ {b.expiry_date}</div>
                       </td>
                       <td>
-                        <div style={{ fontSize: '0.8rem' }}>🌡️ {b.storage_temp_celsius}°C</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>💧 {b.storage_humidity_percent}% RH</div>
+                        <div style={{ fontSize: '0.78rem' }}>🌡️ {b.storage_temp_celsius}°C</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--linear-fg-muted)' }}>💧 {b.storage_humidity_percent}% RH</div>
                       </td>
                       <td>
-                        <span className={`ux4g-badge-pill ${scoreClass}`}>
-                          {b.freshness_score}/100 ({b.freshness_status})
+                        <span className={`linear-badge ${scoreClass}`}>
+                          {b.freshness_score}/100
                         </span>
                       </td>
                       <td>
-                        <span className={`ux4g-badge-pill ${statusClass}`}>
+                        <span className={`linear-badge ${statusClass}`}>
                           {b.status === 'Sold' ? `SOLD (${b.purchased_by_store || 'Retail Store'})` : b.status}
                         </span>
                       </td>
@@ -198,18 +203,28 @@ export default function WarehouseOperatorView({ batches, warehouses, categories,
         )}
       </div>
 
-      {/* UX4G Modal */}
+      {/* Linear Modal Dialog */}
       {showModal && (
-        <div className="ux4g-modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="ux4g-modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 660 }}>
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(5, 5, 6, 0.8)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }} onClick={() => setShowModal(false)}>
+          <div className="linear-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 640, width: '100%', borderRadius: 16 }}>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.4rem' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>🥦 Register Produce Batch</h2>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', borderBottom: '1px solid var(--linear-border-default)', paddingBottom: '0.8rem' }}>
+              <h2 style={{ fontSize: '1.3rem', fontWeight: 600 }}>🥦 Register Produce Batch</h2>
+              <button onClick={() => setShowModal(false)} className="linear-btn linear-btn-secondary" style={{ padding: '0.3rem 0.6rem' }}>✕</button>
             </div>
 
             {msg.text && (
-              <div style={{ background: msg.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)', color: msg.type === 'success' ? '#10b981' : '#f43f5e', padding: '0.8rem', borderRadius: '10px', marginBottom: '1.2rem', fontSize: '0.85rem', fontWeight: 700 }}>
+              <div style={{ background: msg.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', border: '1px solid ' + (msg.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'), color: msg.type === 'success' ? '#34D399' : '#F87171', padding: '0.8rem', borderRadius: '8px', marginBottom: '1.2rem', fontSize: '0.82rem', fontWeight: 500 }}>
                 {msg.text}
               </div>
             )}
@@ -218,16 +233,16 @@ export default function WarehouseOperatorView({ batches, warehouses, categories,
               
               {/* Batch ID */}
               <div style={{ marginBottom: '1.1rem' }}>
-                <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Batch Tag ID Code</label>
+                <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>BATCH TAG ID CODE</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input
                     type="text"
-                    style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
+                    className="linear-input"
                     placeholder="e.g. BATCH-20260825-APL01"
                     value={customBatchId}
                     onChange={(e) => setCustomBatchId(e.target.value)}
                   />
-                  <button type="button" onClick={handleAutoBatchId} style={{ padding: '0.75rem 1.2rem', borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  <button type="button" onClick={handleAutoBatchId} className="linear-btn linear-btn-secondary" style={{ whiteSpace: 'nowrap', padding: '0.7rem 0.9rem', fontSize: '0.74rem' }}>
                     ⚡ Auto Generate
                   </button>
                 </div>
@@ -236,10 +251,10 @@ export default function WarehouseOperatorView({ batches, warehouses, categories,
               {/* Name & Category */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Product Name</label>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>PRODUCT NAME</label>
                   <input
                     type="text"
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }}
+                    className="linear-input"
                     placeholder="e.g. Organic Honeycrisp Apples"
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
@@ -247,8 +262,8 @@ export default function WarehouseOperatorView({ batches, warehouses, categories,
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Product Category</label>
-                  <select style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }} value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>PRODUCT CATEGORY</label>
+                  <select className="linear-input" value={category} onChange={(e) => setCategory(e.target.value)}>
                     {categories.map((c) => (
                       <option key={c.id || c.name} value={c.name}>{c.name}</option>
                     ))}
@@ -259,58 +274,58 @@ export default function WarehouseOperatorView({ batches, warehouses, categories,
               {/* Warehouse & Quantity/Price */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Target Warehouse Location</label>
-                  <select style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }} value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>TARGET WAREHOUSE</label>
+                  <select className="linear-input" value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)}>
                     {warehouses.map((w) => (
                       <option key={w.id || w.code} value={w.code}>{w.name}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Quantity (kg)</label>
-                  <input type="number" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }} value={quantityKg} onChange={(e) => setQuantityKg(e.target.value)} required min="1" />
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>QUANTITY (KG)</label>
+                  <input type="number" className="linear-input" value={quantityKg} onChange={(e) => setQuantityKg(e.target.value)} required min="1" />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Price ($/kg)</label>
-                  <input type="number" step="0.1" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }} value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} required />
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>PRICE ($/KG)</label>
+                  <input type="number" step="0.1" className="linear-input" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} required />
                 </div>
               </div>
 
               {/* Dates */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.1rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Harvest Date</label>
-                  <input type="date" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }} value={harvestDate} onChange={(e) => setHarvestDate(e.target.value)} required />
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>HARVEST DATE</label>
+                  <input type="date" className="linear-input" value={harvestDate} onChange={(e) => setHarvestDate(e.target.value)} required />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Expiry Date</label>
-                  <input type="date" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }} value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} required />
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>EXPIRY DATE</label>
+                  <input type="date" className="linear-input" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} required />
                 </div>
               </div>
 
               {/* Storage Metrics & Freshness */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: '1rem', marginBottom: '1.2rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Storage Temp (°C)</label>
-                  <input type="number" step="0.1" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }} value={storageTemp} onChange={(e) => setStorageTemp(e.target.value)} required />
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>TEMP (°C)</label>
+                  <input type="number" step="0.1" className="linear-input" value={storageTemp} onChange={(e) => setStorageTemp(e.target.value)} required />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Humidity (% RH)</label>
-                  <input type="number" step="0.5" style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: 'var(--text-main)', outline: 'none' }} value={storageHumidity} onChange={(e) => setStorageHumidity(e.target.value)} required />
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>HUMIDITY (% RH)</label>
+                  <input type="number" step="0.5" className="linear-input" value={storageHumidity} onChange={(e) => setStorageHumidity(e.target.value)} required />
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Freshness Score ({freshnessScore}/100)</label>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--linear-fg-muted)', display: 'block', marginBottom: '0.3rem' }}>FRESHNESS ({freshnessScore}/100)</label>
                   <input type="range" min="0" max="100" value={freshnessScore} onChange={(e) => setFreshnessScore(e.target.value)} style={{ width: '100%', marginTop: '0.5rem' }} />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="ux4g-btn-custom"
+                className="linear-btn linear-btn-primary"
                 disabled={submitting}
-                style={{ width: '100%', justifyContent: 'center', padding: '0.9rem' }}
+                style={{ width: '100%', padding: '0.85rem', fontSize: '0.88rem' }}
               >
-                {submitting ? 'Saving to Cloud MongoDB...' : 'Confirm Batch Registration'}
+                {submitting ? 'Saving to Cloud...' : 'Confirm Batch Registration'}
               </button>
 
             </form>
