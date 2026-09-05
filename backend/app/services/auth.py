@@ -40,6 +40,7 @@ def create_user(
     name: str,
     email: str,
     password: str,
+    role: str = "consumer",
 ):
     password_hash = hash_password(password)
 
@@ -47,12 +48,17 @@ def create_user(
         name=name,
         email=email,
         password_hash=password_hash,
-        role="consumer",
+
+        # Save selected role
+        role=role,
+
         is_active=True,
     )
 
     db.add(new_user)
+
     db.commit()
+
     db.refresh(new_user)
 
     return new_user

@@ -81,6 +81,14 @@ async function request(endpoint, options = {}) {
       "access_token"
     );
 
+    localStorage.removeItem(
+      "current_user"
+    );
+
+    localStorage.removeItem(
+      "user_role"
+    );
+
     throw new Error(
       data?.detail ||
         "Session expired. Please login again."
@@ -134,7 +142,11 @@ async function request(endpoint, options = {}) {
 // AUTHENTICATION
 // ============================================================
 
-// Register
+
+// ============================================================
+// REGISTER
+// ============================================================
+
 export async function registerUser(
   name,
   email,
@@ -158,7 +170,10 @@ export async function registerUser(
 }
 
 
-// Login
+// ============================================================
+// LOGIN
+// ============================================================
+
 export async function loginUser(
   email,
   password
@@ -178,6 +193,10 @@ export async function loginUser(
     );
 
 
+  // ==========================================================
+  // SAVE ACCESS TOKEN
+  // ==========================================================
+
   if (
     data?.access_token
   ) {
@@ -186,6 +205,7 @@ export async function loginUser(
       "access_token",
       data.access_token
     );
+
   }
 
 
@@ -193,30 +213,77 @@ export async function loginUser(
 }
 
 
-// Logout
+// ============================================================
+// LOGOUT
+// ============================================================
+
 export function logoutUser() {
 
   localStorage.removeItem(
     "access_token"
   );
+
+  localStorage.removeItem(
+    "current_user"
+  );
+
+  localStorage.removeItem(
+    "user_role"
+  );
 }
 
 
-// Current user
+// ============================================================
+// CURRENT USER
+// ============================================================
+
 export async function getCurrentUser() {
 
-  return request(
-    "/auth/me",
-    {
-      method: "GET",
+  const user =
+    await request(
+      "/auth/me",
+      {
+        method: "GET",
+      }
+    );
+
+
+  // ==========================================================
+  // SAVE CURRENT USER
+  // ==========================================================
+
+  if (user) {
+
+    localStorage.setItem(
+      "current_user",
+      JSON.stringify(user)
+    );
+
+
+    // ========================================================
+    // SAVE ROLE
+    // ========================================================
+
+    if (user.role) {
+
+      localStorage.setItem(
+        "user_role",
+        user.role
+      );
+
     }
-  );
+
+  }
+
+
+  return user;
 }
 
 
 // ============================================================
 // FOOD INVENTORY
 // ============================================================
+
 
 // ============================================================
 // ADD FOOD
@@ -421,13 +488,24 @@ export async function uploadFoodImage(
       .catch(() => null);
 
 
-  // Unauthorized
+  // ==========================================================
+  // UNAUTHORIZED
+  // ==========================================================
+
   if (
     response.status === 401
   ) {
 
     localStorage.removeItem(
       "access_token"
+    );
+
+    localStorage.removeItem(
+      "current_user"
+    );
+
+    localStorage.removeItem(
+      "user_role"
     );
 
     throw new Error(
@@ -437,7 +515,10 @@ export async function uploadFoodImage(
   }
 
 
-  // Upload error
+  // ==========================================================
+  // UPLOAD ERROR
+  // ==========================================================
+
   if (!response.ok) {
 
     let message =
@@ -480,10 +561,6 @@ export async function uploadFoodImage(
 // AI FRESHNESS PREDICTION
 // ============================================================
 
-// ============================================================
-// AI FRESHNESS PREDICTION
-// ============================================================
-
 export async function predictFoodFreshness(
   food_name,
   image_path
@@ -519,13 +596,13 @@ export async function predictFoodFreshness(
           food_name.trim(),
 
         image_path:
-
           image_path,
 
       }),
     }
   );
 }
+
 
 // ============================================================
 // PREDICTION HEALTH
@@ -535,6 +612,36 @@ export async function checkPredictionHealth() {
 
   return request(
     "/prediction/health",
+    {
+      method: "GET",
+    }
+  );
+}
+
+
+// ============================================================
+// BACKEND HEALTH
+// ============================================================
+
+export async function checkBackendHealth() {
+
+  return request(
+    "/",
+    {
+      method: "GET",
+    }
+  );
+}
+
+
+// ============================================================
+// FOOD HEALTH
+// ============================================================
+
+export async function checkFoodHealth() {
+
+  return request(
+    "/foods/health",
     {
       method: "GET",
     }

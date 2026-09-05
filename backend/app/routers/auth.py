@@ -27,12 +27,20 @@ router = APIRouter(
 )
 
 
+# ============================================================
+# AUTH HEALTH
+# ============================================================
+
 @router.get("/health")
 def auth_health():
     return {
         "status": "Authentication module is working"
     }
 
+
+# ============================================================
+# REGISTER
+# ============================================================
 
 @router.post(
     "/register",
@@ -64,6 +72,10 @@ def register_user(
     return new_user
 
 
+# ============================================================
+# LOGIN
+# ============================================================
+
 @router.post(
     "/login",
     response_model=TokenResponse,
@@ -77,11 +89,19 @@ def login_user(
         user.email,
     )
 
+    # --------------------------------------------------------
+    # USER NOT FOUND
+    # --------------------------------------------------------
+
     if not existing_user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
+
+    # --------------------------------------------------------
+    # PASSWORD VERIFICATION
+    # --------------------------------------------------------
 
     if not verify_password(
         user.password,
@@ -92,11 +112,19 @@ def login_user(
             detail="Invalid email or password",
         )
 
+    # --------------------------------------------------------
+    # ACCOUNT STATUS
+    # --------------------------------------------------------
+
     if not existing_user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
         )
+
+    # --------------------------------------------------------
+    # CREATE JWT TOKEN
+    # --------------------------------------------------------
 
     access_token = create_access_token(
         data={
@@ -105,11 +133,20 @@ def login_user(
         }
     )
 
+    # --------------------------------------------------------
+    # LOGIN RESPONSE
+    # --------------------------------------------------------
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
+        "role": existing_user.role,
     }
 
+
+# ============================================================
+# CURRENT USER / PROFILE
+# ============================================================
 
 @router.get(
     "/me",
