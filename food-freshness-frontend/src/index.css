@@ -1,40 +1,21 @@
-:root {
-  font-family: system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #1a1a1a;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root {
+  color-scheme: light;
 }
 
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
+html, body, #root {
+  height: 100%;
+}
+
 body {
-  margin: 0;
-}
-
-a {
-  font-weight: 500;
-  color: #8ab4f8;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #a8c7fa;
-}
-
-h1 {
-  font-size: 2.2em;
-  line-height: 1.1;
-}
-
-button {
-  font-family: inherit;
-  font-size: 14px;
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  background: linear-gradient(135deg, #eef6ee 0%, #f4f6f5 100%);
+  color: #1a1a1a;
 }

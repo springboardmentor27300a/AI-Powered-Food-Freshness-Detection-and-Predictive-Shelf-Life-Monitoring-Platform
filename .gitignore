@@ -1,0 +1,9 @@
+﻿datasets/
+food-freshness-backend/data/
+__pycache__/
+*.pyc
+.vscode/
+venv/
+.env
+node_modules/
+dist/

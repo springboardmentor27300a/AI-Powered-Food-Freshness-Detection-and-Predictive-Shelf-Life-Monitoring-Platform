@@ -32,3 +32,16 @@ class FoodItemOut(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+from datetime import datetime
+
+class FreshnessAnalysisOut(BaseModel):
+    id: int
+    food_item_id: int
+    label: str
+    confidence: float
+    quality_score: float
+    category: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

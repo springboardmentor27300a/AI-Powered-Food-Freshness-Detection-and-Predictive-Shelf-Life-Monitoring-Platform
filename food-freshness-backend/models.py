@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 from database import Base
 
 class User(Base):
@@ -18,3 +18,17 @@ class FoodItem(Base):
     quantity = Column(Integer, default=1)
     expiry_date = Column(String, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
+    
+from datetime import datetime
+
+class FreshnessAnalysis(Base):
+    __tablename__ = "freshness_analyses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    food_item_id = Column(Integer, ForeignKey("food_items.id"))
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    label = Column(String, nullable=False)
+    confidence = Column(Float, nullable=False)
+    quality_score = Column(Float, nullable=False)
+    category = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
