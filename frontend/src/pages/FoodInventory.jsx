@@ -282,6 +282,7 @@ function getScoreClass(score) {
 function FoodInventory({
   onBack,
   onAddFood,
+  onViewReport,
 }) {
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -348,6 +349,17 @@ function FoodInventory({
         err?.message ||
           "Failed to delete food."
       );
+    }
+  };
+
+
+  // ==========================================================
+  // VIEW FOOD REPORT
+  // ==========================================================
+
+  const handleViewReport = (food) => {
+    if (typeof onViewReport === "function") {
+      onViewReport(food);
     }
   };
 
@@ -758,25 +770,55 @@ function FoodInventory({
 
 
                       {/* =================================
-                          DELETE
+                          REPORT + DELETE
                       ================================= */}
 
                       <td>
 
-                        <button
-                          className="food-menu"
-                          type="button"
-                          aria-label={`Delete ${food.food_name}`}
-                          title="Delete food"
-                          onClick={() =>
-                            handleDeleteFood(
-                              food.id,
-                              food.food_name
-                            )
-                          }
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "8px",
+                          }}
                         >
-                          🗑️
-                        </button>
+
+                          {/* VIEW REPORT */}
+
+                          <button
+                            className="food-menu"
+                            type="button"
+                            aria-label={`View report for ${food.food_name}`}
+                            title="View Report"
+                            onClick={() =>
+                              handleViewReport(
+                                food
+                              )
+                            }
+                          >
+                            📊
+                          </button>
+
+
+                          {/* DELETE */}
+
+                          <button
+                            className="food-menu"
+                            type="button"
+                            aria-label={`Delete ${food.food_name}`}
+                            title="Delete food"
+                            onClick={() =>
+                              handleDeleteFood(
+                                food.id,
+                                food.food_name
+                              )
+                            }
+                          >
+                            🗑️
+                          </button>
+
+                        </div>
 
                       </td>
 

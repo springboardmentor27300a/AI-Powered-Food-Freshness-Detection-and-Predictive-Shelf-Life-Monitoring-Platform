@@ -1818,3 +1818,648 @@ body {
     opacity: 0.08;
   }
 }
+
+/* ============================================================
+   PREMIUM FOOD ANALYSIS EXPERIENCE
+   ============================================================ */
+
+.food-analysis-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 100%;
+
+  padding: 35px;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(121, 255, 181, 0.20),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(247, 255, 250, 0.98),
+      rgba(255, 255, 255, 0.98),
+      rgba(239, 255, 247, 0.98)
+    );
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  animation: analysisFadeIn 0.45s ease forwards;
+}
+
+
+/* ============================================================
+   CONTENT
+   ============================================================ */
+
+.analysis-content {
+  position: relative;
+
+  width: min(100%, 520px);
+
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  animation: analysisContentIn 0.65s ease forwards;
+}
+
+
+/* ============================================================
+   GLOW
+   ============================================================ */
+
+.analysis-glow {
+  position: absolute;
+
+  width: 240px;
+  height: 240px;
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  filter: blur(55px);
+
+  opacity: 0.45;
+}
+
+.glow-one {
+  background: rgba(22, 196, 105, 0.20);
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+}
+
+.glow-two {
+  background: rgba(120, 255, 194, 0.15);
+
+  left: 35%;
+  top: 35%;
+
+  animation: glowMove 3s ease-in-out infinite alternate;
+}
+
+
+/* ============================================================
+   PREMIUM ORBIT
+   ============================================================ */
+
+.analysis-orbit {
+  position: relative;
+
+  width: 190px;
+  height: 190px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 25px;
+}
+
+
+/* ============================================================
+   RINGS
+   ============================================================ */
+
+.analysis-ring {
+  position: absolute;
+
+  border-radius: 50%;
+
+  border-style: solid;
+
+  pointer-events: none;
+}
+
+.ring-one {
+  width: 185px;
+  height: 185px;
+
+  border-width: 2px;
+
+  border-color:
+    rgba(8, 169, 79, 0.15)
+    rgba(8, 169, 79, 0.85)
+    rgba(8, 169, 79, 0.15)
+    rgba(8, 169, 79, 0.85);
+
+  animation:
+    analysisSpin 3.2s linear infinite;
+}
+
+
+.ring-two {
+  width: 155px;
+  height: 155px;
+
+  border-width: 2px;
+
+  border-color:
+    rgba(17, 193, 101, 0.80)
+    transparent
+    rgba(17, 193, 101, 0.25)
+    transparent;
+
+  animation:
+    analysisSpinReverse 2.2s linear infinite;
+}
+
+
+.ring-three {
+  width: 125px;
+  height: 125px;
+
+  border-width: 1px;
+
+  border-color:
+    transparent
+    rgba(8, 169, 79, 0.65)
+    transparent
+    rgba(8, 169, 79, 0.30);
+
+  animation:
+    analysisSpin 1.8s linear infinite;
+}
+
+
+/* ============================================================
+   CORE
+   ============================================================ */
+
+.analysis-core {
+  position: relative;
+  z-index: 5;
+
+  width: 92px;
+  height: 92px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      #ffffff,
+      #effff5 55%,
+      #d7f9e5 100%
+    );
+
+  border:
+    1px solid rgba(8, 169, 79, 0.18);
+
+  box-shadow:
+    0 0 0 8px rgba(8, 169, 79, 0.04),
+    0 15px 45px rgba(8, 169, 79, 0.18),
+    inset 0 0 25px rgba(8, 169, 79, 0.08);
+
+  animation:
+    analysisPulse 1.8s ease-in-out infinite;
+}
+
+
+.analysis-brain {
+  font-size: 42px;
+
+  line-height: 1;
+
+  filter:
+    drop-shadow(
+      0 5px 10px
+      rgba(8, 120, 65, 0.15)
+    );
+
+  animation:
+    brainFloat 1.8s ease-in-out infinite;
+}
+
+
+/* ============================================================
+   TEXT
+   ============================================================ */
+
+.analysis-title {
+  margin: 0;
+
+  color: #063b27;
+
+  font-size: 28px;
+
+  font-weight: 850;
+
+  letter-spacing: -0.5px;
+}
+
+
+.analysis-subtitle {
+  margin:
+    9px 0 0;
+
+  max-width: 390px;
+
+  color: #71847b;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+   DOTS
+   ============================================================ */
+
+.analysis-dots {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  margin-top: 15px;
+}
+
+
+.analysis-dots span {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #08a94f;
+
+  animation:
+    analysisDot 1.2s ease-in-out infinite;
+}
+
+
+.analysis-dots span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+
+.analysis-dots span:nth-child(3) {
+  animation-delay: 0.36s;
+}
+
+
+/* ============================================================
+   PROCESSING STEPS
+   ============================================================ */
+
+.analysis-steps {
+  width: min(100%, 370px);
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  margin-top: 25px;
+}
+
+
+.analysis-step {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding:
+    10px 13px;
+
+  border-radius: 12px;
+
+  background:
+    rgba(255, 255, 255, 0.70);
+
+  border:
+    1px solid rgba(8, 169, 79, 0.07);
+
+  color: #9aa9a2;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  text-align: left;
+}
+
+
+.analysis-step.active {
+  color: #466257;
+
+  background:
+    rgba(255, 255, 255, 0.90);
+}
+
+
+.step-icon {
+  width: 25px;
+  height: 25px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    #edf9f1;
+
+  color: #08a94f;
+
+  font-size: 12px;
+
+  font-weight: 900;
+}
+
+
+.step-icon.pulse {
+  animation:
+    stepPulse 1s ease-in-out infinite;
+}
+
+
+/* ============================================================
+   SAFETY MESSAGE
+   ============================================================ */
+
+.analysis-safe-text {
+  margin-top: 17px;
+
+  color: #9aaaA3;
+
+  font-size: 10px;
+
+  letter-spacing: 0.3px;
+}
+
+
+/* ============================================================
+   BLUR ORIGINAL FORM
+   ============================================================ */
+
+.analysing-blur {
+  filter: blur(3px);
+
+  opacity: 0.35;
+
+  pointer-events: none;
+
+  user-select: none;
+
+  transition:
+    filter 0.35s ease,
+    opacity 0.35s ease;
+}
+
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes analysisFadeIn {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+
+}
+
+
+@keyframes analysisContentIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(15px)
+      scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+
+@keyframes analysisSpin {
+
+  from {
+    transform:
+      rotate(0deg);
+  }
+
+  to {
+    transform:
+      rotate(360deg);
+  }
+
+}
+
+
+@keyframes analysisSpinReverse {
+
+  from {
+    transform:
+      rotate(360deg);
+  }
+
+  to {
+    transform:
+      rotate(0deg);
+  }
+
+}
+
+
+@keyframes analysisPulse {
+
+  0%,
+  100% {
+    transform:
+      scale(1);
+
+    box-shadow:
+      0 0 0 8px rgba(8, 169, 79, 0.04),
+      0 15px 45px rgba(8, 169, 79, 0.18),
+      inset 0 0 25px rgba(8, 169, 79, 0.08);
+  }
+
+  50% {
+    transform:
+      scale(1.06);
+
+    box-shadow:
+      0 0 0 14px rgba(8, 169, 79, 0.035),
+      0 20px 55px rgba(8, 169, 79, 0.25),
+      inset 0 0 30px rgba(8, 169, 79, 0.12);
+  }
+
+}
+
+
+@keyframes brainFloat {
+
+  0%,
+  100% {
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+  50% {
+    transform:
+      translateY(-4px)
+      scale(1.05);
+  }
+
+}
+
+
+@keyframes analysisDot {
+
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+
+    transform:
+      translateY(0)
+      scale(0.85);
+  }
+
+  30% {
+    opacity: 1;
+
+    transform:
+      translateY(-4px)
+      scale(1.1);
+  }
+
+}
+
+
+@keyframes stepPulse {
+
+  0%,
+  100% {
+    transform:
+      scale(1);
+
+    box-shadow:
+      0 0 0 0
+      rgba(8, 169, 79, 0.18);
+  }
+
+  50% {
+    transform:
+      scale(1.08);
+
+    box-shadow:
+      0 0 0 5px
+      rgba(8, 169, 79, 0.05);
+  }
+
+}
+
+
+@keyframes glowMove {
+
+  from {
+    transform:
+      translate(-50%, -50%)
+      scale(0.9);
+  }
+
+  to {
+    transform:
+      translate(-45%, -45%)
+      scale(1.1);
+  }
+
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+  .food-analysis-overlay {
+    padding: 20px;
+  }
+
+  .analysis-orbit {
+    width: 155px;
+    height: 155px;
+  }
+
+  .ring-one {
+    width: 150px;
+    height: 150px;
+  }
+
+  .ring-two {
+    width: 128px;
+    height: 128px;
+  }
+
+  .ring-three {
+    width: 105px;
+    height: 105px;
+  }
+
+  .analysis-core {
+    width: 78px;
+    height: 78px;
+  }
+
+  .analysis-brain {
+    font-size: 34px;
+  }
+
+  .analysis-title {
+    font-size: 24px;
+  }
+
+  .analysis-subtitle {
+    font-size: 13px;
+  }
+
+}

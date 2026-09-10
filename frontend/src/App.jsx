@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import AddFood from "./pages/AddFood";
 import FoodInventory from "./pages/FoodInventory";
 import Profile from "./pages/Profile";
+import FoodReport from "./pages/FoodReport";
 
 
 function App() {
@@ -25,6 +26,14 @@ function App() {
       : "login";
 
   });
+
+
+  // ==========================================================
+  // SELECTED FOOD FOR REPORT
+  // ==========================================================
+
+  const [selectedFood, setSelectedFood] =
+    useState(null);
 
 
   // ==========================================================
@@ -48,7 +57,22 @@ function App() {
       "access_token"
     );
 
+    setSelectedFood(null);
+
     setPage("login");
+
+  };
+
+
+  // ==========================================================
+  // OPEN FOOD REPORT
+  // ==========================================================
+
+  const handleViewReport = (food) => {
+
+    setSelectedFood(food);
+
+    setPage("food-report");
 
   };
 
@@ -170,6 +194,37 @@ function App() {
         onAddFood={() =>
           setPage("add-food")
         }
+
+        onViewReport={
+          handleViewReport
+        }
+
+      />
+
+    );
+
+  }
+
+
+  // ==========================================================
+  // FOOD REPORT
+  // ==========================================================
+
+  if (page === "food-report") {
+
+    return (
+
+      <FoodReport
+
+        food={selectedFood}
+
+        onBack={() => {
+
+          setSelectedFood(null);
+
+          setPage("inventory");
+
+        }}
 
       />
 
