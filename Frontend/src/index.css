@@ -332,3 +332,151 @@ body {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
+
+/* ==========================================================================
+   MILESTONE 2: COMPUTER VISION SCANNER & CONSUMER SUITE STYLES
+   ========================================================================== */
+
+/* Critical / Spoilage Badge */
+.linear-badge-critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+}
+
+.linear-badge-spoilage {
+  background: rgba(249, 115, 22, 0.15);
+  color: #FB923C;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+}
+
+/* AI Scanner Visualizer */
+.scanner-viewport {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #060608;
+  border: 1px solid var(--linear-border-default);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.scanner-laser-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, #38BDF8 20%, #818CF8 50%, #38BDF8 80%, transparent 100%);
+  box-shadow: 
+    0 0 15px #38BDF8,
+    0 0 30px rgba(99, 102, 241, 0.6),
+    0 0 50px rgba(56, 189, 248, 0.4);
+  z-index: 10;
+  pointer-events: none;
+  animation: scanLaser 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes scanLaser {
+  0% { top: 2%; opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { top: 96%; opacity: 0.85; }
+}
+
+.scanner-grid-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: 24px 24px;
+  background-image:
+    linear-gradient(to right, rgba(56, 189, 248, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.07) 1px, transparent 1px);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Defect Bounding Boxes */
+.defect-bbox {
+  position: absolute;
+  border: 2px dashed #EF4444;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.15);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4), inset 0 0 10px rgba(239, 68, 68, 0.2);
+  z-index: 12;
+  transition: all 200ms var(--linear-easing);
+  cursor: pointer;
+  animation: pulseBbox 2s infinite ease-in-out;
+}
+
+.defect-bbox:hover {
+  background: rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+  transform: scale(1.02);
+}
+
+.defect-bbox-tag {
+  position: absolute;
+  top: -24px;
+  left: -2px;
+  background: #EF4444;
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+@keyframes pulseBbox {
+  0% { border-color: rgba(239, 68, 68, 0.9); }
+  50% { border-color: rgba(248, 113, 113, 0.4); }
+  100% { border-color: rgba(239, 68, 68, 0.9); }
+}
+
+/* Custom Interactive Range Sliders */
+.linear-range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+  transition: background 200ms;
+}
+
+.linear-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #5E6AD2;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(94, 106, 210, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+  border: 2px solid #FFFFFF;
+  transition: transform 150ms ease;
+}
+
+.linear-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Print Formatting for Freshness Certificate */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  header, footer, .no-print, .linear-blob-1, .linear-blob-2, .linear-bg-grid {
+    display: none !important;
+  }
+  .printable-cert-card {
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+}
+

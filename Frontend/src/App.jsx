@@ -183,7 +183,7 @@ export default function App() {
             )}
 
             {role === 'Consumer' && (
-              <ConsumerView batches={batches} />
+              <ConsumerView batches={batches} user={user} />
             )}
 
             {role === 'Administrator' && (

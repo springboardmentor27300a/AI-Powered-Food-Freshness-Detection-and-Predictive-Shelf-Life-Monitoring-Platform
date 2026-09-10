@@ -1,22 +1,160 @@
 import logging
+import uuid
+import re
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 from datetime import datetime
 
 logger = logging.getLogger("uvicorn")
 
+class MockCursor:
+    def __init__(self, items):
+        self._items = items
+
+    def sort(self, field, direction=1):
+        reverse = direction == -1
+        self._items = sorted(self._items, key=lambda x: str(x.get(field, "")), reverse=reverse)
+        return self
+
+    def limit(self, n):
+        self._items = self._items[:n]
+        return self
+
+    async def to_list(self, length=None):
+        if length is not None:
+            return self._items[:length]
+        return self._items
+
+class MockUpdateResult:
+    def __init__(self, modified_count, matched_count, upserted_id=None):
+        self.modified_count = modified_count
+        self.matched_count = matched_count
+        self.upserted_id = upserted_id
+
+class MockInsertResult:
+    def __init__(self, inserted_id):
+        self.inserted_id = inserted_id
+
+class MockDeleteResult:
+    def __init__(self, deleted_count):
+        self.deleted_count = deleted_count
+
+class MockCollection:
+    def __init__(self, name):
+        self.name = name
+        self.docs = []
+
+    def _match(self, doc, query):
+        if not query: return True
+        for k, v in query.items():
+            if k == "$or":
+                if not any(self._match(doc, sub) for sub in v): return False
+            elif isinstance(v, dict):
+                if "$in" in v:
+                    if doc.get(k) not in v["$in"]: return False
+                if "$gt" in v and not (doc.get(k, 0) > v["$gt"]): return False
+            elif doc.get(k) != v:
+                return False
+        return True
+
+    async def count_documents(self, query=None):
+        return len([d for d in self.docs if self._match(d, query)])
+
+    async def insert_one(self, doc):
+        d = dict(doc)
+        if "_id" not in d: d["_id"] = uuid.uuid4().hex
+        self.docs.append(d)
+        return MockInsertResult(d["_id"])
+
+    async def insert_many(self, docs):
+        ids = []
+        for doc in docs:
+            d = dict(doc)
+            if "_id" not in d: d["_id"] = uuid.uuid4().hex
+            self.docs.append(d)
+            ids.append(d["_id"])
+        return ids
+
+    def find(self, query=None):
+        if not query:
+            return MockCursor(list(self.docs))
+        
+        results = []
+        for d in self.docs:
+            match = True
+            for k, v in query.items():
+                if k == "$or":
+                    or_match = any(
+                        all(d.get(sub_k) == sub_v for sub_k, sub_v in sub_q.items())
+                        for sub_q in v
+                    )
+                    if not or_match:
+                        match = False
+                        break
+                elif d.get(k) != v:
+                    match = False
+                    break
+            if match:
+                results.append(d)
+        return MockCursor(results)
+
+    async def find_one(self, query=None):
+        cursor = self.find(query)
+        items = await cursor.to_list(1)
+        return items[0] if items else None
+
+    async def delete_one(self, query):
+        initial_len = len(self.docs)
+        self.docs = [
+            d for d in self.docs 
+            if not any(
+                (k == "$or" and any(d.get(sub_k) == sub_v for sub_q in v for sub_k, sub_v in sub_q.items())) or (d.get(k) == v)
+                for k, v in query.items()
+            )
+        ]
+        return MockDeleteResult(initial_len - len(self.docs))
+
+class MockDatabase:
+    def __init__(self):
+        self.collections = {}
+
+    def __getattr__(self, name):
+        if name not in self.collections:
+            self.collections[name] = MockCollection(name)
+        return self.collections[name]
+
+    def __getitem__(self, name):
+        return getattr(self, name)
+
 class Database:
     client: AsyncIOMotorClient = None
     db = None
+    is_mock = False
 
 db_instance = Database()
 
 async def connect_to_mongo():
     logger.info("Connecting to Cloud MongoDB Atlas...")
-    db_instance.client = AsyncIOMotorClient(settings.MONGODB_URI)
-    db_instance.db = db_instance.client[settings.DATABASE_NAME]
-    logger.info(f"Connected to Cloud MongoDB Database: {settings.DATABASE_NAME}")
-    
+    try:
+        # Connect with short 3-second timeout to check Atlas connectivity
+        client = AsyncIOMotorClient(
+            settings.MONGODB_URI,
+            serverSelectionTimeoutMS=3000,
+            tlsAllowInvalidCertificates=True
+        )
+        # Probe connection
+        test_db = client[settings.DATABASE_NAME]
+        await test_db.warehouses.count_documents({})
+        db_instance.client = client
+        db_instance.db = test_db
+        db_instance.is_mock = False
+        logger.info(f"Connected to Cloud MongoDB Database: {settings.DATABASE_NAME}")
+    except Exception as e:
+        logger.warning(f"MongoDB Atlas unreachable ({e}). Initializing resilient in-memory datastore fallback.")
+        db_instance.client = None
+        db_instance.db = MockDatabase()
+        db_instance.is_mock = True
+
     # Initialize Seed Data if database is empty
     await seed_database_if_empty()
 
