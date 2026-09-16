@@ -14,3 +14,5 @@ venv/
 
 # Logs
 *.log
+# Uploaded food images
+backend/uploads/

@@ -3,7 +3,14 @@ import "./App.css";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+
 import Dashboard from "./pages/Dashboard";
+
+import RetailDashboard from "./pages/RetailDashboard";
+import WarehouseDashboard from "./pages/WarehouseDashboard";
+import InspectorDashboard from "./pages/InspectorDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+
 import AddFood from "./pages/AddFood";
 import FoodInventory from "./pages/FoodInventory";
 import Profile from "./pages/Profile";
@@ -19,7 +26,9 @@ function App() {
   const [page, setPage] = useState(() => {
 
     const token =
-      localStorage.getItem("access_token");
+      localStorage.getItem(
+        "access_token"
+      );
 
     return token
       ? "dashboard"
@@ -29,7 +38,7 @@ function App() {
 
 
   // ==========================================================
-  // SELECTED FOOD FOR REPORT
+  // SELECTED FOOD
   // ==========================================================
 
   const [selectedFood, setSelectedFood] =
@@ -40,9 +49,27 @@ function App() {
   // LOGIN SUCCESS
   // ==========================================================
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (
+    role
+  ) => {
 
-    setPage("dashboard");
+    const userRole =
+      role ||
+      localStorage.getItem(
+        "user_role"
+      ) ||
+      "consumer";
+
+
+    localStorage.setItem(
+      "user_role",
+      userRole
+    );
+
+
+    setPage(
+      "dashboard"
+    );
 
   };
 
@@ -57,6 +84,14 @@ function App() {
       "access_token"
     );
 
+    localStorage.removeItem(
+      "current_user"
+    );
+
+    localStorage.removeItem(
+      "user_role"
+    );
+
     setSelectedFood(null);
 
     setPage("login");
@@ -65,20 +100,24 @@ function App() {
 
 
   // ==========================================================
-  // OPEN FOOD REPORT
+  // FOOD REPORT
   // ==========================================================
 
-  const handleViewReport = (food) => {
+  const handleViewReport = (
+    food
+  ) => {
 
     setSelectedFood(food);
 
-    setPage("food-report");
+    setPage(
+      "food-report"
+    );
 
   };
 
 
   // ==========================================================
-  // LOGIN PAGE
+  // LOGIN
   // ==========================================================
 
   if (page === "login") {
@@ -86,13 +125,17 @@ function App() {
     return (
 
       <Login
+
         onLoginSuccess={
           handleLoginSuccess
         }
 
         onRegisterPage={() =>
-          setPage("register")
+          setPage(
+            "register"
+          )
         }
+
       />
 
     );
@@ -101,7 +144,7 @@ function App() {
 
 
   // ==========================================================
-  // REGISTER PAGE
+  // REGISTER
   // ==========================================================
 
   if (page === "register") {
@@ -109,9 +152,13 @@ function App() {
     return (
 
       <Register
+
         onLoginPage={() =>
-          setPage("login")
+          setPage(
+            "login"
+          )
         }
+
       />
 
     );
@@ -120,10 +167,26 @@ function App() {
 
 
   // ==========================================================
-  // DASHBOARD
+  // CURRENT ROLE
   // ==========================================================
 
-  if (page === "dashboard") {
+  const role =
+    (
+      localStorage.getItem(
+        "user_role"
+      ) || "consumer"
+    )
+      .toLowerCase();
+
+
+  // ==========================================================
+  // CONSUMER DASHBOARD
+  // ==========================================================
+
+  if (
+    page === "dashboard" &&
+    role === "consumer"
+  ) {
 
     return (
 
@@ -134,15 +197,160 @@ function App() {
         }
 
         onAddFood={() =>
-          setPage("add-food")
+          setPage(
+            "add-food"
+          )
         }
 
         onInventory={() =>
-          setPage("inventory")
+          setPage(
+            "inventory"
+          )
         }
 
         onProfile={() =>
-          setPage("profile")
+          setPage(
+            "profile"
+          )
+        }
+
+      />
+
+    );
+
+  }
+
+
+  // ==========================================================
+  // RETAIL MANAGER DASHBOARD
+  // ==========================================================
+
+  if (
+    page === "dashboard" &&
+    role === "retail_manager"
+  ) {
+
+    return (
+
+      <RetailDashboard
+
+        onLogout={
+          handleLogout
+        }
+
+        onProfile={() =>
+          setPage(
+            "profile"
+          )
+        }
+
+        onInventory={() =>
+          setPage(
+            "inventory"
+          )
+        }
+
+      />
+
+    );
+
+  }
+
+
+  // ==========================================================
+  // WAREHOUSE OPERATOR DASHBOARD
+  // ==========================================================
+
+  if (
+    page === "dashboard" &&
+    role === "warehouse_operator"
+  ) {
+
+    return (
+
+      <WarehouseDashboard
+
+        onLogout={
+          handleLogout
+        }
+
+        onProfile={() =>
+          setPage(
+            "profile"
+          )
+        }
+
+        onInventory={() =>
+          setPage(
+            "inventory"
+          )
+        }
+
+      />
+
+    );
+
+  }
+
+
+  // ==========================================================
+  // FOOD QUALITY INSPECTOR
+  // ==========================================================
+
+  if (
+    page === "dashboard" &&
+    role ===
+      "food_quality_inspector"
+  ) {
+
+    return (
+
+      <InspectorDashboard
+
+        onLogout={
+          handleLogout
+        }
+
+        onProfile={() =>
+          setPage(
+            "profile"
+          )
+        }
+
+        onInventory={() =>
+          setPage(
+            "inventory"
+          )
+        }
+
+      />
+
+    );
+
+  }
+
+
+  // ==========================================================
+  // ADMINISTRATOR
+  // ==========================================================
+
+  if (
+    page === "dashboard" &&
+    role === "administrator"
+  ) {
+
+    return (
+
+      <AdminDashboard
+
+        onLogout={
+          handleLogout
+        }
+
+        onProfile={() =>
+          setPage(
+            "profile"
+          )
         }
 
       />
@@ -156,18 +364,24 @@ function App() {
   // ADD FOOD
   // ==========================================================
 
-  if (page === "add-food") {
+  if (
+    page === "add-food"
+  ) {
 
     return (
 
       <AddFood
 
         onBack={() =>
-          setPage("dashboard")
+          setPage(
+            "dashboard"
+          )
         }
 
         onSuccess={() =>
-          setPage("inventory")
+          setPage(
+            "inventory"
+          )
         }
 
       />
@@ -178,21 +392,27 @@ function App() {
 
 
   // ==========================================================
-  // FOOD INVENTORY
+  // INVENTORY
   // ==========================================================
 
-  if (page === "inventory") {
+  if (
+    page === "inventory"
+  ) {
 
     return (
 
       <FoodInventory
 
         onBack={() =>
-          setPage("dashboard")
+          setPage(
+            "dashboard"
+          )
         }
 
         onAddFood={() =>
-          setPage("add-food")
+          setPage(
+            "add-food"
+          )
         }
 
         onViewReport={
@@ -210,19 +430,27 @@ function App() {
   // FOOD REPORT
   // ==========================================================
 
-  if (page === "food-report") {
+  if (
+    page === "food-report"
+  ) {
 
     return (
 
       <FoodReport
 
-        food={selectedFood}
+        food={
+          selectedFood
+        }
 
         onBack={() => {
 
-          setSelectedFood(null);
+          setSelectedFood(
+            null
+          );
 
-          setPage("inventory");
+          setPage(
+            "inventory"
+          );
 
         }}
 
@@ -237,14 +465,18 @@ function App() {
   // PROFILE
   // ==========================================================
 
-  if (page === "profile") {
+  if (
+    page === "profile"
+  ) {
 
     return (
 
       <Profile
 
         onBack={() =>
-          setPage("dashboard")
+          setPage(
+            "dashboard"
+          )
         }
 
         onLogout={
@@ -263,7 +495,6 @@ function App() {
   // ==========================================================
 
   return null;
-
 }
 
 

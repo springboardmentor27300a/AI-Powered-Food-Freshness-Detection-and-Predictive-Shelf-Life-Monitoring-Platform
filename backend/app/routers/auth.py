@@ -8,6 +8,7 @@ from app.core.security import (
 )
 
 from app.schemas.user import (
+    ALLOWED_ROLES,
     UserCreate,
     UserLogin,
     UserResponse,
@@ -33,6 +34,7 @@ router = APIRouter(
 
 @router.get("/health")
 def auth_health():
+
     return {
         "status": "Authentication module is working"
     }
@@ -51,22 +53,46 @@ def register_user(
     user: UserCreate,
     db: Session = Depends(get_db),
 ):
+
     existing_user = get_user_by_email(
         db,
         user.email,
     )
 
     if existing_user:
+
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
+
+    # --------------------------------------------------------
+    # VALIDATE ROLE
+    # --------------------------------------------------------
+
+    selected_role = (
+        user.role.strip().lower()
+        if user.role
+        else "consumer"
+    )
+
+    if selected_role not in ALLOWED_ROLES:
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid user role",
+        )
+
+    # --------------------------------------------------------
+    # CREATE USER
+    # --------------------------------------------------------
 
     new_user = create_user(
         db=db,
         name=user.name,
         email=user.email,
         password=user.password,
+        role=selected_role,
     )
 
     return new_user
@@ -84,6 +110,7 @@ def login_user(
     user: UserLogin,
     db: Session = Depends(get_db),
 ):
+
     existing_user = get_user_by_email(
         db,
         user.email,
@@ -94,6 +121,7 @@ def login_user(
     # --------------------------------------------------------
 
     if not existing_user:
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -107,6 +135,7 @@ def login_user(
         user.password,
         existing_user.password_hash,
     ):
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -117,19 +146,30 @@ def login_user(
     # --------------------------------------------------------
 
     if not existing_user.is_active:
+
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
         )
 
     # --------------------------------------------------------
-    # CREATE JWT TOKEN
+    # ROLE
+    # --------------------------------------------------------
+
+    user_role = (
+        existing_user.role
+        or "consumer"
+    )
+
+    # --------------------------------------------------------
+    # CREATE JWT
     # --------------------------------------------------------
 
     access_token = create_access_token(
         data={
             "sub": str(existing_user.id),
             "email": existing_user.email,
+            "role": user_role,
         }
     )
 
@@ -140,7 +180,7 @@ def login_user(
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "role": existing_user.role,
+        "role": user_role,
     }
 
 
@@ -153,6 +193,9 @@ def login_user(
     response_model=UserResponse,
 )
 def get_my_profile(
-    current_user=Depends(get_current_user),
+    current_user=Depends(
+        get_current_user
+    ),
 ):
+
     return current_user

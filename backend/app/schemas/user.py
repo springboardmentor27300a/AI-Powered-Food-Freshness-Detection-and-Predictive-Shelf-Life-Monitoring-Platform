@@ -1,6 +1,19 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+
+# ============================================================
+# AVAILABLE USER ROLES
+# ============================================================
+
+ALLOWED_ROLES = {
+    "consumer",
+    "retail_manager",
+    "warehouse_operator",
+    "food_quality_inspector",
+    "administrator",
+}
 
 
 # ============================================================
@@ -13,7 +26,12 @@ class UserCreate(BaseModel):
 
     email: EmailStr
 
-    password: str
+    password: str = Field(
+        min_length=6
+    )
+
+    # Role selected during registration
+    role: str = "consumer"
 
 
 # ============================================================
@@ -60,5 +78,4 @@ class TokenResponse(BaseModel):
 
     token_type: str
 
-    # Role of logged-in user
     role: str

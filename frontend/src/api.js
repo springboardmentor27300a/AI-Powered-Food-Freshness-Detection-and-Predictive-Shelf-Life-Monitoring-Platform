@@ -3,21 +3,27 @@
 // Frontend API Service
 // ============================================================
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL =
+  "http://127.0.0.1:8000";
 
 
 // ============================================================
 // COMMON REQUEST FUNCTION
 // ============================================================
 
-async function request(endpoint, options = {}) {
+async function request(
+  endpoint,
+  options = {}
+) {
 
   const token =
-    localStorage.getItem("access_token");
-
+    localStorage.getItem(
+      "access_token"
+    );
 
   const headers = {
-    Accept: "application/json",
+    Accept:
+      "application/json",
 
     ...(options.body
       ? {
@@ -30,7 +36,6 @@ async function request(endpoint, options = {}) {
   };
 
 
-  // Attach JWT automatically
   if (
     token &&
     !headers.Authorization
@@ -75,7 +80,9 @@ async function request(endpoint, options = {}) {
   // UNAUTHORIZED
   // ==========================================================
 
-  if (response.status === 401) {
+  if (
+    response.status === 401
+  ) {
 
     localStorage.removeItem(
       "access_token"
@@ -130,17 +137,14 @@ async function request(endpoint, options = {}) {
     }
 
 
-    throw new Error(message);
+    throw new Error(
+      message
+    );
   }
 
 
   return data;
 }
-
-
-// ============================================================
-// AUTHENTICATION
-// ============================================================
 
 
 // ============================================================
@@ -205,7 +209,19 @@ export async function loginUser(
       "access_token",
       data.access_token
     );
+  }
 
+
+  // ==========================================================
+  // SAVE ROLE
+  // ==========================================================
+
+  if (data?.role) {
+
+    localStorage.setItem(
+      "user_role",
+      data.role
+    );
   }
 
 
@@ -248,10 +264,6 @@ export async function getCurrentUser() {
     );
 
 
-  // ==========================================================
-  // SAVE CURRENT USER
-  // ==========================================================
-
   if (user) {
 
     localStorage.setItem(
@@ -260,29 +272,18 @@ export async function getCurrentUser() {
     );
 
 
-    // ========================================================
-    // SAVE ROLE
-    // ========================================================
-
     if (user.role) {
 
       localStorage.setItem(
         "user_role",
         user.role
       );
-
     }
-
   }
 
 
   return user;
 }
-
-
-// ============================================================
-// FOOD INVENTORY
-// ============================================================
 
 
 // ============================================================
@@ -330,10 +331,6 @@ export async function addFood(
         expiry_date,
 
         storage_condition,
-
-        // ====================================================
-        // AI PREDICTION RESULT
-        // ====================================================
 
         freshness_status,
 
@@ -429,7 +426,6 @@ export async function uploadFoodImage(
   const formData =
     new FormData();
 
-
   formData.append(
     "file",
     file
@@ -464,9 +460,7 @@ export async function uploadFoodImage(
       `${API_URL}/upload/food-image`,
       {
         method: "POST",
-
         headers,
-
         body: formData,
       }
     );
@@ -487,10 +481,6 @@ export async function uploadFoodImage(
       .json()
       .catch(() => null);
 
-
-  // ==========================================================
-  // UNAUTHORIZED
-  // ==========================================================
 
   if (
     response.status === 401
@@ -514,10 +504,6 @@ export async function uploadFoodImage(
     );
   }
 
-
-  // ==========================================================
-  // UPLOAD ERROR
-  // ==========================================================
 
   if (!response.ok) {
 
@@ -549,7 +535,9 @@ export async function uploadFoodImage(
     }
 
 
-    throw new Error(message);
+    throw new Error(
+      message
+    );
   }
 
 
@@ -595,8 +583,7 @@ export async function predictFoodFreshness(
         food_name:
           food_name.trim(),
 
-        image_path:
-          image_path,
+        image_path,
 
       }),
     }

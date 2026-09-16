@@ -56,7 +56,10 @@ def add_food(
 
         food_name=food.food_name,
 
-        # CATEGORY
+        # ====================================================
+        # EXISTING FOOD INFORMATION
+        # ====================================================
+
         category=food.category,
 
         freshness_status=food.freshness_status,
@@ -70,6 +73,40 @@ def add_food(
         expiry_date=food.expiry_date,
 
         storage_condition=food.storage_condition,
+
+        # ====================================================
+        # MILESTONE 3 - STORAGE INTELLIGENCE INPUTS
+        # ====================================================
+
+        storage_temperature=food.storage_temperature,
+
+        storage_humidity=food.storage_humidity,
+
+        packaging_type=food.packaging_type,
+
+        storage_duration=food.storage_duration,
+
+        air_circulation=food.air_circulation,
+
+        light_exposure=food.light_exposure,
+
+        # ====================================================
+        # MILESTONE 3 OUTPUTS
+        #
+        # These are initially empty.
+        # They will be populated by the shelf-life /
+        # storage intelligence prediction workflow.
+        # ====================================================
+
+        remaining_shelf_life=None,
+
+        shelf_life_confidence=None,
+
+        shelf_life_risk=None,
+
+        storage_compliance_score=None,
+
+        overall_health_score=None,
     )
 
     db.add(new_food)
