@@ -6,13 +6,14 @@ export default function Navbar({ user, role, setRole, theme, setTheme, onLogout 
     { key: 'Warehouse Operator', label: '🏭 Warehouse' },
     { key: 'Food Quality Inspector', label: '🔬 Quality Inspection' },
     { key: 'Consumer', label: '🍏 Consumer' },
-    { key: 'Administrator', label: '⚡ Admin Dashboard' }
+    { key: 'Administrator', label: '⚡ Admin Dashboard' },
+    { key: 'Freshness Analytics Hub', label: '📈 Freshness & Shelf-Life Analytics' }
   ];
 
-  // Restrict visible roles strictly based on user's assigned role
+  // Restrict visible roles: Admins see all; users see their assigned role + Freshness Analytics Hub
   const isAdmin = user?.role === 'Administrator';
   const visibleRoles = user
-    ? (isAdmin ? allRoles : allRoles.filter(r => r.key === user.role))
+    ? (isAdmin ? allRoles : allRoles.filter(r => r.key === user.role || r.key === 'Freshness Analytics Hub'))
     : allRoles;
 
   return (
@@ -52,18 +53,18 @@ export default function Navbar({ user, role, setRole, theme, setTheme, onLogout 
                 FreshSense <span className="linear-accent-gradient">AI</span>
               </h1>
               <span className="linear-badge linear-badge-good" style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>
-                LINEAR v2.5
+                MILESTONE 3
               </span>
             </div>
             
             <div style={{ fontSize: '0.7rem', color: 'var(--linear-fg-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--linear-accent)', display: 'inline-block', boxShadow: '0 0 8px #5E6AD2' }}></span>
-              PRECISION DEVELOPER WORKSPACE
+              PRECISION FRESHNESS PLATFORM
             </div>
           </div>
         </div>
 
-        {/* Locked Role Dashboard Indicator / Admin Workspace Selector */}
+        {/* Workspace Selector */}
         {user && (
           <div style={{
             display: 'flex',
@@ -77,11 +78,12 @@ export default function Navbar({ user, role, setRole, theme, setTheme, onLogout 
           }}>
             {visibleRoles.map((r) => {
               const isActive = role === r.key;
+              const canClick = isAdmin || r.key === 'Freshness Analytics Hub' || r.key === user.role;
               return (
                 <button
                   key={r.key}
                   onClick={() => {
-                    if (isAdmin) setRole(r.key);
+                    if (canClick) setRole(r.key);
                   }}
                   className={`linear-btn ${isActive ? 'linear-btn-primary' : 'linear-btn-secondary'}`}
                   style={{
@@ -89,10 +91,10 @@ export default function Navbar({ user, role, setRole, theme, setTheme, onLogout 
                     fontSize: '0.76rem',
                     whiteSpace: 'nowrap',
                     borderRadius: '7px',
-                    cursor: isAdmin ? 'pointer' : 'default'
+                    cursor: canClick ? 'pointer' : 'default'
                   }}
                 >
-                  {r.label} {!isAdmin && '🔒'}
+                  {r.label} {!isAdmin && r.key === user.role && '🔒'}
                 </button>
               );
             })}

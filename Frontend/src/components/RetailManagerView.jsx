@@ -127,8 +127,13 @@ export default function RetailManagerView({ batches, warehouses, categories, onB
             return (
               <div key={b.id || b.batch_id} className="linear-card" style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
                 
-                {/* Status Badge */}
-                <div style={{ position: 'absolute', top: 14, right: 14, zIndex: 5 }}>
+                {/* Status & FEFO Badges */}
+                <div style={{ position: 'absolute', top: 14, right: 14, zIndex: 5, display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  {daysLeft <= 5 && !isSold && (
+                    <span className="linear-badge linear-badge-warning" style={{ fontSize: '0.65rem' }}>
+                      ⚡ FEFO PRIORITY
+                    </span>
+                  )}
                   {isSold ? (
                     <span className="linear-badge linear-badge-spoilage">
                       🔴 SOLD OUT

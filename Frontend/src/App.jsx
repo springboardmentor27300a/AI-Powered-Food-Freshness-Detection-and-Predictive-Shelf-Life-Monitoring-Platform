@@ -6,6 +6,7 @@ import RetailManagerView from './components/RetailManagerView';
 import InspectorView from './components/InspectorView';
 import ConsumerView from './components/ConsumerView';
 import AdminView from './components/AdminView';
+import FreshnessAnalyticsHub from './components/FreshnessAnalyticsHub';
 
 export default function App() {
   const [theme, setTheme] = useState('dark');
@@ -188,6 +189,14 @@ export default function App() {
 
             {role === 'Administrator' && (
               <AdminView stats={stats} />
+            )}
+
+            {role === 'Freshness Analytics Hub' && (
+              <FreshnessAnalyticsHub
+                user={user}
+                warehouses={warehouses}
+                batches={batches}
+              />
             )}
 
           </div>

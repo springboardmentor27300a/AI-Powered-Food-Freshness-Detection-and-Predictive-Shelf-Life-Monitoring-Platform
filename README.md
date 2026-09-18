@@ -1,4 +1,4 @@
-﻿# 🥬 FreshSense AI — Food Freshness Monitoring Platform
+# 🥬 FreshSense AI — Food Freshness Monitoring Platform
 
 > An AI-powered platform that uses image analysis, environmental data, and storage information to estimate food freshness, predict shelf life, detect spoilage, and generate smart storage recommendations.
 
@@ -132,6 +132,40 @@ EMAILS_FROM_NAME=FreshSense AI
 ```
 
 ---
+## 📌 Milestone 2 (Week 3–4) — Image Analysis & Freshness Assessment
+- **Computer Vision Engine**: Visual defect identification (mold spots, surface bruising, epidermal skin breakdown) with coordinate bounding boxes.
+- **Biochemical Color & Texture Decomposition**: Chlorophyll vitality vs browning oxidation index extraction; surface firmness estimation.
+- **Consumer Freshness Scanner**: Interactive image upload, live camera feed, dataset presets, and instant safety verdicts (Safe to Consume, Consume Soon, Cook Only, Quarantine).
+
+---
+
+## 📌 Milestone 3 (Week 5–6) — Shelf-Life Prediction & Recommendations
+
+### ✅ 1. Arrhenius & $Q_{10}$ Bio-Kinetic Shelf-Life Prediction
+- Exponential temperature deterioration model based on category-specific $Q_{10}$ coefficients ($2.0 \le Q_{10} \le 2.8$).
+- Multi-variable kinetic solver incorporating relative humidity transpirational stress, barrier packaging factors (MAP, Vacuum, Perforated), and positive-pressure airflow ventilation.
+- 30-day day-by-day projected degradation curve generation with dual trace comparison (Current Storage vs Optimal Cold Chain).
+- Endpoints: `POST /api/prediction/shelf-life`, `POST /api/prediction/simulate-conditions`, `GET /api/prediction/batch/{id}`.
+
+### ✅ 2. Cold Storage Telemetry & Compliance Monitoring
+- Real-time environmental monitoring across warehouse microclimate vaults (`ZONE-WH01-A`, `ZONE-WH01-B`, `ZONE-WH02-A`, `ZONE-WH03-A`).
+- 24-hour historical telemetry tracking (hourly probe sampling) for temperature, relative humidity, and airflow CFM.
+- Automated excursion detection flagging cold-chain violations with root cause diagnoses and 1-click remediation.
+- Endpoints: `GET /api/storage/zones`, `GET /api/storage/telemetry/{id}`, `GET /api/storage/alerts`, `POST /api/storage/alerts/{id}/resolve`.
+
+### ✅ 3. Recommendation & FEFO Rotation Engine
+- **First-Expiry-First-Out (FEFO) Dispatch Queue**: Dynamically sorts active lots by shortest remaining days, prioritizing critical lots for front-shelf display.
+- **Dynamic Markdown Pricing**: Automated markdown discount suggestions (-15%, -40%, -70%) to accelerate sell-through and prevent landfill write-offs.
+- **Biological Ethylene Co-Location Matrix**: Enforces strict segregation between high ethylene emitters (Apples, Melons, Bananas) and sensitive produce (Leafy Greens, Carrots).
+- Endpoints: `GET /api/recommendations/fefo-queue`, `GET /api/recommendations/markdowns`, `GET /api/recommendations/storage-matrix`, `GET /api/recommendations/overview`.
+
+### ✅ 4. Freshness Analytics & Executive Dashboards
+- Executive metrics: Total produce monitored, Economic Value at Risk ($), Landfill Waste Diverted ($ and kg), and Storage Network Compliance (%).
+- 7-day category freshness degradation curves comparing Fruits, Vegetables, Dairy, and Meat.
+- Shelf-life risk segmentation bars and category-by-category quality health matrix.
+- Linear-aesthetic workspace: `FreshnessAnalyticsHub.jsx` with interactive SVG charts.
+
+---
 
 ## 📁 Project Structure
 
@@ -140,19 +174,23 @@ FreshSense AI/
 ├── Backend/
 │   ├── app/
 │   │   ├── core/        # config, security, email
-│   │   ├── models/      # Pydantic schemas
-│   │   ├── routers/     # auth, inventory, admin
+│   │   ├── models/      # Pydantic schemas (Milestone 1, 2, 3)
+│   │   ├── routers/     # auth, inventory, prediction, storage, recommendations, analytics, reports
 │   │   └── main.py
 │   ├── .env
 │   └── requirements.txt
-└── Frontend/
-    ├── src/
-    │   ├── components/  # LandingAuthScreen, Dashboard, etc.
-    │   ├── pages/
-    │   └── App.jsx
-    └── package.json
+├── Frontend/
+│   ├── src/
+│   │   ├── components/  # FreshnessAnalyticsHub, Warehouse, Retail, Consumer, Admin
+│   │   ├── index.css    # Linear / Modern Design System
+│   │   └── App.jsx
+│   └── package.json
+├── Food_Freshness_Monitoring_Platform_PRD.md
+├── Milestone1_Documentation_and_Datasets.md
+├── Milestone3_Documentation.md
+└── README.md
 ```
 
 ---
 
-*Built during Week 1 of the FreshSense AI development sprint.*
+*Milestone 3 (Week 5–6) implemented and verified for the FreshSense AI Platform.*

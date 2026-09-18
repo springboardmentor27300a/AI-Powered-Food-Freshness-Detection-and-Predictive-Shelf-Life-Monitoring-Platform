@@ -209,3 +209,115 @@ class ConsumerScanResponse(BaseModel):
     confidence_score: float
     scanned_at: str
 
+
+# --- MILESTONE 3: SHELF-LIFE PREDICTION, STORAGE MONITORING & RECOMMENDATIONS SCHEMAS ---
+
+class DecayCurvePoint(BaseModel):
+    day: int
+    predicted_score: int
+    optimal_score: int
+    status: str
+
+class ShelfLifeSimulationRequest(BaseModel):
+    category: str = Field("Fruits", example="Fruits")
+    harvest_date: Optional[str] = Field("2026-08-20", example="2026-08-20")
+    storage_temp_celsius: float = Field(3.5, example=3.5)
+    storage_humidity_percent: float = Field(87.0, example=87.0)
+    packaging_type: str = Field("Modified Atmosphere (MAP)", example="Modified Atmosphere (MAP)")  # "Vacuum Sealed" | "Modified Atmosphere (MAP)" | "Perforated Polyethylene" | "Open Container / Ambient"
+    air_circulation: str = Field("Optimal (Active)", example="Optimal (Active)")  # "Optimal (Active)" | "Moderate" | "Stagnant"
+    visual_score: int = Field(90, ge=0, le=100, example=90)
+
+class ShelfLifeSimulationResponse(BaseModel):
+    remaining_days: int
+    remaining_hours: int
+    decay_rate_multiplier: float
+    optimal_temp_celsius: float
+    optimal_humidity_percent: float
+    optimal_packaging: str
+    weighted_freshness_score: int
+    freshness_status: str
+    risk_level: str
+    predicted_expiry_date: str
+    extension_gain_days: int
+    day_by_day_curve: List[DecayCurvePoint]
+    key_factors: List[str]
+    recommendation: str
+
+class StorageZoneTelemetry(BaseModel):
+    zone_id: str
+    zone_name: str
+    warehouse_id: str
+    warehouse_name: str
+    temperature_celsius: float
+    humidity_percent: float
+    airflow_cfm: float
+    light_lux: float
+    target_temp_c: float
+    target_humidity_pct: float
+    compliance_status: str  # "Compliant" | "Minor Excursion" | "Critical"
+    active_alerts_count: int = 0
+    last_updated: str
+
+class StorageExcursionAlert(BaseModel):
+    alert_id: str
+    zone_id: str
+    zone_name: str
+    warehouse_name: str
+    parameter: str  # "Temperature" | "Humidity" | "Airflow"
+    current_value: float
+    threshold_value: float
+    severity: str  # "Minor" | "Moderate" | "Critical"
+    duration_minutes: int
+    root_cause: str
+    corrective_action: str
+    is_resolved: bool = False
+    timestamp: str
+
+class FEFOQueueItem(BaseModel):
+    batch_id: str
+    product_name: str
+    category: str
+    warehouse_name: str
+    quantity_kg: float
+    unit_price_per_kg: float
+    expiry_date: str
+    remaining_days: int
+    freshness_score: int
+    freshness_status: str
+    urgency_level: str  # "Critical FEFO Dispatch" | "High Priority" | "Standard Velocity"
+    suggested_channel: str
+    potential_revenue_loss: float
+
+class DynamicMarkdownItem(BaseModel):
+    batch_id: str
+    product_name: str
+    category: str
+    warehouse_name: str
+    quantity_kg: float
+    original_price_per_kg: float
+    discount_percent: int
+    discounted_price_per_kg: float
+    remaining_days: int
+    freshness_score: int
+    reason: str
+    urgency: str
+    potential_revenue_saved: float
+
+class EthyleneMatrixRule(BaseModel):
+    emitter_category: str
+    sensitive_category: str
+    compatibility: str  # "Compatible" | "Incompatible" | "Caution"
+    risk_summary: str
+    separation_advice: str
+
+class FreshnessAnalyticsOverview(BaseModel):
+    total_batches_monitored: int
+    total_kg_monitored: float
+    avg_freshness_score: float
+    critical_risk_batches: int
+    economic_value_at_risk: float
+    total_waste_diverted_kg: float
+    total_waste_diverted_dollars: float
+    overall_compliance_rate_percent: float
+    shelf_life_distribution: dict
+    category_health: List[dict]

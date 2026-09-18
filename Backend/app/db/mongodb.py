@@ -331,3 +331,95 @@ async def seed_database_if_empty():
             }
         ]
         await db.food_batches.insert_many(batches_data)
+
+    # 4. Storage Zones Telemetry
+    zone_count = await db.storage_zones.count_documents({})
+    if zone_count == 0:
+        logger.info("Seeding initial Cold Storage Zones...")
+        zones_data = [
+            {
+                "zone_id": "ZONE-WH01-A",
+                "zone_name": "Cold Room A — Chilled Fresh Produce",
+                "warehouse_id": "WH-CENTRAL-01",
+                "warehouse_name": "GreenValley Central Cold Storage",
+                "temperature_celsius": 3.4,
+                "humidity_percent": 88.5,
+                "airflow_cfm": 420.0,
+                "light_lux": 15.0,
+                "target_temp_c": 3.0,
+                "target_humidity_pct": 88.0,
+                "compliance_status": "Compliant",
+                "active_alerts_count": 0,
+                "last_updated": datetime.utcnow().isoformat()
+            },
+            {
+                "zone_id": "ZONE-WH01-B",
+                "zone_name": "Zone B — Controlled Atmosphere (CA) Vault",
+                "warehouse_id": "WH-CENTRAL-01",
+                "warehouse_name": "GreenValley Central Cold Storage",
+                "temperature_celsius": 2.2,
+                "humidity_percent": 91.0,
+                "airflow_cfm": 380.0,
+                "light_lux": 5.0,
+                "target_temp_c": 2.0,
+                "target_humidity_pct": 90.0,
+                "compliance_status": "Compliant",
+                "active_alerts_count": 0,
+                "last_updated": datetime.utcnow().isoformat()
+            },
+            {
+                "zone_id": "ZONE-WH02-A",
+                "zone_name": "Zone Alpha — Coastal High-Humidity Chiller",
+                "warehouse_id": "WH-PACIFIC-02",
+                "warehouse_name": "Pacific Fresh Logistics Center",
+                "temperature_celsius": 5.8,
+                "humidity_percent": 74.0,
+                "airflow_cfm": 210.0,
+                "light_lux": 45.0,
+                "target_temp_c": 2.5,
+                "target_humidity_pct": 88.0,
+                "compliance_status": "Minor Excursion",
+                "active_alerts_count": 1,
+                "last_updated": datetime.utcnow().isoformat()
+            },
+            {
+                "zone_id": "ZONE-WH03-A",
+                "zone_name": "Bay 1 — Sunshine Produce Deep Chill",
+                "warehouse_id": "WH-SUNSHINE-03",
+                "warehouse_name": "Sunshine Valley Produce Hub",
+                "temperature_celsius": 4.1,
+                "humidity_percent": 83.5,
+                "airflow_cfm": 350.0,
+                "light_lux": 20.0,
+                "target_temp_c": 4.0,
+                "target_humidity_pct": 85.0,
+                "compliance_status": "Compliant",
+                "active_alerts_count": 0,
+                "last_updated": datetime.utcnow().isoformat()
+            }
+        ]
+        await db.storage_zones.insert_many(zones_data)
+
+    # 5. Storage Excursion Alerts
+    alert_count = await db.storage_alerts.count_documents({})
+    if alert_count == 0:
+        logger.info("Seeding initial Cold Storage Alerts...")
+        alerts_data = [
+            {
+                "alert_id": "ALT-20260910-01",
+                "zone_id": "ZONE-WH02-A",
+                "zone_name": "Zone Alpha — Coastal High-Humidity Chiller",
+                "warehouse_name": "Pacific Fresh Logistics Center",
+                "parameter": "Temperature",
+                "current_value": 5.8,
+                "threshold_value": 3.5,
+                "severity": "Moderate",
+                "duration_minutes": 45,
+                "root_cause": "Loading dock door seal integrity compromise during morning wholesale dispatch.",
+                "corrective_action": "Reseal dock bay door #3, engage secondary auxiliary chiller unit, and verify cold air circulation.",
+                "is_resolved": False,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        ]
+        await db.storage_alerts.insert_many(alerts_data)
+
