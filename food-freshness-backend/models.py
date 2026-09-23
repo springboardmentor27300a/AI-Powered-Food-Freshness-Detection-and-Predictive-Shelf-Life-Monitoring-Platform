@@ -17,6 +17,8 @@ class FoodItem(Base):
     category = Column(String, nullable=False)
     quantity = Column(Integer, default=1)
     expiry_date = Column(String, nullable=True)
+    batch_number = Column(String, nullable=True)
+    storage_temp = Column(Float, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
     
 from datetime import datetime
@@ -31,4 +33,11 @@ class FreshnessAnalysis(Base):
     confidence = Column(Float, nullable=False)
     quality_score = Column(Float, nullable=False)
     category = Column(String, nullable=False)
+    color_score = Column(Float, nullable=True, default=100.0)
+    mold_score = Column(Float, nullable=True, default=100.0)
+    bruising_score = Column(Float, nullable=True, default=100.0)
+    visual_score = Column(Float, nullable=True, default=100.0)
+    storage_score = Column(Float, nullable=True, default=90.0)
+    shelflife_days = Column(Float, nullable=True, default=7.0)
+    age_score = Column(Float, nullable=True, default=80.0)
     created_at = Column(DateTime, default=datetime.utcnow)

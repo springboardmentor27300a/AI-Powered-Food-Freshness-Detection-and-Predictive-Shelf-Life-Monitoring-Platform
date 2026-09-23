@@ -1,9 +1,11 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class UserCreate(BaseModel):
     name: str
     email: str
     password: str
+    role: str = "consumer"
 
 class UserOut(BaseModel):
     id: int
@@ -13,11 +15,14 @@ class UserOut(BaseModel):
 
     class Config:
         from_attributes = True
+
 class FoodItemCreate(BaseModel):
     name: str
     category: str
     quantity: int = 1
     expiry_date: str | None = None
+    batch_number: str | None = None
+    storage_temp: float | None = None
 
 class FoodItemOut(BaseModel):
     id: int
@@ -25,14 +30,16 @@ class FoodItemOut(BaseModel):
     category: str
     quantity: int
     expiry_date: str | None
+    batch_number: str | None
+    storage_temp: float | None
     owner_id: int
 
     class Config:
         from_attributes = True
+
 class UserLogin(BaseModel):
     email: str
     password: str
-from datetime import datetime
 
 class FreshnessAnalysisOut(BaseModel):
     id: int
@@ -41,7 +48,21 @@ class FreshnessAnalysisOut(BaseModel):
     confidence: float
     quality_score: float
     category: str
+    color_score: float | None = 100.0
+    mold_score: float | None = 100.0
+    bruising_score: float | None = 100.0
+    visual_score: float | None = 100.0
+    storage_score: float | None = 90.0
+    shelflife_days: float | None = 7.0
+    age_score: float | None = 80.0
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+class FreshnessSummaryOut(BaseModel):
+    total_items: int
+    total_analyzed: int
+    avg_quality_score: float
+    fresh_count: int
+    spoiled_count: int

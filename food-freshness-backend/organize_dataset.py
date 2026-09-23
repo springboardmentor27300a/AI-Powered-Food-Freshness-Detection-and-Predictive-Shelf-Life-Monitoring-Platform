@@ -39,7 +39,10 @@ for src_folder, target_class in CLASS_MAP.items():
         os.makedirs(dest_dir, exist_ok=True)
         for img_path in img_list:
             parent_name = os.path.basename(os.path.dirname(img_path))
-            new_name = f"{parent_name}_{os.path.basename(img_path)}"
+            base_name = os.path.basename(img_path)
+            if len(base_name) > 50:
+                base_name = base_name[-50:]
+            new_name = f"{parent_name}_{base_name}"
             shutil.copy(img_path, os.path.join(dest_dir, new_name))
 
     print(f"{src_folder} -> {target_class}: {len(train_imgs)} train, {len(val_imgs)} val")
