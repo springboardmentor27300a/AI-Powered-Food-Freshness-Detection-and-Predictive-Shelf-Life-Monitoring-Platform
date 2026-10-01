@@ -1050,3 +1050,89 @@ button:active {
 .recs-title { margin: 0 0 10px 0; font-size: 0.95rem; color: #60a5fa; }
 .recs-list { margin: 0; padding-left: 0; list-style: none; font-size: 0.85rem; color: #cbd5e1; }
 .recs-list li { margin-bottom: 6px; display: flex; align-items: flex-start; gap: 8px; }
+
+/* OAuth Login */
+.oauth-divider { display: flex; align-items: center; gap: 12px; margin: 12px 0; color: #94a3b8; font-size: 13px; }
+.oauth-divider::before, .oauth-divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+.oauth-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 10px 16px; border-radius: 8px; border: 1.5px solid #e2e8f0; background: #fff; color: #374151; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+.oauth-btn:hover { background: #f8fafc; }
+
+/* Notification badge */
+.notif-btn { min-width: 44px; }
+.notif-badge { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 5px; min-width: 18px; text-align: center; }
+
+/* Notification cards */
+.notif-card { display: flex; gap: 14px; align-items: flex-start; padding: 14px; border-radius: 10px; margin-bottom: 10px; }
+.notif-danger { background: rgba(239,68,68,0.08); border-left: 4px solid #ef4444; }
+.notif-warning { background: rgba(245,158,11,0.08); border-left: 4px solid #f59e0b; }
+.notif-info { background: rgba(59,130,246,0.08); border-left: 4px solid #3b82f6; }
+.notif-icon { font-size: 22px; flex-shrink: 0; }
+.notif-body strong { display: block; font-size: 14px; margin-bottom: 4px; color: #1e293b; }
+.notif-body p { margin: 0; font-size: 13px; color: #64748b; }
+
+/* Risk Badge */
+.risk-badge { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; color: white; margin-left: 6px; }
+
+/* Trend chart */
+.trend-chart-box { margin-top: 12px; padding: 12px; background: rgba(248,250,252,0.8); border-radius: 10px; border: 1px solid #e2e8f0; overflow-x: auto; }
+.trend-chart-box .recs-title { margin-bottom: 8px; }
+.notification-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+.dropdown-panel {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  width: 300px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  padding: 15px;
+  z-index: 100;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.notification-item {
+  padding: 10px;
+  border-bottom: 1px solid #334155;
+}
+.notification-item:last-child {
+  border-bottom: none;
+}
+.notification-item strong {
+  color: #f59e0b;
+}
+.notification-item p {
+  margin: 5px 0 0;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: #64748b;
+}
+.oauth-divider::before, .oauth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #334155;
+}
+.oauth-divider span {
+  padding: 0 10px;
+  font-size: 0.85rem;
+}
