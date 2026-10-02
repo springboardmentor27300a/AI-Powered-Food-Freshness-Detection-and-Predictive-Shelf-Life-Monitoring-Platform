@@ -1,8 +1,91 @@
+import { useEffect, useState } from "react";
+import { getFoods } from "../api";
+
+
 function InspectorDashboard({
   onLogout,
   onProfile,
   onInventory,
+  onReports,
 }) {
+
+  const [foods, setFoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+
+  /* ==========================================================
+      LOAD INVENTORY DATA
+  ========================================================== */
+
+  useEffect(() => {
+
+    async function loadFoods() {
+
+      try {
+
+        setLoading(true);
+
+        const data = await getFoods();
+
+        setFoods(Array.isArray(data) ? data : []);
+
+      } catch (error) {
+
+        console.error("Failed to load inspector inventory:", error);
+
+        setFoods([]);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    }
+
+    loadFoods();
+
+  }, []);
+
+
+  /* ==========================================================
+      INSPECTION STATISTICS
+  ========================================================== */
+
+  const totalFoods = foods.length;
+
+
+  const spoilageCount = foods.filter((food) => {
+
+    const status =
+      String(food.freshness_status || "")
+        .trim()
+        .toLowerCase();
+
+    const expiryDate = food.expiry_date
+      ? new Date(`${food.expiry_date}T00:00:00`)
+      : null;
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    const isExpired =
+      expiryDate &&
+      !Number.isNaN(expiryDate.getTime()) &&
+      expiryDate < today;
+
+    return (
+      status === "spoiled" ||
+      status === "rotten" ||
+      isExpired
+    );
+
+  }).length;
+
+
+  const qualityReportsCount = foods.length;
+
 
   return (
 
@@ -10,6 +93,11 @@ function InspectorDashboard({
 
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
+
+
+      {/* ==========================================================
+          TOPBAR
+      ========================================================== */}
 
       <header className="topbar">
 
@@ -36,6 +124,19 @@ function InspectorDashboard({
 
         <div className="topbar-right">
 
+          {/* REPORTS */}
+
+          <button
+            className="secondary-button"
+            onClick={onReports}
+            type="button"
+          >
+            📊 Reports
+          </button>
+
+
+          {/* PROFILE */}
+
           <button
             className="secondary-button"
             onClick={onProfile}
@@ -43,6 +144,9 @@ function InspectorDashboard({
           >
             Profile
           </button>
+
+
+          {/* LOGOUT */}
 
           <button
             className="logout-button"
@@ -57,7 +161,16 @@ function InspectorDashboard({
       </header>
 
 
+      {/* ==========================================================
+          MAIN CONTENT
+      ========================================================== */}
+
       <main className="dashboard-content">
+
+
+        {/* ========================================================
+            HERO
+        ======================================================== */}
 
         <section className="dashboard-hero">
 
@@ -81,6 +194,7 @@ function InspectorDashboard({
               and food freshness reports.
             </p>
 
+
             <div className="hero-actions">
 
               <button
@@ -91,10 +205,21 @@ function InspectorDashboard({
                 Inspect Inventory →
               </button>
 
+
+              <button
+                className="secondary-button"
+                onClick={onReports}
+                type="button"
+              >
+                View Reports
+              </button>
+
             </div>
 
           </div>
 
+
+          {/* HERO VISUAL */}
 
           <div className="hero-visual">
 
@@ -103,9 +228,11 @@ function InspectorDashboard({
             </div>
 
             <div className="fresh-ring">
+
               <span>
                 QUALITY
               </span>
+
             </div>
 
           </div>
@@ -113,9 +240,32 @@ function InspectorDashboard({
         </section>
 
 
+
+        {/* ========================================================
+            INSPECTION STATS
+        ======================================================== */}
+
         <section className="stats-grid">
 
-          <div className="stat-card">
+
+          {/* FRESHNESS ANALYSIS */}
+
+          <div
+            className="stat-card"
+            onClick={onInventory}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onInventory();
+              }
+
+            }}
+          >
 
             <div className="stat-icon green">
               🔍
@@ -128,7 +278,7 @@ function InspectorDashboard({
               </p>
 
               <strong>
-                Active
+                {loading ? "..." : totalFoods}
               </strong>
 
             </div>
@@ -136,7 +286,24 @@ function InspectorDashboard({
           </div>
 
 
-          <div className="stat-card">
+          {/* SPOILAGE */}
+
+          <div
+            className="stat-card"
+            onClick={onInventory}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onInventory();
+              }
+
+            }}
+          >
 
             <div className="stat-icon yellow">
               ⚠️
@@ -149,7 +316,7 @@ function InspectorDashboard({
               </p>
 
               <strong>
-                Monitor
+                {loading ? "..." : spoilageCount}
               </strong>
 
             </div>
@@ -157,7 +324,24 @@ function InspectorDashboard({
           </div>
 
 
-          <div className="stat-card">
+          {/* QUALITY REPORTS */}
+
+          <div
+            className="stat-card"
+            onClick={onReports}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onReports();
+              }
+
+            }}
+          >
 
             <div className="stat-icon mint">
               📊
@@ -170,7 +354,7 @@ function InspectorDashboard({
               </p>
 
               <strong>
-                Available
+                {loading ? "..." : qualityReportsCount}
               </strong>
 
             </div>
@@ -179,6 +363,11 @@ function InspectorDashboard({
 
         </section>
 
+
+
+        {/* ========================================================
+            INSPECTION TOOLS
+        ======================================================== */}
 
         <section className="action-section">
 
@@ -204,6 +393,11 @@ function InspectorDashboard({
 
 
           <div className="action-grid">
+
+
+            {/* ====================================================
+                FRESHNESS REPORTS
+            ==================================================== */}
 
             <button
               className="action-card inventory-card"
@@ -239,7 +433,16 @@ function InspectorDashboard({
             </button>
 
 
-            <div className="action-card">
+
+            {/* ====================================================
+                SPOILAGE DETECTION
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onInventory}
+              type="button"
+            >
 
               <div className="action-illustration">
                 🦠⚠️
@@ -262,6 +465,148 @@ function InspectorDashboard({
 
               </div>
 
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+
+
+            {/* ====================================================
+                QUALITY ASSESSMENT
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onInventory}
+              type="button"
+            >
+
+              <div className="action-illustration">
+                🧪📋
+              </div>
+
+              <div>
+
+                <span className="action-label">
+                  ASSESSMENT
+                </span>
+
+                <h3>
+                  Quality Assessment
+                </h3>
+
+                <p>
+                  Review freshness scores,
+                  food condition, and quality information.
+                </p>
+
+              </div>
+
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+
+
+            {/* ====================================================
+                INSPECTION REPORTS
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onReports}
+              type="button"
+            >
+
+              <div className="action-illustration">
+                📊🔬
+              </div>
+
+              <div>
+
+                <span className="action-label">
+                  REPORTING
+                </span>
+
+                <h3>
+                  Inspection Reports
+                </h3>
+
+                <p>
+                  Review food quality,
+                  freshness, and inspection reports.
+                </p>
+
+              </div>
+
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+          </div>
+
+        </section>
+
+
+
+        {/* ========================================================
+            INSPECTOR INSIGHTS
+        ======================================================== */}
+
+        <section
+          className="dashboard-hero"
+          style={{
+            marginTop: "28px",
+            minHeight: "auto",
+          }}
+        >
+
+          <div className="hero-copy">
+
+            <span className="mini-label">
+              INSPECTOR INSIGHTS
+            </span>
+
+            <h2
+              style={{
+                marginBottom: "10px",
+              }}
+            >
+              Inspect with
+              <br />
+              <span>
+                confidence.
+              </span>
+            </h2>
+
+            <p className="dashboard-subtitle">
+              Review freshness assessments,
+              quality scores, spoilage indicators,
+              and inspection reports to support
+              food quality monitoring.
+            </p>
+
+          </div>
+
+
+          <div className="hero-visual">
+
+            <div className="hero-fruit">
+              🔬
+            </div>
+
+            <div className="fresh-ring">
+
+              <span>
+                INSPECT
+              </span>
+
             </div>
 
           </div>
@@ -273,5 +618,6 @@ function InspectorDashboard({
     </div>
   );
 }
+
 
 export default InspectorDashboard;

@@ -1,65 +1,227 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getCurrentUser } from "../api";
 
-function Profile({ onBack, onLogout }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+
+// ============================================================
+// ROLE CONFIGURATION
+// ============================================================
+
+const ROLE_CONFIG = {
+  consumer: {
+    label: "Consumer",
+    icon: "👤",
+    description:
+      "Manage and monitor your personal food inventory, freshness and shelf-life information.",
+    responsibilities: [
+      "Manage personal food inventory",
+      "Monitor food freshness",
+      "Review shelf-life information",
+      "Monitor storage conditions",
+      "Review food quality reports",
+    ],
+  },
+
+  retail_manager: {
+    label: "Retail Manager",
+    icon: "🏪",
+    description:
+      "Monitor retail food inventory, freshness, shelf-life and waste-reduction information.",
+    responsibilities: [
+      "Monitor retail inventory",
+      "Review freshness and quality",
+      "Monitor shelf-life and expiry risk",
+      "Track waste-reduction opportunities",
+      "Review storage information",
+    ],
+  },
+
+  warehouse_operator: {
+    label: "Warehouse Operator",
+    icon: "🏭",
+    description:
+      "Monitor warehouse inventory, storage conditions, freshness and shelf-life risk.",
+    responsibilities: [
+      "Monitor warehouse inventory",
+      "Review storage conditions",
+      "Monitor freshness status",
+      "Track shelf-life and expiry risk",
+      "Support inventory rotation",
+    ],
+  },
+
+  food_quality_inspector: {
+    label: "Food Quality Inspector",
+    icon: "🔬",
+    description:
+      "Review food quality, freshness classification, spoilage indicators and expiry risk.",
+    responsibilities: [
+      "Inspect food freshness",
+      "Review quality classifications",
+      "Monitor spoilage indicators",
+      "Review expiry risk",
+      "Analyse food quality information",
+    ],
+  },
+
+  administrator: {
+    label: "Administrator",
+    icon: "🛡️",
+    description:
+      "Monitor platform-level inventory, freshness, shelf-life, storage and reporting information.",
+    responsibilities: [
+      "Monitor platform information",
+      "Review inventory quality",
+      "Review freshness and shelf-life reports",
+      "Monitor storage information",
+      "Review platform reporting",
+    ],
+  },
+};
+
+
+// ============================================================
+// ROLE HELPERS
+// ============================================================
+
+function normaliseRole(role) {
+  return String(role || "consumer")
+    .trim()
+    .toLowerCase();
+}
+
+
+function getRoleConfig(role) {
+  const normalisedRole =
+    normaliseRole(role);
+
+  return (
+    ROLE_CONFIG[normalisedRole] ||
+    ROLE_CONFIG.consumer
+  );
+}
+
+
+// ============================================================
+// PROFILE PAGE
+// ============================================================
+
+function Profile({
+  onBack,
+  onLogout,
+}) {
+  const [user, setUser] =
+    useState(null);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+
+  // ==========================================================
+  // LOAD CURRENT USER
+  // ==========================================================
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        setLoading(true);
-        setError("");
+    let mounted = true;
 
-        const userData = await getCurrentUser();
+    const loadProfile =
+      async () => {
+        try {
+          setLoading(true);
+          setError("");
 
-        setUser(userData);
-      } catch (err) {
-        console.error("Profile loading error:", err);
+          const userData =
+            await getCurrentUser();
 
-        setError(
-          err?.message ||
-            "Failed to load profile."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+          if (!mounted) {
+            return;
+          }
+
+          setUser(userData);
+        } catch (err) {
+          if (!mounted) {
+            return;
+          }
+
+          console.error(
+            "Profile loading error:",
+            err
+          );
+
+          setError(
+            err?.message ||
+              "Failed to load profile."
+          );
+        } finally {
+          if (mounted) {
+            setLoading(false);
+          }
+        }
+      };
 
     loadProfile();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
+
   // ==========================================================
-  // HELPERS
+  // DERIVED USER INFORMATION
   // ==========================================================
 
+  const roleValue =
+    normaliseRole(
+      user?.role
+    );
+
+  const roleConfig =
+    useMemo(
+      () =>
+        getRoleConfig(
+          roleValue
+        ),
+      [roleValue]
+    );
+
+
   const displayRole =
-    user?.role || "consumer";
+    roleConfig.label;
+
 
   const displayStatus =
     user?.is_active
       ? "Active"
       : "Inactive";
 
+
   const formattedDate =
     user?.created_at
       ? new Date(
           user.created_at
-        ).toLocaleString("en-GB", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        })
-      : "";
+        ).toLocaleString(
+          "en-GB",
+          {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }
+        )
+      : "Not available";
+
 
   const userInitial =
     user?.name
       ?.charAt(0)
-      ?.toUpperCase() || "U";
+      ?.toUpperCase() ||
+    "U";
+
 
   return (
     <div className="dashboard-page">
@@ -68,18 +230,29 @@ function Profile({ onBack, onLogout }) {
           AMBIENT BACKGROUND
       ====================================================== */}
 
-      <div className="ambient ambient-one" />
-      <div className="ambient ambient-two" />
+      <div
+        className="ambient ambient-one"
+      />
 
-      <div className="floating-food dashboard-food-one">
+      <div
+        className="ambient ambient-two"
+      />
+
+      <div
+        className="floating-food dashboard-food-one"
+      >
         🍎
       </div>
 
-      <div className="floating-food dashboard-food-two">
+      <div
+        className="floating-food dashboard-food-two"
+      >
         🥕
       </div>
 
-      <div className="floating-food dashboard-food-three">
+      <div
+        className="floating-food dashboard-food-three"
+      >
         🥦
       </div>
 
@@ -109,6 +282,7 @@ function Profile({ onBack, onLogout }) {
           </div>
 
           <div>
+
             <strong>
               FreshGuard
             </strong>
@@ -116,6 +290,7 @@ function Profile({ onBack, onLogout }) {
             <span>
               My Profile
             </span>
+
           </div>
 
         </div>
@@ -144,7 +319,7 @@ function Profile({ onBack, onLogout }) {
 
         {/* ====================================================
             BACK BUTTON
-        ===================================================== */}
+        ==================================================== */}
 
         <button
           className="back-button"
@@ -162,7 +337,7 @@ function Profile({ onBack, onLogout }) {
 
         {/* ====================================================
             PREMIUM PROFILE CARD
-        ===================================================== */}
+        ==================================================== */}
 
         <section
           className="content-card"
@@ -250,7 +425,8 @@ function Profile({ onBack, onLogout }) {
 
             <p>
               View your FreshGuard account
-              information and role.
+              information, role and access
+              responsibilities.
             </p>
 
           </div>
@@ -344,7 +520,7 @@ function Profile({ onBack, onLogout }) {
 
               {/* =================================================
                   PROFILE SUMMARY
-              ================================================== */}
+              ================================================= */}
 
               <div
                 style={{
@@ -440,7 +616,8 @@ function Profile({ onBack, onLogout }) {
                       fontWeight: "800",
                     }}
                   >
-                    {user.name}
+                    {user.name ||
+                      "FreshGuard User"}
                   </h2>
 
                   <p
@@ -451,7 +628,8 @@ function Profile({ onBack, onLogout }) {
                       wordBreak: "break-word",
                     }}
                   >
-                    {user.email}
+                    {user.email ||
+                      "Email not available"}
                   </p>
 
 
@@ -483,13 +661,15 @@ function Profile({ onBack, onLogout }) {
                         fontWeight: "700",
                       }}
                     >
+
                       <span>
-                        🛡️
+                        {roleConfig.icon}
                       </span>
 
                       <span>
                         {displayRole}
                       </span>
+
                     </div>
 
 
@@ -537,8 +717,151 @@ function Profile({ onBack, onLogout }) {
 
 
               {/* =================================================
+                  ROLE INFORMATION
+              ================================================= */}
+
+              <div
+                style={{
+                  marginBottom: "30px",
+                  padding: "24px",
+                  borderRadius: "22px",
+                  background:
+                    "linear-gradient(135deg, #f1fff6, #fbfffc)",
+                  border:
+                    "1px solid rgba(30,160,90,0.13)",
+                  boxShadow:
+                    "0 10px 28px rgba(20,100,60,0.05)",
+                }}
+              >
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "15px",
+                  }}
+                >
+
+                  <div
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                      flexShrink: 0,
+                      borderRadius: "15px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background:
+                        "rgba(30,180,90,0.10)",
+                      fontSize: "23px",
+                    }}
+                  >
+                    {roleConfig.icon}
+                  </div>
+
+                  <div
+                    style={{
+                      flex: 1,
+                    }}
+                  >
+
+                    <div
+                      style={{
+                        color: "#08a94f",
+                        fontSize: "11px",
+                        fontWeight: "900",
+                        letterSpacing: "1.3px",
+                        textTransform:
+                          "uppercase",
+                      }}
+                    >
+                      Your FreshGuard Role
+                    </div>
+
+                    <h3
+                      style={{
+                        margin:
+                          "6px 0 5px",
+                        color: "#073d27",
+                        fontSize: "21px",
+                        fontWeight: "850",
+                      }}
+                    >
+                      {displayRole}
+                    </h3>
+
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "#71827b",
+                        fontSize: "13px",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {roleConfig.description}
+                    </p>
+
+                  </div>
+
+                </div>
+
+
+                {/* ROLE RESPONSIBILITIES */}
+
+                <div
+                  style={{
+                    marginTop: "22px",
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit,minmax(210px,1fr))",
+                    gap: "10px",
+                  }}
+                >
+
+                  {roleConfig.responsibilities.map(
+                    (item) => (
+                      <div
+                        key={item}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "9px",
+                          padding:
+                            "11px 13px",
+                          borderRadius: "12px",
+                          background:
+                            "rgba(255,255,255,0.80)",
+                          border:
+                            "1px solid rgba(30,160,90,0.10)",
+                          color: "#45665a",
+                          fontSize: "12px",
+                          fontWeight: "650",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "#08a94f",
+                            fontWeight: "900",
+                          }}
+                        >
+                          ✓
+                        </span>
+
+                        <span>
+                          {item}
+                        </span>
+                      </div>
+                    )
+                  )}
+
+                </div>
+
+              </div>
+
+
+              {/* =================================================
                   INFORMATION HEADER
-              ================================================== */}
+              ================================================= */}
 
               <div
                 style={{
@@ -566,6 +889,7 @@ function Profile({ onBack, onLogout }) {
                 </div>
 
                 <div>
+
                   <h3
                     style={{
                       margin: 0,
@@ -586,6 +910,7 @@ function Profile({ onBack, onLogout }) {
                   >
                     Your registered account details
                   </p>
+
                 </div>
 
               </div>
@@ -593,7 +918,7 @@ function Profile({ onBack, onLogout }) {
 
               {/* =================================================
                   INFORMATION GRID
-              ================================================== */}
+              ================================================= */}
 
               <div
                 style={{
@@ -609,7 +934,9 @@ function Profile({ onBack, onLogout }) {
                 <ProfileInfoCard
                   icon="👤"
                   label="Full Name"
-                  value={user.name}
+                  value={
+                    user.name
+                  }
                 />
 
 
@@ -618,16 +945,22 @@ function Profile({ onBack, onLogout }) {
                 <ProfileInfoCard
                   icon="✉️"
                   label="Email Address"
-                  value={user.email}
+                  value={
+                    user.email
+                  }
                 />
 
 
                 {/* ROLE */}
 
                 <ProfileInfoCard
-                  icon="🛡️"
+                  icon={
+                    roleConfig.icon
+                  }
                   label="Role"
-                  value={displayRole}
+                  value={
+                    displayRole
+                  }
                   badge
                 />
 
@@ -637,8 +970,12 @@ function Profile({ onBack, onLogout }) {
                 <ProfileInfoCard
                   icon="✓"
                   label="Account Status"
-                  value={displayStatus}
-                  status={user.is_active}
+                  value={
+                    displayStatus
+                  }
+                  status={
+                    user.is_active
+                  }
                 />
 
 
@@ -647,7 +984,9 @@ function Profile({ onBack, onLogout }) {
                 <ProfileInfoCard
                   icon="🆔"
                   label="User ID"
-                  value={user.id}
+                  value={
+                    user.id
+                  }
                 />
 
 
@@ -656,15 +995,46 @@ function Profile({ onBack, onLogout }) {
                 <ProfileInfoCard
                   icon="📅"
                   label="Account Created"
-                  value={formattedDate}
+                  value={
+                    formattedDate
+                  }
                 />
 
               </div>
 
 
               {/* =================================================
+                  ACCOUNT ACCESS NOTE
+              ================================================= */}
+
+              <div
+                style={{
+                  marginTop: "22px",
+                  padding: "16px 18px",
+                  borderRadius: "16px",
+                  background:
+                    "#fffdf1",
+                  border:
+                    "1px solid #f1e6bd",
+                  color: "#75622c",
+                  fontSize: "12px",
+                  lineHeight: 1.6,
+                }}
+              >
+                🔐{" "}
+                <strong>
+                  Role-based access:
+                </strong>{" "}
+                Your FreshGuard dashboard
+                and available features are
+                determined by the role assigned
+                to this account.
+              </div>
+
+
+              {/* =================================================
                   BACK BUTTON
-              ================================================== */}
+              ================================================= */}
 
               <button
                 className="primary-button"
@@ -697,9 +1067,9 @@ function Profile({ onBack, onLogout }) {
 }
 
 
-/* ============================================================
-   PROFILE INFORMATION CARD
-============================================================ */
+// ============================================================
+// PROFILE INFORMATION CARD
+// ============================================================
 
 function ProfileInfoCard({
   icon,
@@ -781,6 +1151,7 @@ function ProfileInfoCard({
             style={{
               display: "inline-flex",
               alignItems: "center",
+              gap: "6px",
               padding:
                 "6px 12px",
               borderRadius: "9px",
@@ -822,8 +1193,12 @@ function ProfileInfoCard({
               fontWeight: "800",
             }}
           >
-            <span>●</span>
+            <span>
+              ●
+            </span>
+
             {value}
+
           </span>
 
         ) : (
@@ -846,5 +1221,6 @@ function ProfileInfoCard({
     </div>
   );
 }
+
 
 export default Profile;

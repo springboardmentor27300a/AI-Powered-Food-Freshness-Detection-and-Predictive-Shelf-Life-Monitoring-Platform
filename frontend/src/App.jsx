@@ -15,6 +15,7 @@ import AddFood from "./pages/AddFood";
 import FoodInventory from "./pages/FoodInventory";
 import Profile from "./pages/Profile";
 import FoodReport from "./pages/FoodReport";
+import Reports from "./pages/Reports";
 
 
 function App() {
@@ -214,6 +215,12 @@ function App() {
           )
         }
 
+        onReports={() =>
+          setPage(
+            "reports"
+          )
+        }
+
       />
 
     );
@@ -250,6 +257,12 @@ function App() {
           )
         }
 
+        onReports={() =>
+          setPage(
+            "reports"
+          )
+        }
+
       />
 
     );
@@ -283,6 +296,12 @@ function App() {
         onInventory={() =>
           setPage(
             "inventory"
+          )
+        }
+
+        onReports={() =>
+          setPage(
+            "reports"
           )
         }
 
@@ -323,6 +342,12 @@ function App() {
           )
         }
 
+        onReports={() =>
+          setPage(
+            "reports"
+          )
+        }
+
       />
 
     );
@@ -350,6 +375,12 @@ function App() {
         onProfile={() =>
           setPage(
             "profile"
+          )
+        }
+
+        onReports={() =>
+          setPage(
+            "reports"
           )
         }
 
@@ -453,6 +484,31 @@ function App() {
           );
 
         }}
+
+      />
+
+    );
+
+  }
+
+
+  // ==========================================================
+  // REPORTS
+  // ==========================================================
+
+  if (
+    page === "reports"
+  ) {
+
+    return (
+
+      <Reports
+
+        onBack={() =>
+          setPage(
+            "dashboard"
+          )
+        }
 
       />
 

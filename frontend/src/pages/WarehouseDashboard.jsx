@@ -1,8 +1,221 @@
+import { useEffect, useState } from "react";
+import { getFoods } from "../api";
+
+
 function WarehouseDashboard({
   onLogout,
   onProfile,
   onInventory,
+  onReports,
 }) {
+
+  const [foods, setFoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+
+  // ==========================================================
+  // LOAD WAREHOUSE INVENTORY
+  // ==========================================================
+
+  useEffect(() => {
+
+    const loadInventory = async () => {
+
+      try {
+
+        setLoading(true);
+
+        const data = await getFoods();
+
+        setFoods(
+          Array.isArray(data)
+            ? data
+            : []
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Warehouse dashboard inventory loading error:",
+          error
+        );
+
+        setFoods([]);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+    loadInventory();
+
+  }, []);
+
+
+  // ==========================================================
+  // WAREHOUSE ANALYTICS
+  // ==========================================================
+
+  const today = new Date();
+
+  today.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+
+  const sevenDaysFromNow = new Date(
+    today
+  );
+
+  sevenDaysFromNow.setDate(
+    sevenDaysFromNow.getDate() + 7
+  );
+
+
+  // ----------------------------------------------------------
+  // TOTAL INVENTORY
+  // ----------------------------------------------------------
+
+  const inventoryCount =
+    foods.length;
+
+
+  // ----------------------------------------------------------
+  // STORAGE CONDITION CONFIGURED
+  // ----------------------------------------------------------
+
+  const storageConfiguredCount =
+    foods.filter((food) => {
+
+      return Boolean(
+        food?.storage_condition &&
+        String(
+          food.storage_condition
+        ).trim()
+      );
+
+    }).length;
+
+
+  // ----------------------------------------------------------
+  // STORAGE CONDITION MISSING
+  // ----------------------------------------------------------
+
+  const storageMissingCount =
+    Math.max(
+      inventoryCount -
+      storageConfiguredCount,
+      0
+    );
+
+
+  // ----------------------------------------------------------
+  // STORAGE COMPLIANCE
+  // ----------------------------------------------------------
+
+  const complianceCount =
+    inventoryCount === 0
+      ? 0
+      : Math.round(
+          (
+            storageConfiguredCount /
+            inventoryCount
+          ) * 100
+        );
+
+
+  // ----------------------------------------------------------
+  // BATCH FRESHNESS / NEAR EXPIRY
+  // ----------------------------------------------------------
+
+  const batchAlertCount =
+    foods.filter((food) => {
+
+      if (!food?.expiry_date) {
+        return false;
+      }
+
+      const expiryDate =
+        new Date(
+          `${food.expiry_date}T00:00:00`
+        );
+
+      return (
+        expiryDate >= today &&
+        expiryDate <= sevenDaysFromNow
+      );
+
+    }).length;
+
+
+  // ----------------------------------------------------------
+  // SPOILED / EXPIRED
+  // ----------------------------------------------------------
+
+  const unhealthyCount =
+    foods.filter((food) => {
+
+      const freshness =
+        (
+          food?.freshness_status || ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const spoiled =
+        freshness === "spoiled" ||
+        freshness === "rotten";
+
+
+      const expired =
+        food?.expiry_date &&
+        new Date(
+          `${food.expiry_date}T00:00:00`
+        ) < today;
+
+
+      return (
+        spoiled ||
+        expired
+      );
+
+    }).length;
+
+
+  // ----------------------------------------------------------
+  // DISPLAY VALUES
+  // ----------------------------------------------------------
+
+  const inventoryValue =
+    loading
+      ? "..."
+      : inventoryCount;
+
+
+  const storageValue =
+    loading
+      ? "..."
+      : storageConfiguredCount;
+
+
+  const complianceValue =
+    loading
+      ? "..."
+      : `${complianceCount}%`;
+
+
+  const batchValue =
+    loading
+      ? "..."
+      : batchAlertCount;
+
 
   return (
 
@@ -10,6 +223,11 @@ function WarehouseDashboard({
 
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
+
+
+      {/* ==========================================================
+          TOPBAR
+      ========================================================== */}
 
       <header className="topbar">
 
@@ -36,6 +254,19 @@ function WarehouseDashboard({
 
         <div className="topbar-right">
 
+          {/* REPORTS */}
+
+          <button
+            className="secondary-button"
+            onClick={onReports}
+            type="button"
+          >
+            📊 Reports
+          </button>
+
+
+          {/* PROFILE */}
+
           <button
             className="secondary-button"
             onClick={onProfile}
@@ -43,6 +274,9 @@ function WarehouseDashboard({
           >
             Profile
           </button>
+
+
+          {/* LOGOUT */}
 
           <button
             className="logout-button"
@@ -57,7 +291,16 @@ function WarehouseDashboard({
       </header>
 
 
+      {/* ==========================================================
+          MAIN CONTENT
+      ========================================================== */}
+
       <main className="dashboard-content">
+
+
+        {/* ========================================================
+            HERO
+        ======================================================== */}
 
         <section className="dashboard-hero">
 
@@ -81,6 +324,7 @@ function WarehouseDashboard({
               and environmental conditions.
             </p>
 
+
             <div className="hero-actions">
 
               <button
@@ -91,10 +335,21 @@ function WarehouseDashboard({
                 View Inventory →
               </button>
 
+
+              <button
+                className="secondary-button"
+                onClick={onReports}
+                type="button"
+              >
+                View Reports
+              </button>
+
             </div>
 
           </div>
 
+
+          {/* HERO VISUAL */}
 
           <div className="hero-visual">
 
@@ -103,9 +358,11 @@ function WarehouseDashboard({
             </div>
 
             <div className="fresh-ring">
+
               <span>
                 STORAGE
               </span>
+
             </div>
 
           </div>
@@ -113,9 +370,32 @@ function WarehouseDashboard({
         </section>
 
 
+
+        {/* ========================================================
+            WAREHOUSE STATS
+        ======================================================== */}
+
         <section className="stats-grid">
 
-          <div className="stat-card">
+
+          {/* STORAGE CONDITION */}
+
+          <div
+            className="stat-card"
+            onClick={onReports}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onReports();
+              }
+
+            }}
+          >
 
             <div className="stat-icon green">
               🌡️
@@ -124,11 +404,13 @@ function WarehouseDashboard({
             <div>
 
               <p>
-                Temperature
+                Storage Conditions
               </p>
 
               <strong>
-                Monitor
+                {loading
+                  ? "..."
+                  : `${storageValue} configured`}
               </strong>
 
             </div>
@@ -136,7 +418,24 @@ function WarehouseDashboard({
           </div>
 
 
-          <div className="stat-card">
+          {/* STORAGE DATA */}
+
+          <div
+            className="stat-card"
+            onClick={onReports}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onReports();
+              }
+
+            }}
+          >
 
             <div className="stat-icon mint">
               💧
@@ -145,11 +444,15 @@ function WarehouseDashboard({
             <div>
 
               <p>
-                Humidity
+                Storage Data
               </p>
 
               <strong>
-                Monitor
+                {loading
+                  ? "..."
+                  : storageMissingCount === 0
+                    ? "Complete"
+                    : `${storageMissingCount} missing`}
               </strong>
 
             </div>
@@ -157,7 +460,24 @@ function WarehouseDashboard({
           </div>
 
 
-          <div className="stat-card">
+          {/* COMPLIANCE */}
+
+          <div
+            className="stat-card"
+            onClick={onReports}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onReports();
+              }
+
+            }}
+          >
 
             <div className="stat-icon yellow">
               📋
@@ -166,11 +486,11 @@ function WarehouseDashboard({
             <div>
 
               <p>
-                Compliance
+                Storage Compliance
               </p>
 
               <strong>
-                Active
+                {complianceValue}
               </strong>
 
             </div>
@@ -179,6 +499,11 @@ function WarehouseDashboard({
 
         </section>
 
+
+
+        {/* ========================================================
+            STORAGE OPERATIONS
+        ======================================================== */}
 
         <section className="action-section">
 
@@ -204,6 +529,11 @@ function WarehouseDashboard({
 
 
           <div className="action-grid">
+
+
+            {/* ====================================================
+                INVENTORY HEALTH
+            ==================================================== */}
 
             <button
               className="action-card inventory-card"
@@ -239,7 +569,16 @@ function WarehouseDashboard({
             </button>
 
 
-            <div className="action-card">
+
+            {/* ====================================================
+                STORAGE COMPLIANCE
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onReports}
+              type="button"
+            >
 
               <div className="action-illustration">
                 🌡️💧
@@ -262,6 +601,148 @@ function WarehouseDashboard({
 
               </div>
 
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+
+
+            {/* ====================================================
+                BATCH FRESHNESS
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onReports}
+              type="button"
+            >
+
+              <div className="action-illustration">
+                📦⏳
+              </div>
+
+              <div>
+
+                <span className="action-label">
+                  BATCH MONITORING
+                </span>
+
+                <h3>
+                  Batch Freshness
+                </h3>
+
+                <p>
+                  Review freshness and
+                  shelf-life information for stored food.
+                </p>
+
+              </div>
+
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+
+
+            {/* ====================================================
+                ENVIRONMENTAL ANALYTICS
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onReports}
+              type="button"
+            >
+
+              <div className="action-illustration">
+                🌡️📊
+              </div>
+
+              <div>
+
+                <span className="action-label">
+                  ANALYTICS
+                </span>
+
+                <h3>
+                  Environmental Analytics
+                </h3>
+
+                <p>
+                  Review storage condition
+                  and environmental monitoring information.
+                </p>
+
+              </div>
+
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+          </div>
+
+        </section>
+
+
+
+        {/* ========================================================
+            WAREHOUSE INSIGHTS
+        ======================================================== */}
+
+        <section
+          className="dashboard-hero"
+          style={{
+            marginTop: "28px",
+            minHeight: "auto",
+          }}
+        >
+
+          <div className="hero-copy">
+
+            <span className="mini-label">
+              WAREHOUSE OPERATOR INSIGHTS
+            </span>
+
+            <h2
+              style={{
+                marginBottom: "10px",
+              }}
+            >
+              Maintain better
+              <br />
+              <span>
+                storage conditions.
+              </span>
+            </h2>
+
+            <p className="dashboard-subtitle">
+              Monitor inventory health, storage
+              compliance, batch freshness, and
+              environmental conditions to support
+              safe food storage operations.
+            </p>
+
+          </div>
+
+
+          <div className="hero-visual">
+
+            <div className="hero-fruit">
+              🌡️
+            </div>
+
+            <div className="fresh-ring">
+
+              <span>
+                HEALTH
+              </span>
+
             </div>
 
           </div>
@@ -273,5 +754,6 @@ function WarehouseDashboard({
     </div>
   );
 }
+
 
 export default WarehouseDashboard;

@@ -7,7 +7,7 @@
 import json
 import math
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import cv2
@@ -121,10 +121,7 @@ def safe_float(value, default=None):
 
         return float(value)
 
-    except (
-        TypeError,
-        ValueError,
-    ):
+    except (TypeError, ValueError):
         return default
 
 
@@ -145,6 +142,118 @@ def safe_date(value):
             return None
 
     return None
+
+
+def normalize_text(value):
+    """
+    Normalize text for comparisons without changing the
+    original value returned to the frontend.
+    """
+    if value is None:
+        return ""
+
+    return (
+        str(value)
+        .strip()
+        .lower()
+        .replace("_", " ")
+        .replace("-", " ")
+        .replace("&", " and ")
+    )
+
+
+def normalize_food_name(food_name):
+    if not food_name:
+        return "other"
+
+    normalized = normalize_text(food_name)
+
+    return " ".join(normalized.split())
+
+
+def normalize_category(category):
+    """
+    Normalize frontend/PDF category names into internal groups.
+
+    Frontend examples:
+        Fruits
+        Vegetables
+        Dairy Products
+        Meat & Poultry
+        Seafood
+        Bakery Products
+        Packaged Foods
+        Beverages
+        Other
+    """
+
+    normalized = normalize_text(category)
+
+    normalized = " ".join(
+        normalized.split()
+    )
+
+    category_aliases = {
+        "fruit": "fruits",
+        "fruits": "fruits",
+
+        "vegetable": "vegetables",
+        "vegetables": "vegetables",
+
+        "dairy": "dairy",
+        "dairy product": "dairy",
+        "dairy products": "dairy",
+
+        "meat": "meat",
+        "meat poultry": "meat",
+        "meat and poultry": "meat",
+        "meat poultry products": "meat",
+
+        "seafood": "seafood",
+        "sea food": "seafood",
+
+        "bakery": "bakery",
+        "bakery product": "bakery",
+        "bakery products": "bakery",
+
+        "packaged food": "packaged foods",
+        "packaged foods": "packaged foods",
+
+        "beverage": "beverages",
+        "beverages": "beverages",
+
+        "other": "other",
+    }
+
+    if normalized in category_aliases:
+        return category_aliases[normalized]
+
+    # Defensive matching for slightly different frontend values.
+    if "fruit" in normalized:
+        return "fruits"
+
+    if "vegetable" in normalized:
+        return "vegetables"
+
+    if "dairy" in normalized:
+        return "dairy"
+
+    if "meat" in normalized or "poultry" in normalized:
+        return "meat"
+
+    if "seafood" in normalized or "sea food" in normalized:
+        return "seafood"
+
+    if "bakery" in normalized:
+        return "bakery"
+
+    if "packaged" in normalized:
+        return "packaged foods"
+
+    if "beverage" in normalized:
+        return "beverages"
+
+    return "other"
 
 
 def largest_contour(contours):
@@ -401,7 +510,6 @@ def build_food_mask(image):
         )
 
     h, w = gray.shape
-
     image_area = h * w
 
     center_x = w / 2.0
@@ -410,19 +518,15 @@ def build_food_mask(image):
     scored = []
 
     for contour in contours:
-        area = cv2.contourArea(
-            contour
-        )
+        area = cv2.contourArea(contour)
 
         if area < (
             image_area * 0.01
         ):
             continue
 
-        x, y, cw, ch = (
-            cv2.boundingRect(
-                contour
-            )
+        x, y, cw, ch = cv2.boundingRect(
+            contour
         )
 
         cx = (
@@ -550,9 +654,7 @@ def analyse_visual_condition(
         cv2.COLOR_BGR2GRAY,
     )
 
-    food_mask = build_food_mask(
-        image
-    )
+    food_mask = build_food_mask(image)
 
     food_pixels = max(
         int(
@@ -582,13 +684,8 @@ def analyse_visual_condition(
         mask=food_mask,
     )[:3]
 
-    saturation_mean = (
-        mean_hsv[1]
-    )
-
-    brightness_mean = (
-        mean_hsv[2]
-    )
+    saturation_mean = mean_hsv[1]
+    brightness_mean = mean_hsv[2]
 
     color_variation = (
         float(
@@ -605,16 +702,12 @@ def analyse_visual_condition(
     color_score = clamp(
         100.0
         - abs(
-            float(
-                brightness_mean
-            )
+            float(brightness_mean)
             - 145.0
         )
         * 0.18
         - abs(
-            float(
-                saturation_mean
-            )
+            float(saturation_mean)
             - 105.0
         )
         * 0.20
@@ -662,18 +755,14 @@ def analyse_visual_condition(
         ),
     )
 
-    degradation_mask = (
-        cv2.bitwise_or(
-            brown_mask,
-            dark_mask,
-        )
+    degradation_mask = cv2.bitwise_or(
+        brown_mask,
+        dark_mask,
     )
 
-    degradation_fraction = (
-        mask_fraction(
-            degradation_mask,
-            food_mask,
-        )
+    degradation_fraction = mask_fraction(
+        degradation_mask,
+        food_mask,
     )
 
     degradation_score = clamp(
@@ -760,17 +849,16 @@ def analyse_visual_condition(
         local_blur,
     )
 
-    local_texture_fraction = (
-        mask_fraction(
-            (
-                local_difference
-                > 18
-            ).astype(
-                np.uint8
-            )
-            * 255,
-            food_mask,
-        )
+    surface_change_mask = (
+        (
+            local_difference > 18
+        ).astype(np.uint8)
+        * 255
+    )
+
+    local_texture_fraction = mask_fraction(
+        surface_change_mask,
+        food_mask,
     )
 
     surface_change_score = clamp(
@@ -796,13 +884,7 @@ def analyse_visual_condition(
 
     surface_boxes = contour_boxes(
         cv2.bitwise_and(
-            (
-                local_difference
-                > 18
-            ).astype(
-                np.uint8
-            )
-            * 255,
+            surface_change_mask,
             food_mask,
         ),
         min_area=max(
@@ -848,15 +930,13 @@ def analyse_visual_condition(
         mold_green_gray,
     )
 
-    mold_candidate = (
-        cv2.morphologyEx(
-            mold_candidate,
-            cv2.MORPH_OPEN,
-            np.ones(
-                (5, 5),
-                np.uint8,
-            ),
-        )
+    mold_candidate = cv2.morphologyEx(
+        mold_candidate,
+        cv2.MORPH_OPEN,
+        np.ones(
+            (5, 5),
+            np.uint8,
+        ),
     )
 
     mold_fraction = mask_fraction(
@@ -932,22 +1012,18 @@ def analyse_visual_condition(
         bruising_purple,
     )
 
-    bruising_mask = (
-        cv2.morphologyEx(
-            bruising_mask,
-            cv2.MORPH_OPEN,
-            np.ones(
-                (5, 5),
-                np.uint8,
-            ),
-        )
+    bruising_mask = cv2.morphologyEx(
+        bruising_mask,
+        cv2.MORPH_OPEN,
+        np.ones(
+            (5, 5),
+            np.uint8,
+        ),
     )
 
-    bruising_fraction = (
-        mask_fraction(
-            bruising_mask,
-            food_mask,
-        )
+    bruising_fraction = mask_fraction(
+        bruising_mask,
+        food_mask,
     )
 
     bruising_boxes = contour_boxes(
@@ -1016,11 +1092,9 @@ def analyse_visual_condition(
         max_items=5,
     )
 
-    damage_fraction = (
-        mask_fraction(
-            damage_edges,
-            food_mask,
-        )
+    damage_fraction = mask_fraction(
+        damage_edges,
+        food_mask,
     )
 
     physical_damage_score = clamp(
@@ -1043,16 +1117,11 @@ def analyse_visual_condition(
     # ========================================================
 
     spoilage_score = clamp(
-        degradation_score
-        * 0.30
-        + mold_score
-        * 0.30
-        + bruising_score
-        * 0.15
-        + surface_change_score
-        * 0.15
-        + physical_damage_score
-        * 0.10
+        degradation_score * 0.30
+        + mold_score * 0.30
+        + bruising_score * 0.15
+        + surface_change_score * 0.15
+        + physical_damage_score * 0.10
     )
 
     if spoilage_score < 20:
@@ -1080,8 +1149,7 @@ def analyse_visual_condition(
     # ========================================================
 
     visual_condition_score = clamp(
-        100.0
-        - spoilage_score
+        100.0 - spoilage_score
     )
 
     visual_condition = (
@@ -1144,7 +1212,6 @@ def analyse_visual_condition(
     ]
 
     marker_number = 1
-
     marker_legend = []
 
     for definition in marker_definitions:
@@ -1154,7 +1221,6 @@ def analyse_visual_condition(
             marker_legend.append(
                 f"{definition['short']}: none"
             )
-
             continue
 
         marker_legend.append(
@@ -1163,7 +1229,6 @@ def analyse_visual_condition(
 
         for box in boxes[:3]:
             x, y, bw, bh = box
-
             color = definition["color"]
 
             cv2.rectangle(
@@ -1199,20 +1264,16 @@ def analyse_visual_condition(
             (
                 tw,
                 th,
-            ), baseline = (
-                cv2.getTextSize(
-                    label,
-                    font,
-                    font_scale,
-                    thickness,
-                )
+            ), baseline = cv2.getTextSize(
+                label,
+                font,
+                font_scale,
+                thickness,
             )
 
             label_y = max(
                 y,
-                th
-                + baseline
-                + 4,
+                th + baseline + 4,
             )
 
             cv2.rectangle(
@@ -1227,9 +1288,7 @@ def analyse_visual_condition(
                 (
                     min(
                         w - 1,
-                        x
-                        + tw
-                        + 12,
+                        x + tw + 12,
                     ),
                     label_y + 2,
                 ),
@@ -1246,11 +1305,7 @@ def analyse_visual_condition(
                 ),
                 font,
                 font_scale,
-                (
-                    255,
-                    255,
-                    255,
-                ),
+                (255, 255, 255),
                 thickness,
                 cv2.LINE_AA,
             )
@@ -1303,11 +1358,7 @@ def analyse_visual_condition(
                 w / 1200.0,
             ),
         ),
-        (
-            255,
-            255,
-            255,
-        ),
+        (255, 255, 255),
         2,
         cv2.LINE_AA,
     )
@@ -1330,11 +1381,7 @@ def analyse_visual_condition(
                 w / 1500.0,
             ),
         ),
-        (
-            220,
-            255,
-            235,
-        ),
+        (220, 255, 235),
         1,
         cv2.LINE_AA,
     )
@@ -1348,9 +1395,7 @@ def analyse_visual_condition(
         int(h * 0.13),
     )
 
-    legend_y = (
-        h - legend_height
-    )
+    legend_y = h - legend_height
 
     overlay = annotated.copy()
 
@@ -1381,10 +1426,7 @@ def analyse_visual_condition(
     )
 
     first_line = legend_text[:120]
-
-    second_line = legend_text[
-        120:240
-    ]
+    second_line = legend_text[120:240]
 
     cv2.putText(
         annotated,
@@ -1401,11 +1443,7 @@ def analyse_visual_condition(
                 w / 1600.0,
             ),
         ),
-        (
-            235,
-            255,
-            242,
-        ),
+        (235, 255, 242),
         1,
         cv2.LINE_AA,
     )
@@ -1426,11 +1464,7 @@ def analyse_visual_condition(
                     w / 1600.0,
                 ),
             ),
-            (
-                235,
-                255,
-                242,
-            ),
+            (235, 255, 242),
             1,
             cv2.LINE_AA,
         )
@@ -1452,9 +1486,7 @@ def analyse_visual_condition(
         str(annotated_path),
         annotated,
         [
-            int(
-                cv2.IMWRITE_JPEG_QUALITY
-            ),
+            int(cv2.IMWRITE_JPEG_QUALITY),
             92,
         ],
     ):
@@ -1566,9 +1598,7 @@ def analyse_visual_condition(
             2,
         ),
 
-        "physical_damage": (
-            physical_damage_status
-        ),
+        "physical_damage": physical_damage_status,
 
         "physical_damage_detection": (
             physical_damage_status
@@ -1642,22 +1672,13 @@ def analyse_visual_condition(
 
 DEFAULT_SHELF_LIFE_DAYS = {
     "fruits": 7.0,
-    "fruit": 7.0,
-
     "vegetables": 7.0,
-    "vegetable": 7.0,
-
     "dairy": 7.0,
-
     "meat": 4.0,
-
     "seafood": 3.0,
-
     "bakery": 5.0,
-
+    "packaged foods": 30.0,
     "beverages": 14.0,
-    "beverage": 14.0,
-
     "other": 7.0,
 }
 
@@ -1713,39 +1734,12 @@ FOOD_SHELF_LIFE_DAYS = {
 # FOOD NAME NORMALIZATION
 # ============================================================
 
-def normalize_food_name(
-    food_name,
-):
-    if not food_name:
-        return "other"
-
-    normalized = (
-        str(food_name)
-        .strip()
-        .lower()
-    )
-
-    normalized = (
-        normalized
-        .replace("_", " ")
-        .replace("-", " ")
-    )
-
-    return normalized
-
-
-# ============================================================
-# BASE SHELF-LIFE ESTIMATION
-# ============================================================
-
 def get_base_shelf_life_days(
     food_name,
     category=None,
 ):
-    normalized_name = (
-        normalize_food_name(
-            food_name
-        )
+    normalized_name = normalize_food_name(
+        food_name
     )
 
     if normalized_name in FOOD_SHELF_LIFE_DAYS:
@@ -1753,17 +1747,13 @@ def get_base_shelf_life_days(
             normalized_name
         ]
 
-    normalized_category = (
-        str(category or "other")
-        .strip()
-        .lower()
+    normalized_category = normalize_category(
+        category
     )
 
     return DEFAULT_SHELF_LIFE_DAYS.get(
         normalized_category,
-        DEFAULT_SHELF_LIFE_DAYS[
-            "other"
-        ],
+        DEFAULT_SHELF_LIFE_DAYS["other"],
     )
 
 
@@ -1782,11 +1772,11 @@ def calculate_storage_intelligence(
     light_exposure=None,
 ):
     """
-    Estimate storage compliance using the available food/storage
+    Estimate storage compliance using available food/storage
     parameters.
 
-    This is a rule-based intelligence layer, not a replacement for
-    physical IoT sensors.
+    This is a rule-based intelligence layer, not a replacement
+    for physical IoT sensors.
     """
 
     temperature = safe_float(
@@ -1802,28 +1792,20 @@ def calculate_storage_intelligence(
         0.0,
     )
 
-    packaging = (
-        str(packaging_type or "")
-        .strip()
-        .lower()
+    packaging = normalize_text(
+        packaging_type
     )
 
-    circulation = (
-        str(air_circulation or "")
-        .strip()
-        .lower()
+    circulation = normalize_text(
+        air_circulation
     )
 
-    light = (
-        str(light_exposure or "")
-        .strip()
-        .lower()
+    light = normalize_text(
+        light_exposure
     )
 
-    category_normalized = (
-        str(category or "other")
-        .strip()
-        .lower()
+    category_normalized = normalize_category(
+        category
     )
 
     # --------------------------------------------------------
@@ -1841,23 +1823,25 @@ def calculate_storage_intelligence(
         ideal_min = 1.0
         ideal_max = 7.0
 
-    elif category_normalized in {
-        "fruits",
-        "fruit",
-    }:
+    elif category_normalized == "fruits":
         ideal_min = 2.0
         ideal_max = 12.0
 
-    elif category_normalized in {
-        "vegetables",
-        "vegetable",
-    }:
+    elif category_normalized == "vegetables":
         ideal_min = 2.0
         ideal_max = 10.0
 
     elif category_normalized == "bakery":
         ideal_min = 15.0
         ideal_max = 25.0
+
+    elif category_normalized == "packaged foods":
+        ideal_min = 10.0
+        ideal_max = 25.0
+
+    elif category_normalized == "beverages":
+        ideal_min = 2.0
+        ideal_max = 10.0
 
     else:
         ideal_min = 5.0
@@ -1874,29 +1858,17 @@ def calculate_storage_intelligence(
         )
 
     else:
-        if (
-            ideal_min
-            <= temperature
-            <= ideal_max
-        ):
+        if ideal_min <= temperature <= ideal_max:
             temperature_score = 100.0
             temperature_status = (
                 "Temperature within recommended range"
             )
 
-        elif (
-            temperature
-            < ideal_min
-        ):
-            difference = (
-                ideal_min
-                - temperature
-            )
+        elif temperature < ideal_min:
+            difference = ideal_min - temperature
 
             temperature_score = clamp(
-                100.0
-                - difference
-                * 12.0
+                100.0 - difference * 12.0
             )
 
             temperature_status = (
@@ -1904,15 +1876,10 @@ def calculate_storage_intelligence(
             )
 
         else:
-            difference = (
-                temperature
-                - ideal_max
-            )
+            difference = temperature - ideal_max
 
             temperature_score = clamp(
-                100.0
-                - difference
-                * 12.0
+                100.0 - difference * 12.0
             )
 
             temperature_status = (
@@ -1932,9 +1899,7 @@ def calculate_storage_intelligence(
     else:
         if category_normalized in {
             "fruits",
-            "fruit",
             "vegetables",
-            "vegetable",
         }:
             humidity_min = 50.0
             humidity_max = 90.0
@@ -1954,11 +1919,7 @@ def calculate_storage_intelligence(
             humidity_min = 30.0
             humidity_max = 70.0
 
-        if (
-            humidity_min
-            <= humidity
-            <= humidity_max
-        ):
+        if humidity_min <= humidity <= humidity_max:
             humidity_score = 100.0
             humidity_status = (
                 "Humidity within recommended range"
@@ -1966,20 +1927,12 @@ def calculate_storage_intelligence(
 
         else:
             if humidity < humidity_min:
-                difference = (
-                    humidity_min
-                    - humidity
-                )
+                difference = humidity_min - humidity
             else:
-                difference = (
-                    humidity
-                    - humidity_max
-                )
+                difference = humidity - humidity_max
 
             humidity_score = clamp(
-                100.0
-                - difference
-                * 1.5
+                100.0 - difference * 1.5
             )
 
             humidity_status = (
@@ -2049,7 +2002,6 @@ def calculate_storage_intelligence(
 
     if not circulation:
         circulation_score = 70.0
-
         circulation_status = (
             "Air circulation not provided"
         )
@@ -2064,7 +2016,6 @@ def calculate_storage_intelligence(
         ]
     ):
         circulation_score = 100.0
-
         circulation_status = (
             "Adequate air circulation"
         )
@@ -2079,14 +2030,12 @@ def calculate_storage_intelligence(
         ]
     ):
         circulation_score = 45.0
-
         circulation_status = (
             "Poor air circulation"
         )
 
     else:
         circulation_score = 75.0
-
         circulation_status = (
             "Moderate air circulation"
         )
@@ -2097,7 +2046,6 @@ def calculate_storage_intelligence(
 
     if not light:
         light_score = 70.0
-
         light_status = (
             "Light exposure not provided"
         )
@@ -2112,7 +2060,6 @@ def calculate_storage_intelligence(
         ]
     ):
         light_score = 100.0
-
         light_status = (
             "Low light exposure"
         )
@@ -2126,14 +2073,12 @@ def calculate_storage_intelligence(
         ]
     ):
         light_score = 45.0
-
         light_status = (
             "High/direct light exposure"
         )
 
     else:
         light_score = 80.0
-
         light_status = (
             "Moderate light exposure"
         )
@@ -2142,16 +2087,13 @@ def calculate_storage_intelligence(
     # Storage duration score
     # --------------------------------------------------------
 
-    base_shelf_life = (
-        get_base_shelf_life_days(
-            food_name,
-            category,
-        )
+    base_shelf_life = get_base_shelf_life_days(
+        food_name,
+        category,
     )
 
     if duration <= 0:
         duration_score = 100.0
-
         duration_status = (
             "Storage duration not yet provided"
         )
@@ -2228,11 +2170,27 @@ def calculate_storage_intelligence(
 
     return {
         "storage_temperature": temperature,
+
         "storage_humidity": humidity,
-        "packaging_type": packaging_type,
+
+        # Preserve the original user-facing value.
+        "packaging_type": (
+            packaging_type
+        ),
+
         "storage_duration": duration,
-        "air_circulation": air_circulation,
-        "light_exposure": light_exposure,
+
+        "air_circulation": (
+            air_circulation
+        ),
+
+        "light_exposure": (
+            light_exposure
+        ),
+
+        "normalized_category": (
+            category_normalized
+        ),
 
         "temperature_score": round(
             temperature_score,
@@ -2352,18 +2310,14 @@ def calculate_shelf_life_prediction(
         ]
     )
 
-    freshness_score_value = (
-        safe_float(
-            freshness_score,
-            70.0,
-        )
+    freshness_score_value = safe_float(
+        freshness_score,
+        70.0,
     )
 
-    visual_score_value = (
-        safe_float(
-            visual_condition_score,
-            freshness_score_value,
-        )
+    visual_score_value = safe_float(
+        visual_condition_score,
+        freshness_score_value,
     )
 
     storage_score_value = float(
@@ -2377,8 +2331,7 @@ def calculate_shelf_life_prediction(
     # --------------------------------------------------------
 
     freshness_factor = clamp(
-        freshness_score_value
-        / 100.0,
+        freshness_score_value / 100.0,
         0.35,
         1.0,
     )
@@ -2388,8 +2341,7 @@ def calculate_shelf_life_prediction(
     # --------------------------------------------------------
 
     visual_factor = clamp(
-        visual_score_value
-        / 100.0,
+        visual_score_value / 100.0,
         0.35,
         1.0,
     )
@@ -2399,8 +2351,7 @@ def calculate_shelf_life_prediction(
     # --------------------------------------------------------
 
     storage_factor = clamp(
-        storage_score_value
-        / 100.0,
+        storage_score_value / 100.0,
         0.35,
         1.0,
     )
@@ -2425,8 +2376,7 @@ def calculate_shelf_life_prediction(
         product_age_days = max(
             0,
             (
-                today
-                - manufacturing
+                today - manufacturing
             ).days,
         )
 
@@ -2483,14 +2433,10 @@ def calculate_shelf_life_prediction(
     # --------------------------------------------------------
 
     weighted_condition = (
-        freshness_factor
-        * 0.40
-        + visual_factor
-        * 0.25
-        + storage_factor
-        * 0.25
-        + age_factor
-        * 0.10
+        freshness_factor * 0.40
+        + visual_factor * 0.25
+        + storage_factor * 0.25
+        + age_factor * 0.10
     )
 
     estimated_total_life = (
@@ -2499,7 +2445,6 @@ def calculate_shelf_life_prediction(
         * freshness_multiplier
     )
 
-    # Minimum sensible value
     estimated_total_life = max(
         0.0,
         estimated_total_life,
@@ -2521,7 +2466,7 @@ def calculate_shelf_life_prediction(
     )
 
     # --------------------------------------------------------
-    # Known expiry date has priority when supplied
+    # Known expiry date has priority
     # --------------------------------------------------------
 
     expiry_remaining_days = None
@@ -2530,20 +2475,16 @@ def calculate_shelf_life_prediction(
         expiry_remaining_days = max(
             0,
             (
-                expiry
-                - today
+                expiry - today
             ).days,
         )
 
-        # If known expiry is earlier, use it.
         if (
             remaining_shelf_life
             > expiry_remaining_days
         ):
-            remaining_shelf_life = (
-                float(
-                    expiry_remaining_days
-                )
+            remaining_shelf_life = float(
+                expiry_remaining_days
             )
 
     # --------------------------------------------------------
@@ -2552,9 +2493,7 @@ def calculate_shelf_life_prediction(
 
     forecast_expiry_date = (
         today
-        + __import__(
-            "datetime"
-        ).timedelta(
+        + timedelta(
             days=max(
                 0,
                 int(
@@ -2577,8 +2516,6 @@ def calculate_shelf_life_prediction(
     model_confidence_component = clamp(
         freshness_score_value
     )
-
-    input_completeness = 0.0
 
     input_count = 0
 
@@ -2611,12 +2548,9 @@ def calculate_shelf_life_prediction(
     )
 
     shelf_life_confidence = clamp(
-        model_confidence_component
-        * 0.45
-        + storage_score_value
-        * 0.30
-        + visual_score_value
-        * 0.15
+        model_confidence_component * 0.45
+        + storage_score_value * 0.30
+        + visual_score_value * 0.15
         + input_completeness
         * 100.0
         * 0.10
@@ -2697,9 +2631,7 @@ def calculate_shelf_life_prediction(
             else None
         ),
 
-        "product_age_days": (
-            product_age_days
-        ),
+        "product_age_days": product_age_days,
 
         "shelf_life_confidence": round(
             shelf_life_confidence,
@@ -2814,8 +2746,7 @@ def calculate_shelf_life_score(
     return round(
         clamp(
             (
-                remaining
-                / baseline
+                remaining / baseline
             )
             * 100.0
         ),
@@ -2873,7 +2804,7 @@ def generate_recommendations(
     storage_result,
 ):
     """
-    Milestone-3 AI-style recommendation engine.
+    Milestone-3 recommendation engine.
 
     Generates:
         - Storage recommendations
@@ -2886,13 +2817,9 @@ def generate_recommendations(
     recommendations = []
 
     storage_recommendations = []
-
     consumption_recommendations = []
-
     inventory_rotation_recommendations = []
-
     waste_reduction_recommendations = []
-
     quality_improvement_recommendations = []
 
     storage_score = float(
@@ -2907,19 +2834,9 @@ def generate_recommendations(
         ]
     )
 
-    shelf_life_risk = (
-        shelf_life_result[
-            "shelf_life_risk"
-        ]
-    )
-
-    temperature = storage_result.get(
-        "storage_temperature"
-    )
-
-    humidity = storage_result.get(
-        "storage_humidity"
-    )
+    shelf_life_risk = shelf_life_result[
+        "shelf_life_risk"
+    ]
 
     # ========================================================
     # STORAGE RECOMMENDATIONS
@@ -3058,10 +2975,7 @@ def generate_recommendations(
     # QUALITY IMPROVEMENT
     # ========================================================
 
-    if (
-        visual_condition_score
-        < 70
-    ):
+    if visual_condition_score < 70:
         quality_improvement_recommendations.append(
             "Increase inspection frequency because visible quality changes have been detected."
         )
@@ -3107,7 +3021,7 @@ def generate_recommendations(
         quality_improvement_recommendations
     )
 
-    # Remove duplicates while preserving order
+    # Remove duplicates while preserving order.
     unique_recommendations = []
 
     seen = set()
@@ -3116,10 +3030,7 @@ def generate_recommendations(
         if recommendation in seen:
             continue
 
-        seen.add(
-            recommendation
-        )
-
+        seen.add(recommendation)
         unique_recommendations.append(
             recommendation
         )
@@ -3178,9 +3089,7 @@ def generate_recommendations(
             recommendation_priority
         ),
 
-        "recommendation_summary": (
-            summary
-        ),
+        "recommendation_summary": summary,
 
         "recommendations": (
             unique_recommendations
@@ -3237,9 +3146,7 @@ def image_path_for_response(
     OS filesystem paths.
     """
 
-    path = Path(
-        image_path
-    )
+    path = Path(image_path)
 
     try:
         relative = (
@@ -3327,7 +3234,6 @@ def predict_freshness(
 
             "image_analysis": {},
 
-            # Milestone 3 defaults
             "remaining_shelf_life": None,
 
             "shelf_life_confidence": None,
@@ -3426,11 +3332,9 @@ def predict_freshness(
         )
     )
 
-    predicted_class = (
-        CLASS_NAMES[
-            predicted_index
-        ]
-    )
+    predicted_class = CLASS_NAMES[
+        predicted_index
+    ]
 
     confidence = float(
         probabilities[
@@ -3439,11 +3343,9 @@ def predict_freshness(
         * 100
     )
 
-    freshness_score = (
-        calculate_freshness_score(
-            probabilities,
-            predicted_class,
-        )
+    freshness_score = calculate_freshness_score(
+        probabilities,
+        predicted_class,
     )
 
     status_map = {
@@ -3452,11 +3354,9 @@ def predict_freshness(
         "rotten": "Rotten",
     }
 
-    freshness_status = (
-        status_map.get(
-            predicted_class,
-            "Pending",
-        )
+    freshness_status = status_map.get(
+        predicted_class,
+        "Pending",
     )
 
     # ========================================================
@@ -3470,14 +3370,13 @@ def predict_freshness(
 
     if cv_image is None:
         raise RuntimeError(
-            f"OpenCV could not read the food image: {image_file}"
+            "OpenCV could not read the food image: "
+            f"{image_file}"
         )
 
-    image_analysis = (
-        analyse_visual_condition(
-            cv_image,
-            food_name,
-        )
+    image_analysis = analyse_visual_condition(
+        cv_image,
+        food_name,
     )
 
     original_relative_path = (
@@ -3491,6 +3390,14 @@ def predict_freshness(
     ] = original_relative_path
 
     # ========================================================
+    # NORMALIZED CATEGORY
+    # ========================================================
+
+    normalized_category = normalize_category(
+        category
+    )
+
+    # ========================================================
     # MILESTONE 3
     # STORAGE INTELLIGENCE
     # ========================================================
@@ -3499,24 +3406,12 @@ def predict_freshness(
         calculate_storage_intelligence(
             food_name=food_name,
             category=category,
-            storage_temperature=(
-                storage_temperature
-            ),
-            storage_humidity=(
-                storage_humidity
-            ),
-            packaging_type=(
-                packaging_type
-            ),
-            storage_duration=(
-                storage_duration
-            ),
-            air_circulation=(
-                air_circulation
-            ),
-            light_exposure=(
-                light_exposure
-            ),
+            storage_temperature=storage_temperature,
+            storage_humidity=storage_humidity,
+            packaging_type=packaging_type,
+            storage_duration=storage_duration,
+            air_circulation=air_circulation,
+            light_exposure=light_exposure,
         )
     )
 
@@ -3529,41 +3424,21 @@ def predict_freshness(
         calculate_shelf_life_prediction(
             food_name=food_name,
             category=category,
-            freshness_status=(
-                freshness_status
-            ),
-            freshness_score=(
-                freshness_score
-            ),
+            freshness_status=freshness_status,
+            freshness_score=freshness_score,
             visual_condition_score=(
                 image_analysis[
                     "visual_condition_score"
                 ]
             ),
-            storage_temperature=(
-                storage_temperature
-            ),
-            storage_humidity=(
-                storage_humidity
-            ),
-            packaging_type=(
-                packaging_type
-            ),
-            storage_duration=(
-                storage_duration
-            ),
-            air_circulation=(
-                air_circulation
-            ),
-            light_exposure=(
-                light_exposure
-            ),
-            manufacturing_date=(
-                manufacturing_date
-            ),
-            expiry_date=(
-                expiry_date
-            ),
+            storage_temperature=storage_temperature,
+            storage_humidity=storage_humidity,
+            packaging_type=packaging_type,
+            storage_duration=storage_duration,
+            air_circulation=air_circulation,
+            light_exposure=light_exposure,
+            manufacturing_date=manufacturing_date,
+            expiry_date=expiry_date,
         )
     )
 
@@ -3636,12 +3511,8 @@ def predict_freshness(
         generate_recommendations(
             food_name=food_name,
             category=category,
-            freshness_status=(
-                freshness_status
-            ),
-            freshness_score=(
-                freshness_score
-            ),
+            freshness_status=freshness_status,
+            freshness_score=freshness_score,
             visual_condition_score=(
                 image_analysis[
                     "visual_condition_score"
@@ -3666,6 +3537,12 @@ def predict_freshness(
         # ----------------------------------------------------
 
         "food_name": food_name,
+
+        "category": category,
+
+        "normalized_category": (
+            normalized_category
+        ),
 
         "freshness_status": (
             freshness_status
@@ -3744,6 +3621,10 @@ def predict_freshness(
             shelf_life_prediction[
                 "shelf_life_status"
             ]
+        ),
+
+        "shelf_life_prediction": (
+            shelf_life_prediction
         ),
 
         # ----------------------------------------------------
@@ -3901,6 +3782,10 @@ def predict_freshness(
 
     print(
         f"Food       : {food_name}"
+    )
+
+    print(
+        f"Category   : {category}"
     )
 
     print(

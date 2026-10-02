@@ -93,20 +93,19 @@ def add_food(
         # ====================================================
         # MILESTONE 3 OUTPUTS
         #
-        # These are initially empty.
-        # They will be populated by the shelf-life /
-        # storage intelligence prediction workflow.
+        # These values are calculated by the prediction
+        # service and sent from the frontend.
         # ====================================================
 
-        remaining_shelf_life=None,
+        remaining_shelf_life=food.remaining_shelf_life,
 
-        shelf_life_confidence=None,
+        shelf_life_confidence=food.shelf_life_confidence,
 
-        shelf_life_risk=None,
+        shelf_life_risk=food.shelf_life_risk,
 
-        storage_compliance_score=None,
+        storage_compliance_score=food.storage_compliance_score,
 
-        overall_health_score=None,
+        overall_health_score=food.overall_health_score,
     )
 
     db.add(new_food)

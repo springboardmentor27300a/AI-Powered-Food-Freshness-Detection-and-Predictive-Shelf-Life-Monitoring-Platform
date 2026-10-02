@@ -1,8 +1,154 @@
+import { useEffect, useState } from "react";
+import { getFoods } from "../api";
+
+
 function RetailDashboard({
   onLogout,
   onProfile,
   onInventory,
+  onReports,
 }) {
+
+  const [foods, setFoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ==========================================================
+  // LOAD INVENTORY
+  // ==========================================================
+
+  useEffect(() => {
+
+    const loadInventory = async () => {
+
+      try {
+
+        setLoading(true);
+
+        const data = await getFoods();
+
+        setFoods(
+          Array.isArray(data)
+            ? data
+            : []
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Retail dashboard inventory loading error:",
+          error
+        );
+
+        setFoods([]);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+    loadInventory();
+
+  }, []);
+
+
+  // ==========================================================
+  // RETAIL ANALYTICS
+  // ==========================================================
+
+  const today = new Date();
+
+  today.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+
+  const sevenDaysFromNow = new Date(
+    today
+  );
+
+  sevenDaysFromNow.setDate(
+    sevenDaysFromNow.getDate() + 7
+  );
+
+
+  const inventoryCount =
+    foods.length;
+
+
+  const shelfLifeAlerts =
+    foods.filter((food) => {
+
+      if (!food?.expiry_date) {
+        return false;
+      }
+
+      const expiryDate =
+        new Date(
+          `${food.expiry_date}T00:00:00`
+        );
+
+      return (
+        expiryDate >= today &&
+        expiryDate <= sevenDaysFromNow
+      );
+
+    }).length;
+
+
+  const wasteCount =
+    foods.filter((food) => {
+
+      const freshness =
+        (
+          food?.freshness_status || ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const isSpoiled =
+        freshness === "spoiled" ||
+        freshness === "rotten";
+
+
+      const isExpired =
+        food?.expiry_date &&
+        new Date(
+          `${food.expiry_date}T00:00:00`
+        ) < today;
+
+
+      return (
+        isSpoiled ||
+        isExpired
+      );
+
+    }).length;
+
+
+  const inventoryValue =
+    loading
+      ? "..."
+      : inventoryCount;
+
+
+  const shelfLifeValue =
+    loading
+      ? "..."
+      : shelfLifeAlerts;
+
+
+  const wasteValue =
+    loading
+      ? "..."
+      : wasteCount;
+
 
   return (
 
@@ -10,6 +156,10 @@ function RetailDashboard({
 
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
+
+      {/* ==========================================================
+          TOPBAR
+      ========================================================== */}
 
       <header className="topbar">
 
@@ -36,6 +186,19 @@ function RetailDashboard({
 
         <div className="topbar-right">
 
+          {/* REPORTS */}
+
+          <button
+            className="secondary-button"
+            onClick={onReports}
+            type="button"
+          >
+            📊 Reports
+          </button>
+
+
+          {/* PROFILE */}
+
           <button
             className="secondary-button"
             onClick={onProfile}
@@ -43,6 +206,9 @@ function RetailDashboard({
           >
             Profile
           </button>
+
+
+          {/* LOGOUT */}
 
           <button
             className="logout-button"
@@ -57,7 +223,16 @@ function RetailDashboard({
       </header>
 
 
+      {/* ==========================================================
+          MAIN CONTENT
+      ========================================================== */}
+
       <main className="dashboard-content">
+
+
+        {/* ========================================================
+            HERO
+        ======================================================== */}
 
         <section className="dashboard-hero">
 
@@ -81,6 +256,7 @@ function RetailDashboard({
               and waste reduction insights.
             </p>
 
+
             <div className="hero-actions">
 
               <button
@@ -91,10 +267,21 @@ function RetailDashboard({
                 View Inventory →
               </button>
 
+
+              <button
+                className="secondary-button"
+                onClick={onReports}
+                type="button"
+              >
+                View Reports
+              </button>
+
             </div>
 
           </div>
 
+
+          {/* HERO VISUAL */}
 
           <div className="hero-visual">
 
@@ -103,9 +290,11 @@ function RetailDashboard({
             </div>
 
             <div className="fresh-ring">
+
               <span>
                 RETAIL
               </span>
+
             </div>
 
           </div>
@@ -113,9 +302,32 @@ function RetailDashboard({
         </section>
 
 
+
+        {/* ========================================================
+            ROLE STATS
+        ======================================================== */}
+
         <section className="stats-grid">
 
-          <div className="stat-card">
+
+          {/* INVENTORY */}
+
+          <div
+            className="stat-card"
+            onClick={onInventory}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onInventory();
+              }
+
+            }}
+          >
 
             <div className="stat-icon green">
               📦
@@ -128,7 +340,7 @@ function RetailDashboard({
               </p>
 
               <strong>
-                Active
+                {inventoryValue}
               </strong>
 
             </div>
@@ -136,7 +348,24 @@ function RetailDashboard({
           </div>
 
 
-          <div className="stat-card">
+          {/* SHELF LIFE */}
+
+          <div
+            className="stat-card"
+            onClick={onReports}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onReports();
+              }
+
+            }}
+          >
 
             <div className="stat-icon yellow">
               ⏳
@@ -149,7 +378,7 @@ function RetailDashboard({
               </p>
 
               <strong>
-                Monitor
+                {shelfLifeValue}
               </strong>
 
             </div>
@@ -157,7 +386,24 @@ function RetailDashboard({
           </div>
 
 
-          <div className="stat-card">
+          {/* WASTE */}
+
+          <div
+            className="stat-card"
+            onClick={onReports}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+
+              if (
+                event.key === "Enter" ||
+                event.key === " "
+              ) {
+                onReports();
+              }
+
+            }}
+          >
 
             <div className="stat-icon mint">
               ♻️
@@ -170,7 +416,7 @@ function RetailDashboard({
               </p>
 
               <strong>
-                Available
+                {wasteValue}
               </strong>
 
             </div>
@@ -180,7 +426,13 @@ function RetailDashboard({
         </section>
 
 
+
+        {/* ========================================================
+            RETAIL OPERATIONS
+        ======================================================== */}
+
         <section className="action-section">
+
 
           <div className="section-heading">
 
@@ -203,7 +455,13 @@ function RetailDashboard({
           </div>
 
 
+
           <div className="action-grid">
+
+
+            {/* ====================================================
+                INVENTORY QUALITY
+            ==================================================== */}
 
             <button
               className="action-card inventory-card"
@@ -239,7 +497,16 @@ function RetailDashboard({
             </button>
 
 
-            <div className="action-card">
+
+            {/* ====================================================
+                SHELF LIFE ALERTS
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onReports}
+              type="button"
+            >
 
               <div className="action-illustration">
                 ⚠️📅
@@ -262,6 +529,148 @@ function RetailDashboard({
 
               </div>
 
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+
+
+            {/* ====================================================
+                WASTE REDUCTION
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onReports}
+              type="button"
+            >
+
+              <div className="action-illustration">
+                ♻️📈
+              </div>
+
+              <div>
+
+                <span className="action-label">
+                  INSIGHTS
+                </span>
+
+                <h3>
+                  Waste Reduction
+                </h3>
+
+                <p>
+                  Review waste reduction
+                  insights and food quality trends.
+                </p>
+
+              </div>
+
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+
+
+            {/* ====================================================
+                QUALITY REPORTING
+            ==================================================== */}
+
+            <button
+              className="action-card"
+              onClick={onReports}
+              type="button"
+            >
+
+              <div className="action-illustration">
+                📊🥦
+              </div>
+
+              <div>
+
+                <span className="action-label">
+                  REPORTING
+                </span>
+
+                <h3>
+                  Inventory Quality
+                </h3>
+
+                <p>
+                  Review freshness,
+                  shelf-life, and inventory quality reports.
+                </p>
+
+              </div>
+
+              <span className="action-arrow">
+                →
+              </span>
+
+            </button>
+
+          </div>
+
+        </section>
+
+
+
+        {/* ========================================================
+            RETAIL ROLE INFORMATION
+        ======================================================== */}
+
+        <section
+          className="dashboard-hero"
+          style={{
+            marginTop: "28px",
+            minHeight: "auto",
+          }}
+        >
+
+          <div className="hero-copy">
+
+            <span className="mini-label">
+              RETAIL MANAGER INSIGHTS
+            </span>
+
+            <h2
+              style={{
+                marginBottom: "10px",
+              }}
+            >
+              Make smarter
+              <br />
+              <span>
+                inventory decisions.
+              </span>
+            </h2>
+
+            <p className="dashboard-subtitle">
+              Use freshness information, shelf-life
+              monitoring, inventory quality data, and
+              waste reduction insights to support
+              retail operations.
+            </p>
+
+          </div>
+
+
+          <div className="hero-visual">
+
+            <div className="hero-fruit">
+              📊
+            </div>
+
+            <div className="fresh-ring">
+
+              <span>
+                INSIGHTS
+              </span>
+
             </div>
 
           </div>
@@ -273,5 +682,6 @@ function RetailDashboard({
     </div>
   );
 }
+
 
 export default RetailDashboard;

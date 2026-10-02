@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   getFoods,
   deleteFood,
@@ -22,6 +23,7 @@ function getFoodEmoji(category, foodName) {
   // ==========================================================
 
   const foodIcons = {
+
     // Fruits
     apple: "🍎",
     banana: "🍌",
@@ -129,8 +131,7 @@ function getFoodEmoji(category, foodName) {
   // ==========================================================
 
   for (
-    const [food, icon]
-    of Object.entries(foodIcons)
+    const [food, icon] of Object.entries(foodIcons)
   ) {
     if (foodValue.includes(food)) {
       return icon;
@@ -142,21 +143,15 @@ function getFoodEmoji(category, foodName) {
   // CATEGORY BASED FALLBACK
   // ==========================================================
 
-  if (
-    categoryValue.includes("fruit")
-  ) {
+  if (categoryValue.includes("fruit")) {
     return "🍎";
   }
 
-  if (
-    categoryValue.includes("vegetable")
-  ) {
+  if (categoryValue.includes("vegetable")) {
     return "🥦";
   }
 
-  if (
-    categoryValue.includes("dairy")
-  ) {
+  if (categoryValue.includes("dairy")) {
     return "🥛";
   }
 
@@ -167,27 +162,19 @@ function getFoodEmoji(category, foodName) {
     return "🥩";
   }
 
-  if (
-    categoryValue.includes("seafood")
-  ) {
+  if (categoryValue.includes("seafood")) {
     return "🐟";
   }
 
-  if (
-    categoryValue.includes("bakery")
-  ) {
+  if (categoryValue.includes("bakery")) {
     return "🥖";
   }
 
-  if (
-    categoryValue.includes("beverage")
-  ) {
+  if (categoryValue.includes("beverage")) {
     return "🥤";
   }
 
-  if (
-    categoryValue.includes("packaged")
-  ) {
+  if (categoryValue.includes("packaged")) {
     return "📦";
   }
 
@@ -276,6 +263,29 @@ function getScoreClass(score) {
 
 
 // ============================================================
+// NUMBER FORMATTER
+// ============================================================
+
+function formatNumber(value, decimals = 1) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "—";
+  }
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) {
+    return "—";
+  }
+
+  return number.toFixed(decimals);
+}
+
+
+// ============================================================
 // FOOD INVENTORY
 // ============================================================
 
@@ -284,9 +294,14 @@ function FoodInventory({
   onAddFood,
   onViewReport,
 }) {
+
   const [foods, setFoods] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
 
 
   // ==========================================================
@@ -294,26 +309,37 @@ function FoodInventory({
   // ==========================================================
 
   useEffect(() => {
+
     const loadFoods = async () => {
+
       try {
-        const data = await getFoods();
+
+        const data =
+          await getFoods();
 
         setFoods(
           Array.isArray(data)
             ? data
             : []
         );
+
       } catch (err) {
+
         setError(
           err?.message ||
             "Failed to load food inventory."
         );
+
       } finally {
+
         setLoading(false);
+
       }
     };
 
+
     loadFoods();
+
   }, []);
 
 
@@ -325,30 +351,40 @@ function FoodInventory({
     foodId,
     foodName
   ) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to permanently delete "${foodName}"?`
-    );
+
+    const confirmed =
+      window.confirm(
+        `Are you sure you want to permanently delete "${foodName}"?`
+      );
+
 
     if (!confirmed) {
       return;
     }
 
+
     try {
+
       setError("");
 
       await deleteFood(foodId);
 
+
       // Remove immediately from UI
       setFoods((previousFoods) =>
         previousFoods.filter(
-          (food) => food.id !== foodId
+          (food) =>
+            food.id !== foodId
         )
       );
+
     } catch (err) {
+
       setError(
         err?.message ||
           "Failed to delete food."
       );
+
     }
   };
 
@@ -358,9 +394,14 @@ function FoodInventory({
   // ==========================================================
 
   const handleViewReport = (food) => {
-    if (typeof onViewReport === "function") {
+
+    if (
+      typeof onViewReport ===
+      "function"
+    ) {
       onViewReport(food);
     }
+
   };
 
 
@@ -369,7 +410,9 @@ function FoodInventory({
   // ==========================================================
 
   return (
+
     <div className="inventory-page">
+
 
       {/* =====================================================
           DECORATIVE BACKGROUND
@@ -401,6 +444,7 @@ function FoodInventory({
           </div>
 
           <div>
+
             <strong>
               FreshGuard
             </strong>
@@ -408,6 +452,7 @@ function FoodInventory({
             <span>
               Food Inventory
             </span>
+
           </div>
 
         </div>
@@ -421,7 +466,10 @@ function FoodInventory({
 
       <main className="inventory-container">
 
-        {/* Back button */}
+
+        {/* ===================================================
+            BACK BUTTON
+        ==================================================== */}
 
         <button
           className="back-button"
@@ -432,9 +480,9 @@ function FoodInventory({
         </button>
 
 
-        {/* =================================================
+        {/* ===================================================
             PAGE HEADER
-        ================================================= */}
+        ==================================================== */}
 
         <div className="inventory-header">
 
@@ -467,20 +515,22 @@ function FoodInventory({
         </div>
 
 
-        {/* =================================================
+        {/* ===================================================
             ERROR
-        ================================================= */}
+        ==================================================== */}
 
         {error && (
+
           <div className="error-box">
             ⚠️ {error}
           </div>
+
         )}
 
 
-        {/* =================================================
+        {/* ===================================================
             LOADING
-        ================================================= */}
+        ==================================================== */}
 
         {loading ? (
 
@@ -498,6 +548,7 @@ function FoodInventory({
 
 
         ) : foods.length === 0 ? (
+
 
           /* =================================================
              EMPTY STATE
@@ -530,6 +581,7 @@ function FoodInventory({
 
 
         ) : (
+
 
           /* =================================================
              INVENTORY TABLE
@@ -619,15 +671,36 @@ function FoodInventory({
                     );
 
 
+                  // ==================================================
+                  // MILESTONE 3 VALUES
+                  // ==================================================
+
+                  const remainingShelfLife =
+                    food.remaining_shelf_life;
+
+                  const shelfLifeConfidence =
+                    food.shelf_life_confidence;
+
+                  const shelfLifeRisk =
+                    food.shelf_life_risk;
+
+                  const storageComplianceScore =
+                    food.storage_compliance_score;
+
+                  const overallHealthScore =
+                    food.overall_health_score;
+
+
                   return (
 
                     <tr
                       key={food.id}
                     >
 
-                      {/* =================================
+
+                      {/* =============================================
                           FOOD
-                      ================================= */}
+                      ============================================== */}
 
                       <td>
 
@@ -652,26 +725,24 @@ function FoodInventory({
                       </td>
 
 
-                      {/* =================================
+                      {/* =============================================
                           CATEGORY
-                      ================================= */}
+                      ============================================== */}
 
                       <td>
 
                         <span
                           className={`category-badge ${categoryClass}`}
                         >
-
                           {category}
-
                         </span>
 
                       </td>
 
 
-                      {/* =================================
+                      {/* =============================================
                           FRESHNESS
-                      ================================= */}
+                      ============================================== */}
 
                       <td className="freshness-cell">
 
@@ -705,17 +776,65 @@ function FoodInventory({
                           <span
                             className={`freshness-percentage ${freshnessClass}`}
                           >
-                            {score}%
+                            {formatNumber(
+                              score,
+                              2
+                            )}%
                           </span>
+
+
+                          {/* =========================================
+                              MILESTONE 3 - SHELF LIFE
+                          ========================================== */}
+
+                          <div
+                            style={{
+                              marginTop: "8px",
+                              fontSize: "12px",
+                              lineHeight: "1.5",
+                            }}
+                          >
+
+                            <div>
+                              <strong>
+                                Shelf Life:
+                              </strong>{" "}
+                              {formatNumber(
+                                remainingShelfLife,
+                                1
+                              )}{" "}
+                              days
+                            </div>
+
+
+                            <div>
+                              <strong>
+                                Risk:
+                              </strong>{" "}
+                              {shelfLifeRisk || "—"}
+                            </div>
+
+
+                            <div>
+                              <strong>
+                                Confidence:
+                              </strong>{" "}
+                              {formatNumber(
+                                shelfLifeConfidence,
+                                1
+                              )}%
+                            </div>
+
+                          </div>
 
                         </div>
 
                       </td>
 
 
-                      {/* =================================
+                      {/* =============================================
                           SCORE
-                      ================================= */}
+                      ============================================== */}
 
                       <td className="score-cell">
 
@@ -729,7 +848,10 @@ function FoodInventory({
                           <div className="score-content">
 
                             <span className="score-number">
-                              {score}
+                              {formatNumber(
+                                score,
+                                2
+                              )}
                             </span>
 
                             <span className="score-total">
@@ -740,12 +862,49 @@ function FoodInventory({
 
                         </div>
 
+
+                        {/* =========================================
+                            MILESTONE 3 SCORES
+                        ========================================== */}
+
+                        <div
+                          style={{
+                            marginTop: "8px",
+                            fontSize: "12px",
+                            lineHeight: "1.5",
+                            textAlign: "center",
+                          }}
+                        >
+
+                          <div>
+                            <strong>
+                              Health:
+                            </strong>{" "}
+                            {formatNumber(
+                              overallHealthScore,
+                              1
+                            )}
+                          </div>
+
+
+                          <div>
+                            <strong>
+                              Storage:
+                            </strong>{" "}
+                            {formatNumber(
+                              storageComplianceScore,
+                              1
+                            )}
+                          </div>
+
+                        </div>
+
                       </td>
 
 
-                      {/* =================================
+                      {/* =============================================
                           DATE
-                      ================================= */}
+                      ============================================== */}
 
                       <td>
 
@@ -769,9 +928,9 @@ function FoodInventory({
                       </td>
 
 
-                      {/* =================================
+                      {/* =============================================
                           REPORT + DELETE
-                      ================================= */}
+                      ============================================== */}
 
                       <td>
 
@@ -783,6 +942,7 @@ function FoodInventory({
                             gap: "8px",
                           }}
                         >
+
 
                           {/* VIEW REPORT */}
 
@@ -839,6 +999,7 @@ function FoodInventory({
       </main>
 
     </div>
+
   );
 }
 

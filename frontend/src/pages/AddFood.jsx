@@ -31,6 +31,24 @@ function AddFood({ onBack, onSuccess }) {
   const [storageCondition, setStorageCondition] =
     useState("Refrigerator");
 
+  const [storageTemperature, setStorageTemperature] =
+    useState("");
+
+  const [storageHumidity, setStorageHumidity] =
+    useState("");
+
+  const [packagingType, setPackagingType] =
+    useState("Other");
+
+  const [storageDuration, setStorageDuration] =
+    useState("");
+
+  const [airCirculation, setAirCirculation] =
+    useState("Good");
+
+  const [lightExposure, setLightExposure] =
+    useState("Low");
+
 
   // ==========================================================
   // UI STATES
@@ -62,11 +80,8 @@ function AddFood({ onBack, onSuccess }) {
 
 
     if (!file) {
-
       setImageFile(null);
-
       setPrediction(null);
-
       return;
     }
 
@@ -94,7 +109,6 @@ function AddFood({ onBack, onSuccess }) {
       );
 
       setImageFile(null);
-
       setPrediction(null);
 
       return;
@@ -115,7 +129,6 @@ function AddFood({ onBack, onSuccess }) {
       );
 
       setImageFile(null);
-
       setPrediction(null);
 
       return;
@@ -123,9 +136,7 @@ function AddFood({ onBack, onSuccess }) {
 
 
     setError("");
-
     setImageFile(file);
-
     setPrediction(null);
   };
 
@@ -139,7 +150,6 @@ function AddFood({ onBack, onSuccess }) {
     e.preventDefault();
 
     setError("");
-
     setPrediction(null);
 
 
@@ -233,8 +243,35 @@ function AddFood({ onBack, onSuccess }) {
 
       const predictionResult =
         await predictFoodFreshness(
+
           foodName.trim(),
-          imagePath
+
+          imagePath,
+
+          category,
+
+          storageTemperature
+            ? Number(storageTemperature)
+            : null,
+
+          storageHumidity
+            ? Number(storageHumidity)
+            : null,
+
+          packagingType || null,
+
+          storageDuration
+            ? Number(storageDuration)
+            : null,
+
+          airCirculation || null,
+
+          lightExposure || null,
+
+          manufacturingDate || null,
+
+          expiryDate || null
+
         );
 
 
@@ -282,13 +319,59 @@ function AddFood({ onBack, onSuccess }) {
 
         storageCondition,
 
-        // IMPORTANT:
+        // ----------------------------------------------------
         // Save AI prediction result
-        // into database.
+        // ----------------------------------------------------
 
         predictionResult.freshness_status,
 
         predictionResult.freshness_score ??
+          null,
+
+
+        // ====================================================
+        // STORAGE INTELLIGENCE INPUTS
+        // ====================================================
+
+        storageTemperature
+          ? Number(storageTemperature)
+          : null,
+
+        storageHumidity
+          ? Number(storageHumidity)
+          : null,
+
+        packagingType ||
+          null,
+
+        storageDuration
+          ? Number(storageDuration)
+          : null,
+
+        airCirculation ||
+          null,
+
+        lightExposure ||
+          null,
+
+
+        // ====================================================
+        // MILESTONE 3 - CALCULATED OUTPUTS
+        // ====================================================
+
+        predictionResult.remaining_shelf_life ??
+          null,
+
+        predictionResult.shelf_life_confidence ??
+          null,
+
+        predictionResult.shelf_life_risk ??
+          null,
+
+        predictionResult.storage_compliance_score ??
+          null,
+
+        predictionResult.overall_health_score ??
           null
 
       );
@@ -318,9 +401,8 @@ function AddFood({ onBack, onSuccess }) {
 
       onSuccess();
 
-    }
 
-    catch (err) {
+    } catch (err) {
 
       console.error(
         "Add food error:",
@@ -333,14 +415,12 @@ function AddFood({ onBack, onSuccess }) {
         "Failed to add food item."
       );
 
-    }
 
-    finally {
+    } finally {
 
       setLoading(false);
 
     }
-
   };
 
 
@@ -361,11 +441,9 @@ function AddFood({ onBack, onSuccess }) {
         🍎
       </div>
 
-
       <div className="floating-food food-two">
         🥕
       </div>
-
 
       <div className="floating-food food-three">
         🥦
@@ -384,13 +462,11 @@ function AddFood({ onBack, onSuccess }) {
             🍏
           </div>
 
-
           <div>
 
             <strong>
               FreshGuard
             </strong>
-
 
             <span>
               Add Food
@@ -449,11 +525,13 @@ function AddFood({ onBack, onSuccess }) {
               aria-live="polite"
             >
 
+
               {/* ---------------------------------------------
                   PREMIUM GLOW
               ---------------------------------------------- */}
 
               <div className="analysis-glow glow-one" />
+
               <div className="analysis-glow glow-two" />
 
 
@@ -503,7 +581,9 @@ function AddFood({ onBack, onSuccess }) {
                 <div className="analysis-dots">
 
                   <span />
+
                   <span />
+
                   <span />
 
                 </div>
@@ -514,6 +594,7 @@ function AddFood({ onBack, onSuccess }) {
                 <div className="analysis-steps">
 
                   <div className="analysis-step active">
+
                     <span className="step-icon">
                       ✓
                     </span>
@@ -521,10 +602,12 @@ function AddFood({ onBack, onSuccess }) {
                     <span>
                       Image uploaded
                     </span>
+
                   </div>
 
 
                   <div className="analysis-step active">
+
                     <span className="step-icon pulse">
                       ✦
                     </span>
@@ -532,10 +615,12 @@ function AddFood({ onBack, onSuccess }) {
                     <span>
                       AI freshness analysis
                     </span>
+
                   </div>
 
 
                   <div className="analysis-step">
+
                     <span className="step-icon">
                       ◌
                     </span>
@@ -543,6 +628,7 @@ function AddFood({ onBack, onSuccess }) {
                     <span>
                       Preparing inventory report
                     </span>
+
                   </div>
 
                 </div>
@@ -551,6 +637,7 @@ function AddFood({ onBack, onSuccess }) {
                 <div className="analysis-safe-text">
                   Please don't close or refresh this page
                 </div>
+
 
               </div>
 
@@ -591,11 +678,9 @@ function AddFood({ onBack, onSuccess }) {
                 FOOD INVENTORY
               </span>
 
-
               <h1>
                 Add Food Item
               </h1>
-
 
               <p>
                 Add a food item to your personal
@@ -634,29 +719,35 @@ function AddFood({ onBack, onSuccess }) {
 
 
                 <div>
+
                   Freshness:{" "}
 
                   <b>
                     {prediction.freshness_status}
                   </b>
+
                 </div>
 
 
                 <div>
+
                   Freshness Score:{" "}
 
                   <b>
                     {prediction.freshness_score}/100
                   </b>
+
                 </div>
 
 
                 <div>
+
                   Confidence:{" "}
 
                   <b>
                     {prediction.confidence}%
                   </b>
+
                 </div>
 
               </div>
@@ -684,7 +775,6 @@ function AddFood({ onBack, onSuccess }) {
                   Food Name
                 </label>
 
-
                 <input
                   type="text"
                   placeholder="e.g. Apple"
@@ -710,7 +800,6 @@ function AddFood({ onBack, onSuccess }) {
                 <label>
                   Category
                 </label>
-
 
                 <select
                   value={category}
@@ -773,7 +862,6 @@ function AddFood({ onBack, onSuccess }) {
                   Food Image
                 </label>
 
-
                 <input
                   type="file"
                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
@@ -785,8 +873,11 @@ function AddFood({ onBack, onSuccess }) {
                 {imageFile && (
 
                   <small>
+
                     Selected:{" "}
+
                     {imageFile.name}
+
                   </small>
 
                 )}
@@ -803,7 +894,6 @@ function AddFood({ onBack, onSuccess }) {
                 <label>
                   Manufacturing Date
                 </label>
-
 
                 <input
                   type="date"
@@ -830,7 +920,6 @@ function AddFood({ onBack, onSuccess }) {
                 <label>
                   Expiry Date
                 </label>
-
 
                 <input
                   type="date"
@@ -862,7 +951,6 @@ function AddFood({ onBack, onSuccess }) {
                   Storage Condition
                 </label>
 
-
                 <select
                   value={
                     storageCondition
@@ -879,14 +967,216 @@ function AddFood({ onBack, onSuccess }) {
                     Refrigerator
                   </option>
 
-
                   <option value="Freezer">
                     Freezer
                   </option>
 
-
                   <option value="Room Temperature">
                     Room Temperature
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              {/* =================================================
+                  STORAGE TEMPERATURE
+              ================================================== */}
+
+              <div className="form-group">
+
+                <label>
+                  Storage Temperature (°C)
+                </label>
+
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="e.g. 4"
+                  value={storageTemperature}
+                  onChange={(e) =>
+                    setStorageTemperature(
+                      e.target.value
+                    )
+                  }
+                  disabled={loading}
+                />
+
+              </div>
+
+
+              {/* =================================================
+                  STORAGE HUMIDITY
+              ================================================== */}
+
+              <div className="form-group">
+
+                <label>
+                  Storage Humidity (%)
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  placeholder="e.g. 60"
+                  value={storageHumidity}
+                  onChange={(e) =>
+                    setStorageHumidity(
+                      e.target.value
+                    )
+                  }
+                  disabled={loading}
+                />
+
+              </div>
+
+
+              {/* =================================================
+                  PACKAGING TYPE
+              ================================================== */}
+
+              <div className="form-group">
+
+                <label>
+                  Packaging Type
+                </label>
+
+                <select
+                  value={packagingType}
+                  onChange={(e) =>
+                    setPackagingType(
+                      e.target.value
+                    )
+                  }
+                  disabled={loading}
+                >
+
+                  <option value="Open">
+                    Open
+                  </option>
+
+                  <option value="Plastic">
+                    Plastic
+                  </option>
+
+                  <option value="Vacuum">
+                    Vacuum
+                  </option>
+
+                  <option value="Sealed">
+                    Sealed
+                  </option>
+
+                  <option value="Box">
+                    Box
+                  </option>
+
+                  <option value="Other">
+                    Other
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              {/* =================================================
+                  STORAGE DURATION
+              ================================================== */}
+
+              <div className="form-group">
+
+                <label>
+                  Storage Duration (days)
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  placeholder="e.g. 3"
+                  value={storageDuration}
+                  onChange={(e) =>
+                    setStorageDuration(
+                      e.target.value
+                    )
+                  }
+                  disabled={loading}
+                />
+
+              </div>
+
+
+              {/* =================================================
+                  AIR CIRCULATION
+              ================================================== */}
+
+              <div className="form-group">
+
+                <label>
+                  Air Circulation
+                </label>
+
+                <select
+                  value={airCirculation}
+                  onChange={(e) =>
+                    setAirCirculation(
+                      e.target.value
+                    )
+                  }
+                  disabled={loading}
+                >
+
+                  <option value="Good">
+                    Good
+                  </option>
+
+                  <option value="Moderate">
+                    Moderate
+                  </option>
+
+                  <option value="Poor">
+                    Poor
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              {/* =================================================
+                  LIGHT EXPOSURE
+              ================================================== */}
+
+              <div className="form-group">
+
+                <label>
+                  Light Exposure
+                </label>
+
+                <select
+                  value={lightExposure}
+                  onChange={(e) =>
+                    setLightExposure(
+                      e.target.value
+                    )
+                  }
+                  disabled={loading}
+                >
+
+                  <option value="Low">
+                    Low
+                  </option>
+
+                  <option value="Moderate">
+                    Moderate
+                  </option>
+
+                  <option value="High">
+                    High
                   </option>
 
                 </select>
@@ -922,7 +1212,6 @@ function AddFood({ onBack, onSuccess }) {
     </div>
 
   );
-
 }
 
 

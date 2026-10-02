@@ -12,6 +12,7 @@ from app.routers.auth import router as auth_router
 from app.routers.food import router as food_router
 from app.routers.prediction import router as prediction_router
 from app.routers.upload import router as upload_router
+from app.routers.admin import router as admin_router
 
 
 # ============================================================
@@ -77,6 +78,7 @@ app.include_router(auth_router)
 app.include_router(food_router)
 app.include_router(prediction_router)
 app.include_router(upload_router)
+app.include_router(admin_router)
 
 
 # ============================================================

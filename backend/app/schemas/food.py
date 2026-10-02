@@ -52,6 +52,26 @@ class FoodCreate(BaseModel):
     # Examples: Low, Moderate, High
     light_exposure: str | None = None
 
+    # ========================================================
+    # MILESTONE 3 - CALCULATED OUTPUTS
+    # ========================================================
+
+    # Estimated remaining shelf life in days
+    remaining_shelf_life: float | None = None
+
+    # Shelf-life prediction confidence
+    shelf_life_confidence: float | None = None
+
+    # Shelf-life risk level
+    # Examples: Low, Moderate, High, Critical
+    shelf_life_risk: str | None = None
+
+    # Storage compliance score
+    storage_compliance_score: float | None = None
+
+    # Overall food health / quality score
+    overall_health_score: float | None = None
+
 
 # ============================================================
 # FOOD RESPONSE
