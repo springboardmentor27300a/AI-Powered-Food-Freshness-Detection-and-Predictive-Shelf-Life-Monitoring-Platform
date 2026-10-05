@@ -46,12 +46,12 @@ function Register({
 
     try {
 
-      await registerUser(
+      await registerUser({
         name,
         email,
         password,
         role
-      );
+      });
 
 
       setSuccess(
