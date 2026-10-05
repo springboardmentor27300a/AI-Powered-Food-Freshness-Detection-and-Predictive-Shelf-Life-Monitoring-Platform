@@ -16,6 +16,7 @@ import FoodInventory from "./pages/FoodInventory";
 import Profile from "./pages/Profile";
 import FoodReport from "./pages/FoodReport";
 import Reports from "./pages/Reports";
+import AdministratorReports from "./pages/AdministratorReports";
 
 
 function App() {
@@ -499,6 +500,27 @@ function App() {
   if (
     page === "reports"
   ) {
+
+    if (
+      role === "administrator"
+    ) {
+
+      return (
+
+        <AdministratorReports
+
+          onBack={() =>
+            setPage(
+              "dashboard"
+            )
+          }
+
+        />
+
+      );
+
+    }
+
 
     return (
 
