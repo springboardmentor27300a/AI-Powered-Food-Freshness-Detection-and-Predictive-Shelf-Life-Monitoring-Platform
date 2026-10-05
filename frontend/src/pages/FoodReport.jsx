@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { predictFoodFreshness } from "../api";
+import { API_URL, predictFoodFreshness } from "../api";
 
 // ============================================================
 // FOOD ICON
@@ -3608,11 +3608,7 @@ function FoodReport({
           annotatedImagePath ||
           originalImagePath;
 
-        const apiBase =
-          (typeof window !==
-            "undefined" &&
-            window.__FOOD_API_BASE__) ||
-          "http://127.0.0.1:8000";
+        const apiBase = API_URL;
 
         const toImageUrl = (
           path
@@ -3641,10 +3637,9 @@ function FoodReport({
             return value;
           }
 
-          return `${apiBase}/${value.replace(
-            /^\/+/,
-            ""
-          )}`;
+          return `${apiBase}/${value
+          .replace(/\\/g, "/")
+          .replace(/^\/+/, "")}`;
         };
 
         const imageSrc =
