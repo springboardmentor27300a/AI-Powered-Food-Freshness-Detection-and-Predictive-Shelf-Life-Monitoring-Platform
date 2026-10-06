@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: freshness_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: freshness_user
+      POSTGRES_PASSWORD: freshness_pass
+      POSTGRES_DB: freshness_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - freshness_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U freshness_user -d freshness_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: freshness_backend
+    restart: unless-stopped
+    
+    environment:
+      DATABASE_URL: postgresql://freshness_user:freshness%40123@host.docker.internal:5432/freshness_db
+      SECRET_KEY: dev-only-secret-change-me
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      ENVIRONMENT: development
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    build: ./frontend
+    container_name: freshness_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  freshness_pgdata:

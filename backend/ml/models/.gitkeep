@@ -1,0 +1,4 @@
+This directory holds the trained model file (freshness_model.keras) plus
+class_indices.json, training_history.png, evaluation_report.json and
+confusion_matrix.png once you run the training scripts. Not committed
+empty — this file just keeps the folder in git.
