@@ -258,10 +258,6 @@ function Register({
                 Food Quality Inspector
               </option>
 
-              <option value="administrator">
-                Administrator
-              </option>
-
             </select>
 
           </div>

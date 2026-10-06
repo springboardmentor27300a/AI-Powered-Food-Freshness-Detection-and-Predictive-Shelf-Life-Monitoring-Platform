@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -34,7 +35,7 @@ function App() {
 
     return token
       ? "dashboard"
-      : "login";
+      : "home";
 
   });
 
@@ -45,6 +46,35 @@ function App() {
 
   const [selectedFood, setSelectedFood] =
     useState(null);
+
+
+  // ==========================================================
+  // HOME
+  // ==========================================================
+
+  if (page === "home") {
+
+    return (
+
+      <Home
+
+        onLogin={() =>
+          setPage(
+            "login"
+          )
+        }
+
+        onRegister={() =>
+          setPage(
+            "register"
+          )
+        }
+
+      />
+
+    );
+
+  }
 
 
   // ==========================================================
@@ -96,7 +126,7 @@ function App() {
 
     setSelectedFood(null);
 
-    setPage("login");
+    setPage("home");
 
   };
 
