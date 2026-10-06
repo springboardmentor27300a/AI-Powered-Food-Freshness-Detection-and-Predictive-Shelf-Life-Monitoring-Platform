@@ -1,0 +1,12 @@
+{
+  "dataset": "sriramr/fruits-fresh-and-rotten-for-classification",
+  "dataset_url": "https://www.kaggle.com/datasets/sriramr/fruits-fresh-and-rotten-for-classification",
+  "cnn_classes": ["fresh", "rotten"],
+  "_comment": "This dataset provides binary fresh/rotten labels across apples, bananas and oranges. The CNN is trained honestly on these 2 classes only — it is NOT trained to output 5 classes from binary data. The platform's 5-tier freshness category (Fresh/Good/Acceptable/Near Spoilage/Spoiled) is produced afterwards by app/services/scoring_service.py, which combines this binary CNN signal with OpenCV visual sub-scores, storage conditions, and product age. See docs/DATASET.md and docs/CNN_TRAINING.md for the full, documented mapping.",
+  "cnn_to_platform_mapping": {
+    "fresh": ["fresh", "good"],
+    "rotten": ["near_spoilage", "spoiled"]
+  },
+  "image_size": [224, 224],
+  "model_version": "mobilenetv2-freshness-v1"
+}
