@@ -28,7 +28,25 @@
    GLOBAL
 ========================= */
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
 body {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  overflow-x: hidden;
+
   background:
     radial-gradient(
       circle at 8% 10%,
@@ -51,6 +69,26 @@ body {
       #ffffff 50%,
       #effaf3
     );
+
+  color: var(--text);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
 }
 
 /* =========================
@@ -125,10 +163,13 @@ body {
   z-index: 20;
 
   min-height: 82px;
+  width: 100%;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  gap: 16px;
 
   padding: 0 6%;
 
@@ -140,6 +181,7 @@ body {
   );
 
   backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 
   border-bottom:
     1px solid rgba(
@@ -158,11 +200,15 @@ body {
   display: flex;
   align-items: center;
   gap: 13px;
+
+  min-width: 0;
 }
 
 .brand-icon {
   width: 49px;
   height: 49px;
+
+  flex: 0 0 49px;
 
   display: grid;
   place-items: center;
@@ -206,6 +252,8 @@ body {
   color: var(--green-900);
   font-size: 17px;
   font-weight: 800;
+
+  white-space: nowrap;
 }
 
 .brand span {
@@ -214,6 +262,8 @@ body {
 
   color: var(--muted);
   font-size: 11px;
+
+  white-space: nowrap;
 }
 
 /* =========================
@@ -222,6 +272,7 @@ body {
 
 .auth-page {
   min-height: 100vh;
+  min-height: 100dvh;
 
   position: relative;
   overflow: hidden;
@@ -297,6 +348,7 @@ body {
   box-shadow: var(--shadow-lg);
 
   backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
 }
 
 .auth-logo {
@@ -395,6 +447,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+
+  min-width: 0;
 }
 
 .form-group label {
@@ -407,6 +461,7 @@ body {
 .form-group input,
 .form-group select {
   width: 100%;
+  min-width: 0;
   height: 54px;
 
   padding: 0 16px;
@@ -569,6 +624,8 @@ body {
 
   font-size: 13px;
   font-weight: 700;
+
+  overflow-wrap: anywhere;
 }
 
 .error-box {
@@ -595,6 +652,10 @@ body {
 
 .dashboard-page {
   min-height: 100vh;
+  min-height: 100dvh;
+
+  width: 100%;
+  min-width: 0;
 
   position: relative;
   overflow: hidden;
@@ -697,6 +758,8 @@ body {
 
 .hero-copy {
   max-width: 650px;
+  min-width: 0;
+
   position: relative;
   z-index: 3;
 }
@@ -714,6 +777,8 @@ body {
   line-height: 1.06;
 
   color: var(--green-950);
+
+  overflow-wrap: anywhere;
 }
 
 .hero-copy h1 span {
@@ -735,6 +800,8 @@ body {
 .hero-actions {
   display: flex;
 
+  flex-wrap: wrap;
+
   gap: 12px;
 
   margin-top: 28px;
@@ -754,7 +821,7 @@ body {
 
   position: relative;
 
-  flex-shrink: 0;
+  flex: 0 0 330px;
 }
 
 .hero-fruit {
@@ -927,6 +994,7 @@ body {
   gap: 16px;
 
   min-height: 125px;
+  min-width: 0;
 
   padding: 24px;
 
@@ -958,7 +1026,7 @@ body {
   display: grid;
   place-items: center;
 
-  flex-shrink: 0;
+  flex: 0 0 55px;
 
   border-radius: 17px;
 
@@ -1009,6 +1077,8 @@ body {
   opacity: 0.08;
 
   transform: rotate(-12deg);
+
+  pointer-events: none;
 }
 
 /* =========================
@@ -1024,6 +1094,8 @@ body {
 
   justify-content: space-between;
   align-items: center;
+
+  gap: 15px;
 
   margin-bottom: 18px;
 }
@@ -1041,6 +1113,8 @@ body {
 }
 
 .section-emoji {
+  flex-shrink: 0;
+
   font-size: 35px;
 
   animation:
@@ -1061,6 +1135,7 @@ body {
   position: relative;
 
   min-height: 205px;
+  min-width: 0;
 
   display: flex;
 
@@ -1225,6 +1300,8 @@ body {
   opacity: 0.08;
 
   transform: rotate(15deg);
+
+  pointer-events: none;
 }
 
 .fresh-banner .mini-label {
@@ -1301,7 +1378,10 @@ body {
 .topbar-right {
   display: flex;
   align-items: center;
+
   gap: 15px;
+
+  min-width: 0;
 }
 
 .user-pill {
@@ -1309,11 +1389,15 @@ body {
   align-items: center;
 
   gap: 9px;
+
+  min-width: 0;
 }
 
 .user-avatar {
   width: 38px;
   height: 38px;
+
+  flex: 0 0 38px;
 
   display: grid;
   place-items: center;
@@ -1327,12 +1411,22 @@ body {
   font-weight: 900;
 }
 
+.user-info {
+  min-width: 0;
+}
+
 .user-info strong {
   display: block;
 
   color: var(--green-900);
 
   font-size: 12px;
+
+  max-width: 130px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-info span {
@@ -1345,6 +1439,12 @@ body {
   font-size: 10px;
 
   text-transform: capitalize;
+
+  max-width: 130px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .logout-button {
@@ -1362,6 +1462,8 @@ body {
   font-weight: 800;
 
   transition: 0.25s ease;
+
+  white-space: nowrap;
 }
 
 .logout-button:hover {
@@ -1377,6 +1479,10 @@ body {
 .form-page,
 .inventory-page {
   min-height: 100vh;
+  min-height: 100dvh;
+
+  width: 100%;
+  min-width: 0;
 
   position: relative;
 
@@ -1445,6 +1551,8 @@ body {
   animation:
     foodFloat
     5s ease-in-out infinite;
+
+  pointer-events: none;
 }
 
 .section-title {
@@ -1461,6 +1569,8 @@ body {
   color: var(--green-950);
 
   font-size: 35px;
+
+  overflow-wrap: anywhere;
 }
 
 .section-title p {
@@ -1509,6 +1619,8 @@ body {
   color: var(--green-950);
 
   font-size: 37px;
+
+  overflow-wrap: anywhere;
 }
 
 .inventory-header p {
@@ -1526,7 +1638,12 @@ body {
 }
 
 .inventory-table-wrapper {
+  width: 100%;
+
   overflow-x: auto;
+  overflow-y: hidden;
+
+  -webkit-overflow-scrolling: touch;
 
   border:
     1px solid var(--border);
@@ -1594,11 +1711,15 @@ body {
   gap: 11px;
 
   color: var(--green-900);
+
+  min-width: 0;
 }
 
 .food-icon {
   width: 40px;
   height: 40px;
+
+  flex: 0 0 40px;
 
   display: grid;
   place-items: center;
@@ -1623,6 +1744,8 @@ body {
 
   font-size: 10px;
   font-weight: 900;
+
+  white-space: nowrap;
 }
 
 .status-fresh {
@@ -1721,107 +1844,9 @@ body {
   }
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 900px) {
-  .dashboard-hero {
-    padding: 40px;
-
-    flex-direction: column;
-
-    align-items: flex-start;
-  }
-
-  .hero-visual {
-    align-self: center;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .action-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 650px) {
-  .topbar {
-    padding: 0 20px;
-  }
-
-  .user-info {
-    display: none;
-  }
-
-  .dashboard-content,
-  .inventory-container {
-    width: 92%;
-  }
-
-  .dashboard-hero {
-    padding: 30px 24px;
-  }
-
-  .hero-copy h1 {
-    font-size: 38px;
-  }
-
-  .hero-actions {
-    flex-direction: column;
-  }
-
-  .hero-button,
-  .secondary-button {
-    width: 100%;
-  }
-
-  .hero-visual {
-    width: 280px;
-    height: 280px;
-    align-self: center;
-  }
-
-  .content-card {
-    padding: 30px 21px;
-  }
-
-  .auth-container {
-    padding: 32px 22px;
-  }
-
-  .inventory-header {
-    align-items: flex-start;
-
-    flex-direction: column;
-  }
-
-  .inventory-add-button {
-    width: 100%;
-  }
-
-  .fresh-banner {
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    padding: 25px;
-  }
-
-  .banner-badge {
-    align-self: flex-end;
-  }
-
-  .floating-food {
-    opacity: 0.08;
-  }
-}
-
 /* ============================================================
    PREMIUM FOOD ANALYSIS EXPERIENCE
-   ============================================================ */
+============================================================ */
 
 .food-analysis-overlay {
   position: absolute;
@@ -1855,10 +1880,9 @@ body {
   animation: analysisFadeIn 0.45s ease forwards;
 }
 
-
 /* ============================================================
    CONTENT
-   ============================================================ */
+============================================================ */
 
 .analysis-content {
   position: relative;
@@ -1874,10 +1898,9 @@ body {
   animation: analysisContentIn 0.65s ease forwards;
 }
 
-
 /* ============================================================
    GLOW
-   ============================================================ */
+============================================================ */
 
 .analysis-glow {
   position: absolute;
@@ -1912,10 +1935,9 @@ body {
   animation: glowMove 3s ease-in-out infinite alternate;
 }
 
-
 /* ============================================================
    PREMIUM ORBIT
-   ============================================================ */
+============================================================ */
 
 .analysis-orbit {
   position: relative;
@@ -1930,10 +1952,9 @@ body {
   margin-bottom: 25px;
 }
 
-
 /* ============================================================
    RINGS
-   ============================================================ */
+============================================================ */
 
 .analysis-ring {
   position: absolute;
@@ -1961,7 +1982,6 @@ body {
     analysisSpin 3.2s linear infinite;
 }
 
-
 .ring-two {
   width: 155px;
   height: 155px;
@@ -1977,7 +1997,6 @@ body {
   animation:
     analysisSpinReverse 2.2s linear infinite;
 }
-
 
 .ring-three {
   width: 125px;
@@ -1995,10 +2014,9 @@ body {
     analysisSpin 1.8s linear infinite;
 }
 
-
 /* ============================================================
    CORE
-   ============================================================ */
+============================================================ */
 
 .analysis-core {
   position: relative;
@@ -2033,7 +2051,6 @@ body {
     analysisPulse 1.8s ease-in-out infinite;
 }
 
-
 .analysis-brain {
   font-size: 42px;
 
@@ -2049,10 +2066,9 @@ body {
     brainFloat 1.8s ease-in-out infinite;
 }
 
-
 /* ============================================================
    TEXT
-   ============================================================ */
+============================================================ */
 
 .analysis-title {
   margin: 0;
@@ -2065,7 +2081,6 @@ body {
 
   letter-spacing: -0.5px;
 }
-
 
 .analysis-subtitle {
   margin:
@@ -2080,10 +2095,9 @@ body {
   line-height: 1.6;
 }
 
-
 /* ============================================================
    DOTS
-   ============================================================ */
+============================================================ */
 
 .analysis-dots {
   display: flex;
@@ -2097,7 +2111,6 @@ body {
   margin-top: 15px;
 }
 
-
 .analysis-dots span {
   width: 7px;
   height: 7px;
@@ -2110,20 +2123,17 @@ body {
     analysisDot 1.2s ease-in-out infinite;
 }
 
-
 .analysis-dots span:nth-child(2) {
   animation-delay: 0.18s;
 }
-
 
 .analysis-dots span:nth-child(3) {
   animation-delay: 0.36s;
 }
 
-
 /* ============================================================
    PROCESSING STEPS
-   ============================================================ */
+============================================================ */
 
 .analysis-steps {
   width: min(100%, 370px);
@@ -2136,7 +2146,6 @@ body {
 
   margin-top: 25px;
 }
-
 
 .analysis-step {
   display: flex;
@@ -2165,14 +2174,12 @@ body {
   text-align: left;
 }
 
-
 .analysis-step.active {
   color: #466257;
 
   background:
     rgba(255, 255, 255, 0.90);
 }
-
 
 .step-icon {
   width: 25px;
@@ -2198,16 +2205,14 @@ body {
   font-weight: 900;
 }
 
-
 .step-icon.pulse {
   animation:
     stepPulse 1s ease-in-out infinite;
 }
 
-
 /* ============================================================
    SAFETY MESSAGE
-   ============================================================ */
+============================================================ */
 
 .analysis-safe-text {
   margin-top: 17px;
@@ -2219,10 +2224,9 @@ body {
   letter-spacing: 0.3px;
 }
 
-
 /* ============================================================
    BLUR ORIGINAL FORM
-   ============================================================ */
+============================================================ */
 
 .analysing-blur {
   filter: blur(3px);
@@ -2238,13 +2242,11 @@ body {
     opacity 0.35s ease;
 }
 
-
 /* ============================================================
    ANIMATIONS
-   ============================================================ */
+============================================================ */
 
 @keyframes analysisFadeIn {
-
   from {
     opacity: 0;
   }
@@ -2252,12 +2254,9 @@ body {
   to {
     opacity: 1;
   }
-
 }
 
-
 @keyframes analysisContentIn {
-
   from {
     opacity: 0;
 
@@ -2273,12 +2272,9 @@ body {
       translateY(0)
       scale(1);
   }
-
 }
-
 
 @keyframes analysisSpin {
-
   from {
     transform:
       rotate(0deg);
@@ -2288,12 +2284,9 @@ body {
     transform:
       rotate(360deg);
   }
-
 }
-
 
 @keyframes analysisSpinReverse {
-
   from {
     transform:
       rotate(360deg);
@@ -2303,12 +2296,9 @@ body {
     transform:
       rotate(0deg);
   }
-
 }
 
-
 @keyframes analysisPulse {
-
   0%,
   100% {
     transform:
@@ -2329,12 +2319,9 @@ body {
       0 20px 55px rgba(8, 169, 79, 0.25),
       inset 0 0 30px rgba(8, 169, 79, 0.12);
   }
-
 }
 
-
 @keyframes brainFloat {
-
   0%,
   100% {
     transform:
@@ -2347,12 +2334,9 @@ body {
       translateY(-4px)
       scale(1.05);
   }
-
 }
 
-
 @keyframes analysisDot {
-
   0%,
   60%,
   100% {
@@ -2370,12 +2354,9 @@ body {
       translateY(-4px)
       scale(1.1);
   }
-
 }
 
-
 @keyframes stepPulse {
-
   0%,
   100% {
     transform:
@@ -2394,12 +2375,9 @@ body {
       0 0 0 5px
       rgba(8, 169, 79, 0.05);
   }
-
 }
 
-
 @keyframes glowMove {
-
   from {
     transform:
       translate(-50%, -50%)
@@ -2411,23 +2389,977 @@ body {
       translate(-45%, -45%)
       scale(1.1);
   }
-
 }
 
+/* ============================================================
+   TABLET / SMALL LAPTOP
+============================================================ */
+
+@media (max-width: 1100px) {
+  .topbar {
+    padding-left: 4%;
+    padding-right: 4%;
+  }
+
+  .dashboard-content,
+  .inventory-container {
+    width: 92%;
+  }
+
+  .dashboard-hero {
+    padding: 45px;
+  }
+
+  .hero-copy {
+    max-width: 56%;
+  }
+
+  .hero-visual {
+    width: 290px;
+    height: 290px;
+    flex-basis: 290px;
+  }
+
+  .hero-fruit {
+    width: 140px;
+    height: 140px;
+    font-size: 72px;
+  }
+
+  .fresh-ring {
+    width: 215px;
+    height: 215px;
+  }
+
+  .action-card {
+    padding: 24px;
+    gap: 18px;
+  }
+}
 
 /* ============================================================
-   MOBILE
-   ============================================================ */
+   TABLET
+============================================================ */
+
+@media (max-width: 900px) {
+  .topbar {
+    min-height: 76px;
+  }
+
+  .dashboard-content {
+    margin-top: 35px;
+    margin-bottom: 60px;
+  }
+
+  .dashboard-hero {
+    min-height: auto;
+
+    padding: 40px;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  .hero-copy {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .hero-visual {
+    align-self: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .stat-card {
+    padding: 19px;
+    gap: 12px;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+    font-size: 22px;
+  }
+
+  .stat-card strong {
+    font-size: 27px;
+  }
+
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-card {
+    min-height: 180px;
+  }
+
+  .fresh-banner {
+    padding: 27px;
+  }
+
+  .inventory-header {
+    align-items: flex-start;
+  }
+}
+
+/* ============================================================
+   MOBILE / 650px
+============================================================ */
+
+@media (max-width: 650px) {
+  .topbar {
+    min-height: 70px;
+
+    padding:
+      0 16px;
+
+    gap: 8px;
+  }
+
+  .brand {
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .brand-icon {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+
+    border-radius: 13px;
+    font-size: 23px;
+  }
+
+  .brand strong {
+    font-size: 14px;
+  }
+
+  .brand span {
+    font-size: 9px;
+  }
+
+  .topbar-right {
+    gap: 7px;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .dashboard-content,
+  .inventory-container {
+    width: calc(100% - 28px);
+  }
+
+  .dashboard-content {
+    margin:
+      25px auto 45px;
+  }
+
+  .dashboard-hero {
+    padding:
+      30px 24px;
+
+    border-radius: 27px;
+
+    gap: 25px;
+  }
+
+  .hero-copy h1 {
+    font-size: 38px;
+    line-height: 1.08;
+  }
+
+  .dashboard-subtitle {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-button,
+  .secondary-button {
+    width: 100%;
+  }
+
+  .hero-visual {
+    width: 280px;
+    height: 280px;
+    flex-basis: 280px;
+
+    align-self: center;
+  }
+
+  .hero-fruit {
+    width: 130px;
+    height: 130px;
+    font-size: 68px;
+  }
+
+  .fresh-ring {
+    width: 205px;
+    height: 205px;
+  }
+
+  .fruit-orbit {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .orbit-one {
+    left: 30px;
+  }
+
+  .orbit-two {
+    right: 0;
+  }
+
+  .orbit-three {
+    left: 35px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    min-height: 105px;
+    padding: 19px;
+  }
+
+  .stat-card strong {
+    font-size: 27px;
+  }
+
+  .action-section {
+    margin-top: 34px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+  }
+
+  .section-heading h2 {
+    font-size: 21px;
+  }
+
+  .section-emoji {
+    font-size: 29px;
+  }
+
+  .action-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .action-card {
+    min-height: 165px;
+
+    padding:
+      22px 20px;
+
+    gap: 16px;
+
+    border-radius: 21px;
+  }
+
+  .action-illustration {
+    min-width: 68px;
+    font-size: 37px;
+  }
+
+  .action-card h3 {
+    font-size: 18px;
+  }
+
+  .action-card p {
+    font-size: 12px;
+  }
+
+  .action-arrow {
+    right: 18px;
+    bottom: 16px;
+  }
+
+  .fresh-banner {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    padding: 25px;
+
+    border-radius: 22px;
+  }
+
+  .fresh-banner h2 {
+    font-size: 21px;
+  }
+
+  .banner-food {
+    font-size: 34px;
+  }
+
+  .banner-badge {
+    align-self: flex-end;
+  }
+
+  .floating-food {
+    opacity: 0.08;
+  }
+
+  .content-card {
+    padding:
+      30px 21px;
+
+    border-radius: 25px;
+  }
+
+  .form-page-main {
+    width: calc(100% - 28px);
+
+    margin:
+      28px auto 50px;
+  }
+
+  .section-title h1 {
+    font-size: 29px;
+  }
+
+  .inventory-container {
+    margin:
+      28px auto 50px;
+  }
+
+  .inventory-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 14px;
+  }
+
+  .inventory-header h1 {
+    font-size: 30px;
+  }
+
+  .inventory-add-button {
+    width: 100%;
+  }
+
+  .auth-page {
+    padding:
+      25px 14px;
+  }
+
+  .auth-container {
+    padding:
+      32px 22px;
+
+    border-radius: 26px;
+  }
+
+  .auth-logo {
+    width: 70px;
+    height: 70px;
+
+    border-radius: 22px;
+
+    font-size: 36px;
+  }
+
+  .auth-container h1 {
+    font-size: 28px;
+  }
+
+  .auth-heading p {
+    font-size: 13px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    min-height: 52px;
+  }
+}
+
+/* ============================================================
+   SMALL PHONES
+============================================================ */
+
+@media (max-width: 480px) {
+  .topbar {
+    padding:
+      0 12px;
+  }
+
+  .brand {
+    max-width: calc(100% - 65px);
+  }
+
+  .brand-icon {
+    width: 39px;
+    height: 39px;
+    flex-basis: 39px;
+
+    font-size: 21px;
+  }
+
+  .brand strong {
+    font-size: 13px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .brand span {
+    display: none;
+  }
+
+  .logout-button {
+    padding:
+      9px 11px;
+
+    font-size: 11px;
+  }
+
+  .dashboard-content,
+  .inventory-container {
+    width: calc(100% - 22px);
+  }
+
+  .dashboard-hero {
+    padding:
+      25px 18px;
+
+    border-radius: 23px;
+  }
+
+  .hero-copy h1 {
+    font-size: 32px;
+  }
+
+  .dashboard-subtitle {
+    margin-top: 14px;
+    font-size: 13px;
+  }
+
+  .hero-visual {
+    width: 245px;
+    height: 245px;
+    flex-basis: 245px;
+  }
+
+  .hero-fruit {
+    width: 112px;
+    height: 112px;
+    font-size: 59px;
+  }
+
+  .fresh-ring {
+    width: 180px;
+    height: 180px;
+  }
+
+  .fresh-ring span {
+    right: -17px;
+    top: 18px;
+    padding:
+      6px 9px;
+  }
+
+  .fruit-orbit {
+    width: 43px;
+    height: 43px;
+
+    font-size: 21px;
+  }
+
+  .orbit-one {
+    left: 19px;
+    top: 18px;
+  }
+
+  .orbit-two {
+    right: -1px;
+    top: 98px;
+  }
+
+  .orbit-three {
+    left: 24px;
+    bottom: 8px;
+  }
+
+  .stat-card {
+    padding:
+      16px;
+
+    border-radius: 18px;
+  }
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+
+    border-radius: 14px;
+  }
+
+  .stat-card p {
+    font-size: 11px;
+  }
+
+  .stat-card strong {
+    font-size: 25px;
+  }
+
+  .stat-decoration {
+    font-size: 52px;
+  }
+
+  .action-card {
+    min-height: 155px;
+
+    padding:
+      20px 16px;
+
+    gap: 13px;
+  }
+
+  .action-illustration {
+    min-width: 58px;
+    font-size: 32px;
+  }
+
+  .action-label {
+    font-size: 9px;
+  }
+
+  .action-card h3 {
+    font-size: 17px;
+  }
+
+  .action-card p {
+    padding-right: 8px;
+    font-size: 11.5px;
+  }
+
+  .action-arrow {
+    right: 14px;
+    bottom: 12px;
+    font-size: 19px;
+  }
+
+  .fresh-banner {
+    padding:
+      21px 18px;
+  }
+
+  .fresh-banner h2 {
+    font-size: 19px;
+  }
+
+  .fresh-banner p {
+    font-size: 12px;
+  }
+
+  .banner-badge {
+    min-width: 85px;
+    padding: 10px;
+  }
+
+  .banner-badge span {
+    font-size: 19px;
+  }
+
+  .content-card {
+    padding:
+      25px 17px;
+  }
+
+  .section-title h1 {
+    font-size: 27px;
+  }
+
+  .section-title p {
+    font-size: 13px;
+  }
+
+  .inventory-header h1 {
+    font-size: 27px;
+  }
+
+  .empty-state,
+  .inventory-loading {
+    padding:
+      48px 16px;
+  }
+
+  .empty-food {
+    font-size: 54px;
+  }
+
+  .auth-container {
+    padding:
+      27px 17px;
+
+    border-radius: 23px;
+  }
+
+  .auth-container h1 {
+    font-size: 26px;
+  }
+
+  .auth-form {
+    gap: 15px;
+  }
+
+  .form-group input,
+  .form-group select {
+    height: 51px;
+    padding:
+      0 14px;
+
+    border-radius: 13px;
+  }
+}
+
+/* ============================================================
+   EXTRA SMALL PHONES - 320px / 360px
+============================================================ */
+
+@media (max-width: 380px) {
+  .topbar {
+    min-height: 64px;
+  }
+
+  .brand {
+    gap: 7px;
+  }
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+
+    border-radius: 11px;
+    font-size: 19px;
+  }
+
+  .brand strong {
+    font-size: 12px;
+  }
+
+  .logout-button {
+    padding:
+      8px 9px;
+
+    font-size: 10px;
+  }
+
+  .dashboard-content {
+    margin-top: 20px;
+  }
+
+  .dashboard-hero {
+    padding:
+      22px 15px;
+  }
+
+  .hero-copy h1 {
+    font-size: 29px;
+  }
+
+  .dashboard-subtitle {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .hero-visual {
+    width: 220px;
+    height: 220px;
+    flex-basis: 220px;
+  }
+
+  .hero-fruit {
+    width: 100px;
+    height: 100px;
+    font-size: 52px;
+  }
+
+  .fresh-ring {
+    width: 165px;
+    height: 165px;
+  }
+
+  .fresh-ring span {
+    right: -12px;
+    top: 14px;
+    font-size: 8px;
+  }
+
+  .fruit-orbit {
+    width: 39px;
+    height: 39px;
+    font-size: 19px;
+  }
+
+  .orbit-one {
+    left: 13px;
+  }
+
+  .orbit-two {
+    right: -4px;
+    top: 88px;
+  }
+
+  .orbit-three {
+    left: 18px;
+  }
+
+  .stat-card {
+    gap: 10px;
+    padding:
+      14px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+
+    font-size: 19px;
+  }
+
+  .stat-card strong {
+    font-size: 23px;
+  }
+
+  .action-card {
+    padding:
+      17px 13px;
+
+    min-height: 145px;
+  }
+
+  .action-illustration {
+    min-width: 49px;
+    font-size: 28px;
+  }
+
+  .action-card h3 {
+    font-size: 16px;
+  }
+
+  .action-card p {
+    font-size: 10.5px;
+  }
+
+  .section-heading h2 {
+    font-size: 19px;
+  }
+
+  .fresh-banner {
+    padding:
+      18px 15px;
+  }
+
+  .fresh-banner h2 {
+    font-size: 18px;
+  }
+
+  .auth-page {
+    padding:
+      16px 10px;
+  }
+
+  .auth-container {
+    padding:
+      24px 14px;
+
+    border-radius: 20px;
+  }
+
+  .auth-logo {
+    width: 62px;
+    height: 62px;
+
+    font-size: 31px;
+    border-radius: 19px;
+  }
+
+  .auth-container h1 {
+    font-size: 24px;
+  }
+
+  .auth-heading p {
+    font-size: 12px;
+    margin-bottom: 22px;
+  }
+
+  .form-group input,
+  .form-group select {
+    height: 49px;
+    font-size: 13px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    min-height: 49px;
+    padding:
+      0 16px;
+
+    font-size: 13px;
+  }
+}
+
+/* ============================================================
+   LANDSCAPE MOBILE
+============================================================ */
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .auth-page {
+    align-items: flex-start;
+
+    padding:
+      25px 16px;
+  }
+
+  .auth-container {
+    margin:
+      10px auto;
+  }
+
+  .dashboard-hero {
+    flex-direction: row;
+    align-items: center;
+
+    padding:
+      30px;
+  }
+
+  .hero-copy {
+    max-width: 58%;
+  }
+
+  .hero-visual {
+    width: 230px;
+    height: 230px;
+    flex-basis: 230px;
+  }
+
+  .hero-fruit {
+    width: 110px;
+    height: 110px;
+    font-size: 57px;
+  }
+
+  .fresh-ring {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+/* ============================================================
+   TOUCH DEVICES
+============================================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  .primary-button:hover,
+  .secondary-button:hover,
+  .stat-card:hover,
+  .action-card:hover,
+  .logout-button:hover {
+    transform: none;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .logout-button,
+  .back-button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .logout-button {
+    min-height: 50px;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   VERY LARGE SCREENS
+============================================================ */
+
+@media (min-width: 1600px) {
+  .dashboard-content,
+  .inventory-container {
+    width: min(1280px, 88%);
+  }
+
+  .dashboard-hero {
+    padding:
+      65px;
+  }
+
+  .hero-copy h1 {
+    font-size: 60px;
+  }
+
+  .hero-visual {
+    width: 350px;
+    height: 350px;
+    flex-basis: 350px;
+  }
+}
+
+/* ============================================================
+   PREMIUM FOOD ANALYSIS - MOBILE OVERRIDES
+============================================================ */
 
 @media (max-width: 600px) {
-
   .food-analysis-overlay {
+    position: absolute;
+
     padding: 20px;
+
+    min-height: 100%;
+  }
+
+  .analysis-content {
+    width: 100%;
+    max-width: 100%;
   }
 
   .analysis-orbit {
     width: 155px;
     height: 155px;
+
+    margin-bottom: 20px;
   }
 
   .ring-one {
@@ -2459,7 +3391,1654 @@ body {
   }
 
   .analysis-subtitle {
+    max-width: 330px;
+
     font-size: 13px;
   }
 
+  .analysis-steps {
+    width: min(100%, 340px);
+
+    margin-top: 20px;
+  }
+
+  .analysis-step {
+    padding:
+      9px 11px;
+
+    font-size: 11px;
+  }
+
+  .analysis-safe-text {
+    font-size: 9px;
+  }
+}
+
+/* ============================================================
+   PREMIUM FOOD ANALYSIS - VERY SMALL DEVICES
+============================================================ */
+
+@media (max-width: 380px) {
+  .food-analysis-overlay {
+    padding:
+      15px 12px;
+  }
+
+  .analysis-orbit {
+    width: 135px;
+    height: 135px;
+  }
+
+  .ring-one {
+    width: 132px;
+    height: 132px;
+  }
+
+  .ring-two {
+    width: 112px;
+    height: 112px;
+  }
+
+  .ring-three {
+    width: 92px;
+    height: 92px;
+  }
+
+  .analysis-core {
+    width: 68px;
+    height: 68px;
+  }
+
+  .analysis-brain {
+    font-size: 30px;
+  }
+
+  .analysis-title {
+    font-size: 21px;
+  }
+
+  .analysis-subtitle {
+    font-size: 11.5px;
+  }
+
+  .analysis-steps {
+    margin-top: 16px;
+    gap: 6px;
+  }
+
+  .analysis-step {
+    padding:
+      8px 9px;
+
+    font-size: 10px;
+  }
+
+  .step-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+}
+
+/* ============================================================
+   DEVICE-SAFE RESPONSIVE TOPBAR
+   Prevents Reports / Profile / Logout cropping on mobile
+   ============================================================ */
+
+/* ---------- TABLET ---------- */
+
+@media (max-width: 900px) {
+  .topbar {
+    min-height: auto !important;
+    padding: 12px 24px !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .brand {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .topbar-right,
+  .freshguard-topbar-right {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+
+  .user-pill,
+  .freshguard-user-pill {
+    min-width: 0 !important;
+  }
+
+  .logout-button,
+  .freshguard-logout-button,
+  .freshguard-reports-button,
+  .freshguard-profile-button {
+    white-space: nowrap !important;
+  }
+}
+
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width: 650px) {
+  .topbar {
+    width: 100% !important;
+
+    min-height: auto !important;
+
+    display: flex !important;
+    flex-wrap: wrap !important;
+
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    gap: 10px !important;
+
+    padding:
+      10px 14px 12px !important;
+
+    box-sizing: border-box !important;
+  }
+
+  /* Brand gets its own safe space */
+  .brand {
+    flex: 1 1 auto !important;
+
+    min-width: 0 !important;
+
+    max-width: calc(100% - 10px) !important;
+
+    overflow: hidden !important;
+  }
+
+  .brand-icon {
+    width: 43px !important;
+    height: 43px !important;
+
+    flex-shrink: 0 !important;
+
+    font-size: 23px !important;
+
+    border-radius: 14px !important;
+  }
+
+  .brand strong {
+    font-size: 16px !important;
+
+    white-space: nowrap !important;
+  }
+
+  .brand span {
+    font-size: 9px !important;
+
+    white-space: nowrap !important;
+  }
+
+  /*
+    All dashboard controls move into a second flexible row.
+    Nothing is allowed to overflow the viewport.
+  */
+  .topbar-right,
+  .freshguard-topbar-right {
+    width: 100% !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: flex-end !important;
+
+    flex-wrap: wrap !important;
+
+    gap: 6px !important;
+
+    min-width: 0 !important;
+
+    box-sizing: border-box !important;
+  }
+
+  /*
+    Do NOT hide Reports/Profile/Logout.
+    Make them compact enough to fit.
+  */
+  .freshguard-reports-button,
+  .freshguard-profile-button,
+  .logout-button,
+  .freshguard-logout-button {
+    width: auto !important;
+
+    min-width: 0 !important;
+
+    min-height: 42px !important;
+
+    height: 42px !important;
+
+    padding:
+      0 11px !important;
+
+    border-radius: 12px !important;
+
+    font-size: 11px !important;
+
+    white-space: nowrap !important;
+
+    flex: 0 0 auto !important;
+
+    box-sizing: border-box !important;
+  }
+
+  /*
+    Notification button
+  */
+  .freshguard-notification-button,
+  .notification-button {
+    width: 42px !important;
+    height: 42px !important;
+
+    min-width: 42px !important;
+    min-height: 42px !important;
+
+    padding: 0 !important;
+
+    flex: 0 0 42px !important;
+
+    border-radius: 12px !important;
+  }
+
+  /*
+    User info can disappear on small screens,
+    but avatar remains visible.
+  */
+  .user-info {
+    display: none !important;
+  }
+
+  .user-pill,
+  .freshguard-user-pill {
+    min-width: 42px !important;
+
+    width: auto !important;
+
+    gap: 5px !important;
+
+    flex: 0 0 auto !important;
+  }
+
+  .user-avatar {
+    width: 38px !important;
+    height: 38px !important;
+
+    flex-shrink: 0 !important;
+  }
+
+  /*
+    Prevent dropdown from going outside screen
+  */
+  .freshguard-notification-dropdown {
+    position: fixed !important;
+
+    top: 112px !important;
+
+    left: 10px !important;
+    right: 10px !important;
+
+    width: auto !important;
+
+    max-width: none !important;
+
+    box-sizing: border-box !important;
+  }
+}
+
+
+/* ---------- VERY SMALL PHONES: 320px–380px ---------- */
+
+@media (max-width: 380px) {
+  .topbar {
+    padding:
+      9px 10px 11px !important;
+
+    gap: 8px !important;
+  }
+
+  .brand {
+    width: 100% !important;
+
+    flex: 0 0 100% !important;
+  }
+
+  .brand-icon {
+    width: 40px !important;
+    height: 40px !important;
+
+    font-size: 21px !important;
+  }
+
+  .brand strong {
+    font-size: 15px !important;
+  }
+
+  .brand span {
+    display: none !important;
+  }
+
+  .topbar-right,
+  .freshguard-topbar-right {
+    width: 100% !important;
+
+    justify-content: space-between !important;
+
+    gap: 5px !important;
+  }
+
+  .freshguard-reports-button,
+  .freshguard-profile-button,
+  .logout-button,
+  .freshguard-logout-button {
+    min-height: 40px !important;
+    height: 40px !important;
+
+    padding:
+      0 9px !important;
+
+    font-size: 10px !important;
+
+    border-radius: 11px !important;
+  }
+
+  .freshguard-notification-button,
+  .notification-button {
+    width: 40px !important;
+    height: 40px !important;
+
+    min-width: 40px !important;
+    min-height: 40px !important;
+
+    flex-basis: 40px !important;
+  }
+}
+
+
+/* ---------- EXTRA SMALL PHONES: 320px ---------- */
+
+@media (max-width: 340px) {
+  .topbar {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .topbar-right,
+  .freshguard-topbar-right {
+    gap: 4px !important;
+  }
+
+  .freshguard-reports-button,
+  .freshguard-profile-button,
+  .logout-button,
+  .freshguard-logout-button {
+    padding:
+      0 7px !important;
+
+    font-size: 9px !important;
+  }
+
+  .freshguard-notification-button,
+  .notification-button {
+    width: 38px !important;
+    height: 38px !important;
+
+    min-width: 38px !important;
+    min-height: 38px !important;
+
+    flex-basis: 38px !important;
+  }
+}
+
+
+/* ============================================================
+   DASHBOARD CONTENT — MOBILE SAFETY
+   ============================================================ */
+
+@media (max-width: 650px) {
+  .dashboard-content {
+    width: calc(100% - 24px) !important;
+
+    max-width: 100% !important;
+
+    margin:
+      25px auto 55px !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .dashboard-hero {
+    width: 100% !important;
+
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+  }
+
+  .hero-copy {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    min-width: 0 !important;
+  }
+
+  .hero-copy h1,
+  .dashboard-subtitle {
+    max-width: 100% !important;
+
+    overflow-wrap: anywhere !important;
+  }
+
+  .stats-grid,
+  .action-grid {
+    width: 100% !important;
+
+    min-width: 0 !important;
+  }
+
+  .stat-card,
+  .action-card {
+    min-width: 0 !important;
+
+    max-width: 100% !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .action-card {
+    overflow: hidden !important;
+  }
+
+  .action-card h3,
+  .action-card p {
+    overflow-wrap: anywhere !important;
+  }
+
+  .fresh-banner {
+    width: 100% !important;
+
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+  }
+}
+
+
+/* ============================================================
+   FORM / INVENTORY MOBILE SAFETY
+   ============================================================ */
+
+@media (max-width: 650px) {
+  .form-page-main,
+  .inventory-container {
+    width: calc(100% - 24px) !important;
+
+    max-width: 100% !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .content-card {
+    width: 100% !important;
+
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+  }
+
+  .inventory-table-wrapper {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    overflow-x: auto !important;
+
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+
+/* ============================================================
+   ANALYSIS OVERLAY — SMALL SCREEN SAFETY
+   ============================================================ */
+
+@media (max-width: 600px) {
+  .food-analysis-overlay {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    box-sizing: border-box !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    padding:
+      18px 12px !important;
+  }
+
+  .analysis-content {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    min-width: 0 !important;
+  }
+
+  .analysis-title,
+  .analysis-subtitle {
+    max-width: 100% !important;
+
+    overflow-wrap: anywhere !important;
+  }
+
+  .analysis-steps {
+    width: 100% !important;
+
+    max-width: 370px !important;
+  }
+}
+
+
+/* ============================================================
+   UNIVERSAL MOBILE OVERFLOW PROTECTION
+   ============================================================ */
+
+@media (max-width: 650px) {
+  html,
+  body,
+  #root {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    overflow-x: hidden !important;
+  }
+
+  * {
+    max-width: 100%;
+  }
+
+  img,
+  video,
+  svg {
+    max-width: 100%;
+  }
+}
+/* ============================================================
+   FINAL DEVICE RESPONSIVE SYSTEM
+   Dashboard + Profile + Forms + Inventory
+   No cropping / no horizontal overflow
+   Existing design preserved
+   ============================================================ */
+
+
+/* ============================================================
+   GLOBAL RESPONSIVE FOUNDATION
+   ============================================================ */
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+
+/* ============================================================
+   TOPBAR — DESKTOP SAFE
+   ============================================================ */
+
+.topbar {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+  .topbar {
+    min-height: auto !important;
+
+    padding:
+      12px 24px !important;
+
+    gap: 12px !important;
+
+    flex-wrap: wrap !important;
+
+    overflow: visible !important;
+  }
+
+  .topbar > * {
+    min-width: 0 !important;
+  }
+
+  .brand {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  .topbar-right {
+    min-width: 0 !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: flex-end !important;
+
+    flex-wrap: wrap !important;
+
+    gap: 8px !important;
+  }
+
+  .user-pill {
+    min-width: 0 !important;
+  }
+
+  .user-info {
+    min-width: 0 !important;
+  }
+
+  .user-info strong,
+  .user-info span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+
+/* ============================================================
+   MOBILE — 650px
+   ============================================================ */
+
+@media (max-width: 650px) {
+
+  /* ----------------------------------------------------------
+     PAGE
+  ---------------------------------------------------------- */
+
+  html,
+  body,
+  #root {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    overflow-x: hidden !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     TOPBAR
+  ---------------------------------------------------------- */
+
+  .topbar {
+    width: 100% !important;
+    max-width: 100% !important;
+
+    min-height: auto !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: stretch !important;
+
+    justify-content: flex-start !important;
+
+    gap: 10px !important;
+
+    padding:
+      10px 14px 12px !important;
+
+    overflow: visible !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     BRAND
+  ---------------------------------------------------------- */
+
+  .brand {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    flex: 0 0 auto !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 10px !important;
+  }
+
+  .brand-icon {
+    width: 42px !important;
+    height: 42px !important;
+
+    min-width: 42px !important;
+    min-height: 42px !important;
+
+    flex-shrink: 0 !important;
+
+    border-radius: 13px !important;
+
+    font-size: 22px !important;
+  }
+
+  .brand > div {
+    min-width: 0 !important;
+  }
+
+  .brand strong {
+    font-size: 16px !important;
+
+    line-height: 1.15 !important;
+
+    white-space: nowrap !important;
+  }
+
+  .brand span {
+    font-size: 9px !important;
+
+    line-height: 1.2 !important;
+
+    white-space: nowrap !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     TOPBAR ACTIONS
+  ---------------------------------------------------------- */
+
+  .topbar-right {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: flex-end !important;
+
+    flex-wrap: wrap !important;
+
+    gap: 6px !important;
+
+    flex: 0 0 auto !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     USER PILL
+     Hide text only, preserve avatar
+  ---------------------------------------------------------- */
+
+  .user-pill {
+    min-width: 0 !important;
+
+    width: auto !important;
+
+    flex: 0 0 auto !important;
+
+    gap: 5px !important;
+  }
+
+  .user-info {
+    display: none !important;
+  }
+
+  .user-avatar {
+    width: 40px !important;
+    height: 40px !important;
+
+    min-width: 40px !important;
+    min-height: 40px !important;
+
+    flex-shrink: 0 !important;
+
+    border-radius: 12px !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     BUTTONS
+  ---------------------------------------------------------- */
+
+  .topbar button {
+    flex: 0 0 auto !important;
+
+    max-width: 100% !important;
+
+    white-space: nowrap !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .logout-button {
+    min-height: 40px !important;
+    height: 40px !important;
+
+    padding:
+      0 11px !important;
+
+    border-radius: 11px !important;
+
+    font-size: 10px !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     DASHBOARD CONTENT
+  ---------------------------------------------------------- */
+
+  .dashboard-content {
+    width: calc(100% - 24px) !important;
+
+    max-width: 100% !important;
+
+    min-width: 0 !important;
+
+    margin:
+      25px auto 55px !important;
+
+    padding: 0 !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     WORKSPACE STRIP
+  ---------------------------------------------------------- */
+
+  .dashboard-content > * {
+    max-width: 100% !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     HERO
+  ---------------------------------------------------------- */
+
+  .dashboard-hero {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    min-height: auto !important;
+
+    padding:
+      30px 22px !important;
+
+    border-radius: 25px !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: stretch !important;
+
+    justify-content: flex-start !important;
+
+    gap: 25px !important;
+
+    overflow: hidden !important;
+  }
+
+  .hero-copy {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    min-width: 0 !important;
+  }
+
+  .hero-copy h1 {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    font-size:
+      clamp(32px, 10vw, 42px) !important;
+
+    line-height: 1.08 !important;
+
+    overflow-wrap: normal !important;
+
+    word-break: normal !important;
+  }
+
+  .dashboard-subtitle {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    font-size: 13px !important;
+
+    line-height: 1.65 !important;
+
+    overflow-wrap: break-word !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     HERO BUTTONS
+  ---------------------------------------------------------- */
+
+  .hero-actions {
+    width: 100% !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    gap: 9px !important;
+
+    margin-top: 22px !important;
+  }
+
+  .hero-button,
+  .hero-actions .secondary-button,
+  .hero-actions .primary-button {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    min-height: 50px !important;
+
+    box-sizing: border-box !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     HERO VISUAL
+  ---------------------------------------------------------- */
+
+  .hero-visual {
+    width: min(280px, 100%) !important;
+
+    height: 280px !important;
+
+    max-width: 100% !important;
+
+    margin: 0 auto !important;
+
+    align-self: center !important;
+
+    flex-shrink: 0 !important;
+  }
+
+  .hero-fruit {
+    width: 125px !important;
+    height: 125px !important;
+
+    font-size: 66px !important;
+  }
+
+  .fresh-ring {
+    width: 205px !important;
+    height: 205px !important;
+  }
+
+  .fruit-orbit {
+    width: 47px !important;
+    height: 47px !important;
+
+    font-size: 23px !important;
+  }
+
+  .orbit-one {
+    top: 18px;
+    left: 32px;
+  }
+
+  .orbit-two {
+    right: 2px;
+    top: 105px;
+  }
+
+  .orbit-three {
+    left: 40px;
+    bottom: 10px;
+  }
+
+
+  /* ----------------------------------------------------------
+     STATS
+  ---------------------------------------------------------- */
+
+  .stats-grid {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    grid-template-columns: 1fr !important;
+
+    gap: 12px !important;
+
+    margin-top: 18px !important;
+  }
+
+  .stat-card {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    min-height: 105px !important;
+
+    padding: 18px !important;
+
+    gap: 13px !important;
+
+    border-radius: 18px !important;
+
+    overflow: hidden !important;
+  }
+
+  .stat-icon {
+    width: 48px !important;
+    height: 48px !important;
+
+    min-width: 48px !important;
+    min-height: 48px !important;
+
+    font-size: 22px !important;
+
+    border-radius: 14px !important;
+  }
+
+  .stat-card p {
+    font-size: 11px !important;
+  }
+
+  .stat-card strong {
+    font-size: 26px !important;
+  }
+
+  .stat-decoration {
+    font-size: 52px !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     ACTION SECTION
+  ---------------------------------------------------------- */
+
+  .action-section {
+    width: 100% !important;
+
+    margin-top: 30px !important;
+  }
+
+  .section-heading {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    gap: 10px !important;
+
+    margin-bottom: 14px !important;
+  }
+
+  .section-heading h2 {
+    min-width: 0 !important;
+
+    font-size: 21px !important;
+  }
+
+  .section-emoji {
+    font-size: 29px !important;
+
+    flex-shrink: 0 !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     ACTION CARDS
+  ---------------------------------------------------------- */
+
+  .action-grid {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    grid-template-columns: 1fr !important;
+
+    gap: 12px !important;
+  }
+
+  .action-card {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    min-height: 175px !important;
+
+    padding: 21px !important;
+
+    gap: 16px !important;
+
+    border-radius: 20px !important;
+
+    overflow: hidden !important;
+  }
+
+  .action-illustration {
+    min-width: 65px !important;
+
+    width: 65px !important;
+
+    font-size: 35px !important;
+  }
+
+  .action-card > div {
+    min-width: 0 !important;
+  }
+
+  .action-label {
+    font-size: 9px !important;
+  }
+
+  .action-card h3 {
+    font-size: 18px !important;
+
+    line-height: 1.25 !important;
+
+    overflow-wrap: break-word !important;
+  }
+
+  .action-card p {
+    max-width: 100% !important;
+
+    font-size: 12px !important;
+
+    line-height: 1.55 !important;
+
+    overflow-wrap: break-word !important;
+  }
+
+  .action-arrow {
+    right: 17px !important;
+    bottom: 16px !important;
+
+    font-size: 19px !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     FRESH BANNER
+  ---------------------------------------------------------- */
+
+  .fresh-banner {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: flex-start !important;
+
+    justify-content: flex-start !important;
+
+    gap: 15px !important;
+
+    padding:
+      23px 20px !important;
+
+    border-radius: 20px !important;
+
+    overflow: hidden !important;
+  }
+
+  .fresh-banner h2 {
+    font-size: 20px !important;
+
+    line-height: 1.25 !important;
+  }
+
+  .fresh-banner p {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    font-size: 12px !important;
+  }
+
+  .banner-food {
+    font-size: 32px !important;
+  }
+
+  .banner-badge {
+    align-self: flex-start !important;
+
+    min-width: 90px !important;
+  }
+}
+
+
+/* ============================================================
+   SMALL PHONES — 380px
+   ============================================================ */
+
+@media (max-width: 380px) {
+
+  .topbar {
+    padding:
+      9px 10px 11px !important;
+  }
+
+  .brand-icon {
+    width: 39px !important;
+    height: 39px !important;
+
+    min-width: 39px !important;
+    min-height: 39px !important;
+
+    font-size: 20px !important;
+  }
+
+  .brand strong {
+    font-size: 15px !important;
+  }
+
+  .brand span {
+    display: none !important;
+  }
+
+  .topbar-right {
+    width: 100% !important;
+
+    justify-content: space-between !important;
+
+    gap: 4px !important;
+  }
+
+  .user-avatar {
+    width: 38px !important;
+    height: 38px !important;
+
+    min-width: 38px !important;
+  }
+
+  .logout-button {
+    min-height: 38px !important;
+    height: 38px !important;
+
+    padding:
+      0 9px !important;
+
+    font-size: 9px !important;
+  }
+
+  .dashboard-content {
+    width: calc(100% - 18px) !important;
+
+    margin-top: 18px !important;
+  }
+
+  .dashboard-hero {
+    padding:
+      24px 17px !important;
+
+    border-radius: 21px !important;
+  }
+
+  .hero-copy h1 {
+    font-size:
+      clamp(29px, 9.5vw, 37px) !important;
+  }
+
+  .dashboard-subtitle {
+    font-size: 12px !important;
+  }
+
+  .hero-visual {
+    width: 245px !important;
+    height: 245px !important;
+  }
+
+  .hero-fruit {
+    width: 110px !important;
+    height: 110px !important;
+
+    font-size: 57px !important;
+  }
+
+  .fresh-ring {
+    width: 180px !important;
+    height: 180px !important;
+  }
+
+  .action-card {
+    padding: 18px !important;
+
+    min-height: 160px !important;
+  }
+
+  .action-illustration {
+    min-width: 55px !important;
+    width: 55px !important;
+
+    font-size: 31px !important;
+  }
+}
+
+
+/* ============================================================
+   EXTRA SMALL — 320px / 360px
+   ============================================================ */
+
+@media (max-width: 350px) {
+
+  .topbar-right {
+    justify-content: flex-start !important;
+
+    flex-wrap: wrap !important;
+  }
+
+  .dashboard-content {
+    width: calc(100% - 14px) !important;
+  }
+
+  .dashboard-hero {
+    padding:
+      21px 15px !important;
+  }
+
+  .hero-copy h1 {
+    font-size: 29px !important;
+  }
+
+  .hero-visual {
+    width: 225px !important;
+    height: 225px !important;
+  }
+
+  .hero-fruit {
+    width: 100px !important;
+    height: 100px !important;
+
+    font-size: 52px !important;
+  }
+
+  .fresh-ring {
+    width: 165px !important;
+    height: 165px !important;
+  }
+
+  .stat-card {
+    padding: 15px !important;
+  }
+
+  .action-card {
+    padding: 16px !important;
+
+    gap: 11px !important;
+  }
+
+  .action-illustration {
+    min-width: 48px !important;
+    width: 48px !important;
+
+    font-size: 28px !important;
+  }
+}
+
+
+/* ============================================================
+   PROFILE / FORM / INVENTORY PAGES
+   ============================================================ */
+
+@media (max-width: 650px) {
+
+  .form-page,
+  .inventory-page {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    overflow-x: hidden !important;
+  }
+
+  .form-page-main,
+  .inventory-container {
+    width: calc(100% - 24px) !important;
+
+    max-width: 100% !important;
+
+    min-width: 0 !important;
+
+    margin:
+      25px auto 55px !important;
+
+    box-sizing: border-box !important;
+  }
+
+  .content-card {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    padding:
+      28px 20px !important;
+
+    border-radius: 23px !important;
+
+    overflow: hidden !important;
+  }
+
+  .section-title h1 {
+    font-size: 29px !important;
+
+    line-height: 1.15 !important;
+
+    overflow-wrap: break-word !important;
+  }
+
+  .section-title p {
+    max-width: 100% !important;
+
+    font-size: 13px !important;
+  }
+
+  .inventory-header {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: stretch !important;
+
+    gap: 14px !important;
+  }
+
+  .inventory-header h1 {
+    font-size: 30px !important;
+  }
+
+  .inventory-add-button {
+    width: 100% !important;
+  }
+
+  .inventory-table-wrapper {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    overflow-x: auto !important;
+
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .inventory-table {
+    min-width: 700px !important;
+  }
+}
+
+
+/* ============================================================
+   AUTH PAGES
+   ============================================================ */
+
+@media (max-width: 650px) {
+
+  .auth-page {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    padding:
+      25px 12px !important;
+
+    overflow-x: hidden !important;
+  }
+
+  .auth-container {
+    width: 100% !important;
+
+    max-width: 460px !important;
+
+    min-width: 0 !important;
+
+    padding:
+      30px 20px !important;
+
+    border-radius: 24px !important;
+  }
+
+  .auth-logo {
+    width: 70px !important;
+    height: 70px !important;
+
+    font-size: 36px !important;
+
+    border-radius: 22px !important;
+  }
+
+  .auth-container h1 {
+    font-size: 28px !important;
+  }
+
+  .auth-heading p {
+    font-size: 13px !important;
+  }
+
+  .form-group input,
+  .form-group select {
+    height: 51px !important;
+
+    font-size: 14px !important;
+  }
+}
+
+
+/* ============================================================
+   ANALYSIS OVERLAY
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+  .food-analysis-overlay {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    max-width: 100% !important;
+
+    padding:
+      18px 12px !important;
+
+    overflow-x: hidden !important;
+
+    overflow-y: auto !important;
+  }
+
+  .analysis-content {
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    min-width: 0 !important;
+  }
+
+  .analysis-title {
+    max-width: 100% !important;
+
+    font-size: 23px !important;
+
+    overflow-wrap: break-word !important;
+  }
+
+  .analysis-subtitle {
+    max-width: 100% !important;
+
+    font-size: 12px !important;
+
+    overflow-wrap: break-word !important;
+  }
+
+  .analysis-steps {
+    width: 100% !important;
+
+    max-width: 370px !important;
+  }
+}
+
+
+/* ============================================================
+   REDUCE MOTION — ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

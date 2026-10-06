@@ -50,7 +50,7 @@ function Register({
         name,
         email,
         password,
-        role
+        role,
       });
 
 
@@ -67,7 +67,8 @@ function Register({
     } catch (err) {
 
       setError(
-        err.message
+        err?.message ||
+          "Registration failed. Please try again."
       );
 
     } finally {
@@ -79,35 +80,468 @@ function Register({
 
   return (
 
-    <div className="auth-page">
+    <div
+      className="auth-page register-page"
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        boxSizing: "border-box",
+        overflowX: "hidden",
+      }}
+    >
+
+      {/* ======================================================
+          RESPONSIVE REGISTER STYLES
+      ====================================================== */}
+
+      <style>
+        {`
+
+          .register-page {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            box-sizing: border-box;
+          }
+
+
+          .register-page .register-container {
+            box-sizing: border-box;
+            width: min(100% - 32px, 520px);
+            max-width: 520px;
+          }
+
+
+          .register-page .auth-heading {
+            min-width: 0;
+          }
+
+
+          .register-page .auth-heading h1 {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .register-page .auth-heading p {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .register-page .error-box,
+          .register-page .success-box {
+            width: 100%;
+            box-sizing: border-box;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .register-page .auth-form {
+            width: 100%;
+            min-width: 0;
+          }
+
+
+          .register-page .form-group {
+            width: 100%;
+            min-width: 0;
+          }
+
+
+          .register-page .form-group input,
+          .register-page .form-group select {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+          }
+
+
+          .register-page .primary-button {
+            width: 100%;
+            min-height: 52px;
+            box-sizing: border-box;
+            touch-action: manipulation;
+          }
+
+
+          .register-page .auth-link {
+            width: 100%;
+            box-sizing: border-box;
+            overflow-wrap: anywhere;
+          }
+
+
+          .register-page .auth-link button {
+            touch-action: manipulation;
+          }
+
+
+          @media (max-width: 700px) {
+
+            .register-page {
+              padding:
+                24px 16px !important;
+            }
+
+
+            .register-page .register-container {
+              width: 100%;
+              max-width: 500px;
+            }
+
+          }
+
+
+          @media (max-width: 520px) {
+
+            .register-page {
+              padding:
+                20px 13px !important;
+            }
+
+
+            .register-page .register-container {
+              width: 100%;
+              max-width: none;
+            }
+
+
+            .register-page .auth-logo {
+              width: 66px !important;
+              height: 66px !important;
+              min-width: 66px !important;
+              font-size: 31px !important;
+              margin-bottom: 17px !important;
+            }
+
+
+            .register-page .auth-heading {
+              margin-bottom: 21px !important;
+            }
+
+
+            .register-page .auth-heading h1 {
+              font-size: 29px !important;
+              line-height: 1.15 !important;
+            }
+
+
+            .register-page .auth-heading p {
+              font-size: 12px !important;
+              line-height: 1.55 !important;
+            }
+
+
+            .register-page .mini-label {
+              font-size: 9px !important;
+              letter-spacing: 1.1px !important;
+            }
+
+
+            .register-page .form-group {
+              margin-bottom: 14px !important;
+            }
+
+
+            .register-page .form-group label {
+              font-size: 12px !important;
+            }
+
+
+            .register-page .form-group input,
+            .register-page .form-group select {
+              min-height: 48px !important;
+              height: 48px !important;
+              padding:
+                0 13px !important;
+              border-radius:
+                12px !important;
+              font-size: 13px !important;
+            }
+
+
+            .register-page .primary-button {
+              min-height: 51px !important;
+              height: 51px !important;
+              border-radius:
+                13px !important;
+              font-size: 13px !important;
+            }
+
+
+            .register-page .auth-link {
+              font-size: 12px !important;
+              line-height: 1.6 !important;
+            }
+
+
+            .register-page .auth-link button {
+              font-size: 12px !important;
+            }
+
+          }
+
+
+          @media (max-width: 390px) {
+
+            .register-page {
+              padding:
+                15px 10px !important;
+            }
+
+
+            .register-page .register-container {
+              width: 100%;
+              border-radius:
+                18px !important;
+            }
+
+
+            .register-page .auth-logo {
+              width: 58px !important;
+              height: 58px !important;
+              min-width: 58px !important;
+              font-size: 27px !important;
+              margin-bottom: 14px !important;
+            }
+
+
+            .register-page .auth-heading {
+              margin-bottom: 18px !important;
+            }
+
+
+            .register-page .auth-heading h1 {
+              font-size: 25px !important;
+            }
+
+
+            .register-page .auth-heading p {
+              font-size: 11px !important;
+            }
+
+
+            .register-page .form-group {
+              margin-bottom: 12px !important;
+            }
+
+
+            .register-page .form-group label {
+              font-size: 11px !important;
+            }
+
+
+            .register-page .form-group input,
+            .register-page .form-group select {
+              height: 46px !important;
+              min-height: 46px !important;
+              padding:
+                0 11px !important;
+              border-radius:
+                11px !important;
+              font-size: 12px !important;
+            }
+
+
+            .register-page .primary-button {
+              height: 49px !important;
+              min-height: 49px !important;
+              font-size: 12px !important;
+            }
+
+
+            .register-page .auth-link {
+              font-size: 11px !important;
+            }
+
+
+            .register-page .auth-link button {
+              font-size: 11px !important;
+            }
+
+          }
+
+
+          @media (max-width: 340px) {
+
+            .register-page {
+              padding:
+                10px 7px !important;
+            }
+
+
+            .register-page .auth-heading h1 {
+              font-size: 23px !important;
+            }
+
+
+            .register-page .form-group input,
+            .register-page .form-group select {
+              font-size: 11px !important;
+            }
+
+          }
+
+
+          @media (max-height: 700px) and (min-width: 391px) {
+
+            .register-page {
+              padding-top: 15px !important;
+              padding-bottom: 15px !important;
+            }
+
+
+            .register-page .auth-logo {
+              margin-bottom: 10px !important;
+            }
+
+
+            .register-page .auth-heading {
+              margin-bottom: 13px !important;
+            }
+
+
+            .register-page .form-group {
+              margin-bottom: 10px !important;
+            }
+
+          }
+
+
+          @media (orientation: landscape)
+            and (max-height: 600px) {
+
+            .register-page {
+              align-items: flex-start !important;
+              padding-top: 15px !important;
+              padding-bottom: 15px !important;
+            }
+
+
+            .register-page .register-container {
+              margin-top: 5px !important;
+              margin-bottom: 5px !important;
+            }
+
+
+            .register-page .auth-logo {
+              width: 50px !important;
+              height: 50px !important;
+              min-width: 50px !important;
+              font-size: 24px !important;
+              margin-bottom: 8px !important;
+            }
+
+
+            .register-page .auth-heading {
+              margin-bottom: 10px !important;
+            }
+
+
+            .register-page .auth-heading h1 {
+              font-size: 22px !important;
+            }
+
+
+            .register-page .auth-heading p {
+              display: none !important;
+            }
+
+
+            .register-page .form-group {
+              margin-bottom: 8px !important;
+            }
+
+
+            .register-page .form-group input,
+            .register-page .form-group select {
+              height: 42px !important;
+              min-height: 42px !important;
+            }
+
+
+            .register-page .primary-button {
+              height: 45px !important;
+              min-height: 45px !important;
+            }
+
+          }
+
+
+          @media (prefers-reduced-motion: reduce) {
+
+            .register-page *,
+            .register-page *::before,
+            .register-page *::after {
+              animation-duration:
+                0.01ms !important;
+
+              animation-iteration-count:
+                1 !important;
+
+              transition-duration:
+                0.01ms !important;
+
+              scroll-behavior:
+                auto !important;
+            }
+
+          }
+
+        `}
+      </style>
+
+
+      {/* ======================================================
+          FLOATING FOOD
+      ====================================================== */}
 
       <div className="floating-food food-one">
         🍓
       </div>
 
+
       <div className="floating-food food-two">
         🥬
       </div>
+
 
       <div className="floating-food food-three">
         🍊
       </div>
 
+
       <div className="floating-food food-four">
         🥑
       </div>
+
 
       <div className="floating-food food-five">
         🍅
       </div>
 
 
+      {/* ======================================================
+          REGISTER CONTAINER
+      ====================================================== */}
+
       <div className="auth-container register-container">
+
+        {/* ====================================================
+            LOGO
+        ==================================================== */}
 
         <div className="auth-logo">
           🥬
         </div>
 
+
+        {/* ====================================================
+            HEADING
+        ==================================================== */}
 
         <div className="auth-heading">
 
@@ -115,9 +549,11 @@ function Register({
             GET STARTED
           </span>
 
+
           <h1>
             Create Account
           </h1>
+
 
           <p>
             Start monitoring your food inventory
@@ -126,6 +562,10 @@ function Register({
 
         </div>
 
+
+        {/* ====================================================
+            ERROR
+        ==================================================== */}
 
         {error && (
 
@@ -136,6 +576,10 @@ function Register({
         )}
 
 
+        {/* ====================================================
+            SUCCESS
+        ==================================================== */}
+
         {success && (
 
           <div className="success-box">
@@ -144,6 +588,10 @@ function Register({
 
         )}
 
+
+        {/* ====================================================
+            REGISTER FORM
+        ==================================================== */}
 
         <form
           className="auth-form"
@@ -160,6 +608,7 @@ function Register({
               Full Name
             </label>
 
+
             <input
               type="text"
               placeholder="Your name"
@@ -169,6 +618,7 @@ function Register({
               }
               required
               disabled={loading}
+              autoComplete="name"
             />
 
           </div>
@@ -184,6 +634,7 @@ function Register({
               Email Address
             </label>
 
+
             <input
               type="email"
               placeholder="you@example.com"
@@ -193,6 +644,7 @@ function Register({
               }
               required
               disabled={loading}
+              autoComplete="email"
             />
 
           </div>
@@ -208,6 +660,7 @@ function Register({
               Password
             </label>
 
+
             <input
               type="password"
               placeholder="Create a strong password"
@@ -218,6 +671,7 @@ function Register({
               minLength={6}
               required
               disabled={loading}
+              autoComplete="new-password"
             />
 
           </div>
@@ -233,6 +687,7 @@ function Register({
               Account Role
             </label>
 
+
             <select
               value={role}
               onChange={(e) =>
@@ -246,13 +701,16 @@ function Register({
                 Consumer
               </option>
 
+
               <option value="retail_manager">
                 Retail Manager
               </option>
 
+
               <option value="warehouse_operator">
                 Warehouse Operator
               </option>
+
 
               <option value="food_quality_inspector">
                 Food Quality Inspector
@@ -282,13 +740,19 @@ function Register({
         </form>
 
 
+        {/* ====================================================
+            LOGIN LINK
+        ==================================================== */}
+
         <div className="auth-link">
 
           Already have an account?
 
+
           <button
             onClick={onLoginPage}
             disabled={loading}
+            type="button"
           >
             Sign In
           </button>

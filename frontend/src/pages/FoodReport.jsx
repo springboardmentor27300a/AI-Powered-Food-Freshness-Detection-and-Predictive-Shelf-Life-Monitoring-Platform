@@ -332,9 +332,6 @@ function getStorageProfile(category, foodName) {
   const foodValue =
     (foodName || "").trim().toLowerCase();
 
-  // Keep this aligned with the existing backend
-  // storage intelligence rules.
-
   if (
     categoryValue.includes("meat") ||
     categoryValue.includes("poultry") ||
@@ -592,10 +589,6 @@ function buildDeepRecommendations(
 
   const cards = [];
 
-  // ----------------------------------------------------------
-  // TEMPERATURE
-  // ----------------------------------------------------------
-
   if (temperature === null) {
     cards.push({
       title: "Temperature",
@@ -633,10 +626,6 @@ function buildDeepRecommendations(
         `Recommended: ${storageProfile.temperatureLabel}`,
     });
   }
-
-  // ----------------------------------------------------------
-  // HUMIDITY
-  // ----------------------------------------------------------
 
   if (humidity === null) {
     cards.push({
@@ -676,10 +665,6 @@ function buildDeepRecommendations(
     });
   }
 
-  // ----------------------------------------------------------
-  // PACKAGING
-  // ----------------------------------------------------------
-
   if (packaging) {
     const packagingText =
       String(packaging).toLowerCase();
@@ -718,10 +703,6 @@ function buildDeepRecommendations(
     });
   }
 
-  // ----------------------------------------------------------
-  // STORAGE DURATION
-  // ----------------------------------------------------------
-
   if (duration !== null) {
     const durationRisk =
       durationStatus.toLowerCase().includes("exceed") ||
@@ -753,10 +734,6 @@ function buildDeepRecommendations(
         "More data improves recommendation precision",
     });
   }
-
-  // ----------------------------------------------------------
-  // AIR CIRCULATION
-  // ----------------------------------------------------------
 
   if (circulation) {
     const circulationText =
@@ -800,10 +777,6 @@ function buildDeepRecommendations(
     });
   }
 
-  // ----------------------------------------------------------
-  // LIGHT
-  // ----------------------------------------------------------
-
   if (light) {
     const lightText =
       String(light).toLowerCase();
@@ -845,10 +818,6 @@ function buildDeepRecommendations(
         "Environmental factor",
     });
   }
-
-  // ----------------------------------------------------------
-  // SHELF LIFE
-  // ----------------------------------------------------------
 
   const remaining =
     numericValue(
@@ -899,10 +868,6 @@ function buildDeepRecommendations(
     });
   }
 
-  // ----------------------------------------------------------
-  // VISUAL AI
-  // ----------------------------------------------------------
-
   const visualAnalysis =
     prediction?.image_analysis ||
     prediction?.analysis ||
@@ -948,10 +913,6 @@ function buildDeepRecommendations(
     });
   }
 
-  // ----------------------------------------------------------
-  // CONSUMPTION
-  // ----------------------------------------------------------
-
   const consumption =
     prediction?.consumption_recommendations?.[0] ||
     prediction?.recommendation_engine
@@ -981,10 +942,6 @@ function buildDeepRecommendations(
     meta:
       "Based on freshness + shelf-life",
   });
-
-  // ----------------------------------------------------------
-  // FEFO
-  // ----------------------------------------------------------
 
   const rotation =
     prediction?.inventory_rotation_recommendations?.[0] ||
@@ -1020,10 +977,6 @@ function buildDeepRecommendations(
         : "Expiry date not available",
   });
 
-  // ----------------------------------------------------------
-  // WASTE REDUCTION
-  // ----------------------------------------------------------
-
   const waste =
     prediction?.waste_reduction_recommendations?.[0] ||
     prediction?.recommendation_engine
@@ -1050,10 +1003,6 @@ function buildDeepRecommendations(
     meta:
       "Shelf-life + storage driven",
   });
-
-  // ----------------------------------------------------------
-  // QUALITY
-  // ----------------------------------------------------------
 
   const quality =
     prediction?.quality_improvement_recommendations?.[0] ||
@@ -1286,32 +1235,20 @@ function FoodReport({
             food.food_name,
             food.image_path,
             food.category || null,
-
-            // IMPORTANT:
-            // Pass actual Milestone-3 storage data
-            // instead of null values.
-
             food.storage_temperature ??
               null,
-
             food.storage_humidity ??
               null,
-
             food.packaging_type ??
               null,
-
             food.storage_duration ??
               null,
-
             food.air_circulation ??
               null,
-
             food.light_exposure ??
               null,
-
             food.manufacturing_date ||
               null,
-
             food.expiry_date ||
               null
           );
@@ -1385,6 +1322,7 @@ function FoodReport({
   if (!food) {
     return (
       <div
+        className="food-report-safe-page"
         style={{
           minHeight: "100vh",
           display: "flex",
@@ -1393,9 +1331,53 @@ function FoodReport({
           background:
             "linear-gradient(135deg,#effff5,#ffffff,#f7fff4)",
           padding: "30px",
+          boxSizing: "border-box",
         }}
       >
+        <style>{`
+          .food-report-safe-page {
+            overflow-x: hidden;
+          }
+
+          .food-report-safe-card {
+            width: min(100%, 520px);
+            box-sizing: border-box;
+          }
+
+          @media (max-width: 520px) {
+            .food-report-safe-page {
+              padding: 16px !important;
+            }
+
+            .food-report-safe-card {
+              padding: 30px 20px !important;
+              border-radius: 22px !important;
+            }
+
+            .food-report-safe-card h2 {
+              font-size: 22px !important;
+            }
+
+            .food-report-safe-card p {
+              font-size: 13px !important;
+              line-height: 1.55 !important;
+            }
+
+            .food-report-safe-card button {
+              width: 100%;
+              min-height: 46px;
+            }
+          }
+
+          @media (max-width: 360px) {
+            .food-report-safe-card {
+              padding: 25px 16px !important;
+            }
+          }
+        `}</style>
+
         <div
+          className="food-report-safe-card"
           style={{
             background: "#ffffff",
             borderRadius: "28px",
@@ -1424,6 +1406,7 @@ function FoodReport({
           </p>
 
           <button
+            type="button"
             onClick={onBack}
             style={{
               marginTop: "20px",
@@ -1451,6 +1434,7 @@ function FoodReport({
 
   return (
     <div
+      className="food-report-page"
       style={{
         minHeight: "100vh",
         background:
@@ -1460,8 +1444,799 @@ function FoodReport({
         color: "#073b27",
         fontFamily:
           "inherit",
+        boxSizing: "border-box",
+        overflowX: "hidden",
       }}
     >
+      <style>{`
+        /* =====================================================
+           FOOD REPORT - COMPLETE RESPONSIVE SYSTEM
+           Existing inline design is preserved.
+           Responsive rules only adjust layout/spacing/sizing.
+           ===================================================== */
+
+        .food-report-page,
+        .food-report-page *,
+        .food-report-page *::before,
+        .food-report-page *::after {
+          box-sizing: border-box;
+        }
+
+        .food-report-page {
+          width: 100%;
+          max-width: 100%;
+          overflow-x: hidden;
+        }
+
+        .food-report-page img {
+          max-width: 100%;
+        }
+
+        .food-report-page button {
+          font: inherit;
+        }
+
+        .food-report-page p,
+        .food-report-page h1,
+        .food-report-page h2,
+        .food-report-page h3 {
+          overflow-wrap: anywhere;
+        }
+
+        /* Main max-width containers */
+        .food-report-page > section,
+        .food-report-page > div {
+          max-width: 1250px;
+        }
+
+        /* =====================================================
+           DESKTOP / LARGE DESKTOP
+           ===================================================== */
+
+        @media (min-width: 1440px) {
+          .food-report-page {
+            padding-left: 48px !important;
+            padding-right: 48px !important;
+          }
+        }
+
+        /* =====================================================
+           TABLET
+           ===================================================== */
+
+        @media (max-width: 1100px) {
+          .food-report-page {
+            padding:
+              24px 24px 60px !important;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] {
+            grid-template-columns:
+              minmax(0, 1fr) 220px !important;
+            gap: 24px !important;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1.15fr 0.85fr"] {
+            grid-template-columns:
+              minmax(0, 1fr) !important;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .food-report-page [style*="repeat(5,minmax(0,1fr))"] {
+            grid-template-columns:
+              repeat(3, minmax(0, 1fr)) !important;
+          }
+
+          .food-report-page [style*="minmax(310px, 0.95fr) minmax(0, 1.7fr)"] {
+            grid-template-columns:
+              minmax(280px, 0.8fr)
+              minmax(0, 1.2fr) !important;
+          }
+
+          .food-report-page [style*="repeat(4,minmax(0,1fr))"] {
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+
+        /* =====================================================
+           900px
+           ===================================================== */
+
+        @media (max-width: 900px) {
+          .food-report-page {
+            padding:
+              20px 18px 55px !important;
+          }
+
+          .food-report-page > div[style*="max-width: 1250px"],
+          .food-report-page > section[style*="max-width: 1250px"] {
+            width: 100%;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] {
+            grid-template-columns:
+              1fr !important;
+            text-align: center;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] > div:first-child {
+            width: 100%;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] > div:first-child > div:nth-child(2) {
+            justify-content: center;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] > div:first-child > div:nth-child(3) {
+            justify-content: center;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] > div:last-child {
+            margin: 0 auto;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] [style*="width: 220px"] {
+            width: 190px !important;
+            height: 190px !important;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] [style*="width: 176px"] {
+            width: 152px !important;
+            height: 152px !important;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1fr 270px"] [style*="font-size: 48px"] {
+            font-size: 40px !important;
+          }
+
+          .food-report-page [style*="grid-template-columns: 1.15fr 0.85fr"] {
+            grid-template-columns:
+              1fr !important;
+          }
+
+          .food-report-page [style*="minmax(310px, 0.95fr) minmax(0, 1.7fr)"] {
+            grid-template-columns:
+              1fr !important;
+          }
+
+          .food-report-page [style*="min-height: 520px"] {
+            min-height: 420px !important;
+          }
+
+          .food-report-page img[alt*="visual analysis"] {
+            min-height: 420px !important;
+          }
+
+          .food-report-page [style*="repeat(5,minmax(0,1fr))"] {
+            grid-template-columns:
+              repeat(3, minmax(0, 1fr)) !important;
+          }
+
+          .food-report-page [style*="repeat(4,minmax(0,1fr))"] {
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+
+        /* =====================================================
+           MOBILE - 700px
+           ===================================================== */
+
+        @media (max-width: 700px) {
+          .food-report-page {
+            padding:
+              14px 12px 42px !important;
+          }
+
+          .food-report-page > div:first-child {
+            margin-bottom: 16px !important;
+          }
+
+          /* Top navigation */
+          .food-report-page > div:first-child {
+            gap: 10px !important;
+          }
+
+          .food-report-page > div:first-child button {
+            padding:
+              10px 13px !important;
+            font-size: 12px !important;
+            white-space: normal !important;
+          }
+
+          .food-report-page > div:first-child > div {
+            font-size: 10px !important;
+            letter-spacing: 1px !important;
+            text-align: right;
+          }
+
+          /* Main hero */
+          .food-report-page > section {
+            border-radius:
+              22px !important;
+          }
+
+          .food-report-page [style*="padding: 34px 38px"] {
+            padding:
+              24px 20px !important;
+          }
+
+          .food-report-page h1 {
+            font-size:
+              clamp(28px, 8vw, 38px) !important;
+          }
+
+          .food-report-page h2 {
+            font-size:
+              21px !important;
+          }
+
+          .food-report-page h3 {
+            font-size:
+              19px !important;
+          }
+
+          .food-report-page [style*="width: 78px"] {
+            width: 62px !important;
+            height: 62px !important;
+            font-size: 34px !important;
+            border-radius: 17px !important;
+            flex-shrink: 0 !important;
+          }
+
+          /* All major multi-column layouts */
+          .food-report-page [style*="grid-template-columns: 1.15fr 0.85fr"],
+          .food-report-page [style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns:
+              1fr !important;
+          }
+
+          /* Four overview cards */
+          .food-report-page [style*="repeat(4,minmax(0,1fr))"] {
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          /* AI intelligence cards */
+          .food-report-page [style*="repeat(5,minmax(0,1fr))"] {
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          /* Visual analysis cards */
+          .food-report-page [style*="repeat(2,minmax(0,1fr))"] {
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          /* Section cards */
+          .food-report-page [style*="padding: 28px"] {
+            padding:
+              21px !important;
+          }
+
+          .food-report-page [style*="padding: 30px"] {
+            padding:
+              21px !important;
+          }
+
+          /* Score circle */
+          .food-report-page [style*="width: 220px"][style*="height: 220px"] {
+            width: 175px !important;
+            height: 175px !important;
+          }
+
+          .food-report-page [style*="width: 176px"][style*="height: 176px"] {
+            width: 140px !important;
+            height: 140px !important;
+          }
+
+          /* Avoid text squeezing */
+          .food-report-page [style*="display: flex"] {
+            max-width: 100%;
+          }
+
+          /* Recommendation header */
+          .food-report-page [style*="white-space: nowrap"] {
+            white-space: normal !important;
+          }
+
+          /* Visual image */
+          .food-report-page [style*="min-height: 520px"] {
+            min-height: 350px !important;
+          }
+
+          .food-report-page img[alt*="visual analysis"] {
+            min-height: 350px !important;
+          }
+
+          /* Long recommendation area */
+          .food-report-page [style*="max-height: 640px"] {
+            max-height: none !important;
+            overflow-y: visible !important;
+          }
+
+          /* Footer */
+          .food-report-page > section:last-child {
+            padding:
+              18px !important;
+          }
+        }
+
+        /* =====================================================
+           560px
+           ===================================================== */
+
+        @media (max-width: 560px) {
+          .food-report-page {
+            padding:
+              10px 9px 35px !important;
+          }
+
+          .food-report-page > div:first-child {
+            align-items:
+              flex-start !important;
+          }
+
+          .food-report-page > div:first-child button {
+            min-height: 42px;
+            max-width: 62%;
+          }
+
+          .food-report-page > div:first-child > div {
+            max-width: 38%;
+          }
+
+          .food-report-page [style*="padding: 34px 38px"] {
+            padding:
+              21px 16px !important;
+          }
+
+          .food-report-page [style*="padding: 28px"],
+          .food-report-page [style*="padding: 30px"] {
+            padding:
+              17px !important;
+          }
+
+          .food-report-page [style*="width: 78px"] {
+            width: 56px !important;
+            height: 56px !important;
+            font-size: 30px !important;
+          }
+
+          .food-report-page [style*="gap: 18px"] {
+            gap: 12px !important;
+          }
+
+          .food-report-page [style*="repeat(4,minmax(0,1fr))"],
+          .food-report-page [style*="repeat(5,minmax(0,1fr))"] {
+            grid-template-columns:
+              1fr !important;
+          }
+
+          .food-report-page [style*="repeat(2,minmax(0,1fr))"] {
+            grid-template-columns:
+              1fr !important;
+          }
+
+          /* Make overview cards compact */
+          .food-report-page [style*="min-height: 125px"] {
+            min-height: auto !important;
+          }
+
+          /* Score */
+          .food-report-page [style*="width: 220px"][style*="height: 220px"] {
+            width: 155px !important;
+            height: 155px !important;
+          }
+
+          .food-report-page [style*="width: 176px"][style*="height: 176px"] {
+            width: 123px !important;
+            height: 123px !important;
+          }
+
+          .food-report-page [style*="font-size: 48px"] {
+            font-size: 34px !important;
+          }
+
+          /* Hero information */
+          .food-report-page [style*="font-size: 16px"] {
+            font-size: 13px !important;
+          }
+
+          /* Visual image */
+          .food-report-page [style*="min-height: 520px"] {
+            min-height: 290px !important;
+          }
+
+          .food-report-page img[alt*="visual analysis"] {
+            min-height: 290px !important;
+          }
+
+          /* Footer */
+          .food-report-page > section:last-child > div:last-child {
+            width: 100%;
+            line-height: 1.5;
+          }
+        }
+
+        /* =====================================================
+           430px
+           ===================================================== */
+
+        @media (max-width: 430px) {
+          .food-report-page {
+            padding:
+              8px 7px 30px !important;
+          }
+
+          .food-report-page > div:first-child {
+            gap: 7px !important;
+          }
+
+          .food-report-page > div:first-child button {
+            padding:
+              9px 10px !important;
+            font-size:
+              11px !important;
+          }
+
+          .food-report-page > div:first-child > div {
+            font-size:
+              8px !important;
+            letter-spacing:
+              .7px !important;
+          }
+
+          .food-report-page [style*="padding: 34px 38px"] {
+            padding:
+              18px 13px !important;
+          }
+
+          .food-report-page [style*="padding: 28px"],
+          .food-report-page [style*="padding: 30px"] {
+            padding:
+              15px !important;
+          }
+
+          .food-report-page [style*="width: 78px"] {
+            width: 50px !important;
+            height: 50px !important;
+            font-size: 27px !important;
+            border-radius: 14px !important;
+          }
+
+          .food-report-page h1 {
+            font-size:
+              27px !important;
+            letter-spacing:
+              -0.8px !important;
+          }
+
+          .food-report-page h2 {
+            font-size:
+              19px !important;
+          }
+
+          .food-report-page h3 {
+            font-size:
+              17px !important;
+          }
+
+          .food-report-page [style*="width: 220px"][style*="height: 220px"] {
+            width: 140px !important;
+            height: 140px !important;
+          }
+
+          .food-report-page [style*="width: 176px"][style*="height: 176px"] {
+            width: 112px !important;
+            height: 112px !important;
+          }
+
+          .food-report-page [style*="font-size: 48px"] {
+            font-size: 31px !important;
+          }
+
+          .food-report-page [style*="min-height: 520px"] {
+            min-height: 250px !important;
+          }
+
+          .food-report-page img[alt*="visual analysis"] {
+            min-height: 250px !important;
+          }
+
+          .food-report-page [style*="padding: 17px"] {
+            padding: 13px !important;
+          }
+
+          .food-report-page [style*="padding: 16px"] {
+            padding: 13px !important;
+          }
+
+          .food-report-page [style*="padding: 20px"] {
+            padding: 15px !important;
+          }
+        }
+
+        /* =====================================================
+           390px
+           ===================================================== */
+
+        @media (max-width: 390px) {
+          .food-report-page {
+            padding:
+              7px 6px 26px !important;
+          }
+
+          .food-report-page > div:first-child button {
+            font-size:
+              10px !important;
+            padding:
+              8px 9px !important;
+          }
+
+          .food-report-page > div:first-child > div {
+            font-size:
+              7px !important;
+          }
+
+          .food-report-page [style*="padding: 34px 38px"] {
+            padding:
+              16px 11px !important;
+          }
+
+          .food-report-page [style*="width: 78px"] {
+            width: 46px !important;
+            height: 46px !important;
+            font-size: 24px !important;
+          }
+
+          .food-report-page h1 {
+            font-size:
+              24px !important;
+          }
+
+          .food-report-page h2 {
+            font-size:
+              18px !important;
+          }
+
+          .food-report-page p {
+            font-size:
+              11px !important;
+          }
+
+          .food-report-page [style*="width: 220px"][style*="height: 220px"] {
+            width: 125px !important;
+            height: 125px !important;
+          }
+
+          .food-report-page [style*="width: 176px"][style*="height: 176px"] {
+            width: 100px !important;
+            height: 100px !important;
+          }
+
+          .food-report-page [style*="font-size: 48px"] {
+            font-size: 27px !important;
+          }
+
+          .food-report-page [style*="min-height: 520px"] {
+            min-height: 225px !important;
+          }
+
+          .food-report-page img[alt*="visual analysis"] {
+            min-height: 225px !important;
+          }
+        }
+
+        /* =====================================================
+           360px
+           ===================================================== */
+
+        @media (max-width: 360px) {
+          .food-report-page {
+            padding:
+              6px 5px 24px !important;
+          }
+
+          .food-report-page > div:first-child button {
+            max-width:
+              70%;
+            font-size:
+              9px !important;
+          }
+
+          .food-report-page > div:first-child > div {
+            display:
+              none;
+          }
+
+          .food-report-page [style*="padding: 34px 38px"] {
+            padding:
+              14px 9px !important;
+          }
+
+          .food-report-page [style*="padding: 28px"],
+          .food-report-page [style*="padding: 30px"] {
+            padding:
+              13px !important;
+          }
+
+          .food-report-page [style*="width: 78px"] {
+            width: 42px !important;
+            height: 42px !important;
+            font-size: 22px !important;
+          }
+
+          .food-report-page h1 {
+            font-size:
+              22px !important;
+          }
+
+          .food-report-page h2 {
+            font-size:
+              17px !important;
+          }
+
+          .food-report-page [style*="width: 220px"][style*="height: 220px"] {
+            width: 112px !important;
+            height: 112px !important;
+          }
+
+          .food-report-page [style*="width: 176px"][style*="height: 176px"] {
+            width: 90px !important;
+            height: 90px !important;
+          }
+
+          .food-report-page [style*="font-size: 48px"] {
+            font-size: 24px !important;
+          }
+
+          .food-report-page [style*="min-height: 520px"] {
+            min-height: 200px !important;
+          }
+
+          .food-report-page img[alt*="visual analysis"] {
+            min-height: 200px !important;
+          }
+        }
+
+        /* =====================================================
+           340px - EXTRA SMALL DEVICES
+           ===================================================== */
+
+        @media (max-width: 340px) {
+          .food-report-page {
+            padding:
+              5px 4px 20px !important;
+          }
+
+          .food-report-page > div:first-child button {
+            padding:
+              7px 8px !important;
+            font-size:
+              8px !important;
+          }
+
+          .food-report-page [style*="padding: 34px 38px"] {
+            padding:
+              12px 8px !important;
+          }
+
+          .food-report-page [style*="width: 78px"] {
+            width: 38px !important;
+            height: 38px !important;
+            font-size: 19px !important;
+          }
+
+          .food-report-page h1 {
+            font-size:
+              20px !important;
+          }
+
+          .food-report-page h2 {
+            font-size:
+              16px !important;
+          }
+
+          .food-report-page h3 {
+            font-size:
+              15px !important;
+          }
+
+          .food-report-page [style*="width: 220px"][style*="height: 220px"] {
+            width: 100px !important;
+            height: 100px !important;
+          }
+
+          .food-report-page [style*="width: 176px"][style*="height: 176px"] {
+            width: 80px !important;
+            height: 80px !important;
+          }
+
+          .food-report-page [style*="font-size: 48px"] {
+            font-size: 21px !important;
+          }
+
+          .food-report-page [style*="min-height: 520px"] {
+            min-height: 180px !important;
+          }
+
+          .food-report-page img[alt*="visual analysis"] {
+            min-height: 180px !important;
+          }
+        }
+
+        /* =====================================================
+           LANDSCAPE MOBILE
+           ===================================================== */
+
+        @media (max-width: 900px) and (orientation: landscape) and (max-height: 600px) {
+          .food-report-page {
+            padding:
+              12px 18px 35px !important;
+          }
+
+          .food-report-page [style*="width: 220px"][style*="height: 220px"] {
+            width: 150px !important;
+            height: 150px !important;
+          }
+
+          .food-report-page [style*="width: 176px"][style*="height: 176px"] {
+            width: 120px !important;
+            height: 120px !important;
+          }
+
+          .food-report-page [style*="min-height: 520px"] {
+            min-height: 280px !important;
+          }
+
+          .food-report-page img[alt*="visual analysis"] {
+            min-height: 280px !important;
+          }
+        }
+
+        /* =====================================================
+           TOUCH DEVICES
+           ===================================================== */
+
+        @media (hover: none) and (pointer: coarse) {
+          .food-report-page button {
+            min-height: 44px;
+          }
+
+          .food-report-page button,
+          .food-report-page [role="button"] {
+            -webkit-tap-highlight-color:
+              transparent;
+          }
+
+          .food-report-page img {
+            -webkit-user-drag: none;
+          }
+        }
+
+        /* =====================================================
+           REDUCED MOTION
+           ===================================================== */
+
+        @media (prefers-reduced-motion: reduce) {
+          .food-report-page *,
+          .food-report-page *::before,
+          .food-report-page *::after {
+            scroll-behavior: auto !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
+
       {/* =====================================================
           TOP NAV
       ===================================================== */}
@@ -1476,6 +2251,7 @@ function FoodReport({
           justifyContent:
             "space-between",
           gap: "20px",
+          width: "100%",
         }}
       >
         <button
@@ -1530,6 +2306,7 @@ function FoodReport({
             "0 25px 70px rgba(0,70,35,0.10)",
           position: "relative",
           overflow: "hidden",
+          width: "100%",
         }}
       >
         <div
@@ -1576,6 +2353,7 @@ function FoodReport({
                   "1.5px",
                 marginBottom:
                   "16px",
+                maxWidth: "100%",
               }}
             >
               <span>✦</span>
@@ -1588,6 +2366,7 @@ function FoodReport({
                 alignItems:
                   "center",
                 gap: "18px",
+                minWidth: 0,
               }}
             >
               <div
@@ -1606,6 +2385,7 @@ function FoodReport({
                   fontSize: "45px",
                   boxShadow:
                     "0 12px 30px rgba(8,169,79,0.10)",
+                  flexShrink: 0,
                 }}
               >
                 {getFoodEmoji(
@@ -1614,7 +2394,11 @@ function FoodReport({
                 )}
               </div>
 
-              <div>
+              <div
+                style={{
+                  minWidth: 0,
+                }}
+              >
                 <h1
                   style={{
                     margin: 0,
@@ -1694,6 +2478,9 @@ function FoodReport({
                     "700",
                   fontSize:
                     "13px",
+                  maxWidth: "100%",
+                  overflowWrap:
+                    "anywhere",
                 }}
               >
                 Category:{" "}
@@ -1715,6 +2502,9 @@ function FoodReport({
                       "700",
                     fontSize:
                       "13px",
+                    maxWidth: "100%",
+                    overflowWrap:
+                      "anywhere",
                   }}
                 >
                   ❄{" "}
@@ -1750,6 +2540,7 @@ function FoodReport({
                   "center",
                 boxShadow:
                   "0 20px 45px rgba(8,169,79,0.15)",
+                flexShrink: 0,
               }}
             >
               <div
@@ -1833,6 +2624,7 @@ function FoodReport({
           gridTemplateColumns:
             "repeat(4,minmax(0,1fr))",
           gap: "15px",
+          width: "100%",
         }}
       >
         {[
@@ -1889,6 +2681,7 @@ function FoodReport({
                 "20px",
               boxShadow:
                 "0 12px 35px rgba(0,70,35,0.06)",
+              minWidth: 0,
             }}
           >
             <div
@@ -1929,6 +2722,8 @@ function FoodReport({
                   "21px",
                 fontWeight:
                   "800",
+                overflowWrap:
+                  "anywhere",
               }}
             >
               {item.value}
@@ -1965,6 +2760,7 @@ function FoodReport({
           gridTemplateColumns:
             "1.15fr 0.85fr",
           gap: "20px",
+          width: "100%",
         }}
       >
         {/* FRESHNESS ANALYSIS */}
@@ -1981,6 +2777,7 @@ function FoodReport({
               "1px solid rgba(8,169,79,0.09)",
             boxShadow:
               "0 15px 45px rgba(0,70,35,0.06)",
+            minWidth: 0,
           }}
         >
           <div
@@ -1993,7 +2790,11 @@ function FoodReport({
               gap: "15px",
             }}
           >
-            <div>
+            <div
+              style={{
+                minWidth: 0,
+              }}
+            >
               <span
                 style={{
                   fontSize:
@@ -2038,6 +2839,7 @@ function FoodReport({
                   "center",
                 fontSize:
                   "22px",
+                flexShrink: 0,
               }}
             >
               ✦
@@ -2068,6 +2870,8 @@ function FoodReport({
                   "center",
                 gap:
                   "15px",
+                flexWrap:
+                  "wrap",
               }}
             >
               <div>
@@ -2239,6 +3043,7 @@ function FoodReport({
                       "#fafdfb",
                     border:
                       "1px solid #edf4ef",
+                    minWidth: 0,
                   }}
                 >
                   <span
@@ -2257,6 +3062,7 @@ function FoodReport({
                         "center",
                       justifyContent:
                         "center",
+                      flexShrink: 0,
                     }}
                   >
                     {factor.icon}
@@ -2266,12 +3072,16 @@ function FoodReport({
                     style={{
                       flex:
                         1,
+                      minWidth:
+                        0,
                       fontSize:
                         "13px",
                       fontWeight:
                         "700",
                       color:
                         "#41584e",
+                      overflowWrap:
+                        "anywhere",
                     }}
                   >
                     {factor.name}
@@ -2283,6 +3093,7 @@ function FoodReport({
                         "#08a94f",
                       fontSize:
                         "13px",
+                      flexShrink: 0,
                     }}
                   >
                     {factor.weight}
@@ -2305,6 +3116,7 @@ function FoodReport({
               "column",
             gap:
               "20px",
+            minWidth: 0,
           }}
         >
           <div
@@ -2403,6 +3215,7 @@ function FoodReport({
                 "1px solid rgba(8,169,79,0.09)",
               boxShadow:
                 "0 15px 45px rgba(0,70,35,0.06)",
+              minWidth: 0,
             }}
           >
             <div
@@ -2415,9 +3228,16 @@ function FoodReport({
                   "flex-start",
                 gap:
                   "15px",
+                flexWrap:
+                  "wrap",
               }}
             >
-              <div>
+              <div
+                style={{
+                  minWidth: 0,
+                  flex: 1,
+                }}
+              >
                 <span
                   style={{
                     fontSize:
@@ -2563,6 +3383,7 @@ function FoodReport({
                           tone.background,
                         border:
                           `1px solid ${tone.border}`,
+                        minWidth: 0,
                       }}
                     >
                       <div
@@ -2626,6 +3447,7 @@ function FoodReport({
                                   "#073b27",
                                 fontSize:
                                   "13px",
+                                minWidth: 0,
                               }}
                             >
                               {item.title}
@@ -2653,6 +3475,7 @@ function FoodReport({
                                   "12px",
                                 fontWeight:
                                   "900",
+                                flexShrink: 0,
                               }}
                             >
                               {tone.icon}
@@ -2669,6 +3492,8 @@ function FoodReport({
                                 "13px",
                               fontWeight:
                                 "800",
+                              overflowWrap:
+                                "anywhere",
                             }}
                           >
                             {item.value}
@@ -2727,6 +3552,7 @@ function FoodReport({
           gridTemplateColumns:
             "1fr 1fr",
           gap: "20px",
+          width: "100%",
         }}
       >
         {/* SHELF LIFE */}
@@ -2743,6 +3569,7 @@ function FoodReport({
               "1px solid rgba(8,169,79,0.09)",
             boxShadow:
               "0 15px 45px rgba(0,70,35,0.06)",
+            minWidth: 0,
           }}
         >
           <span
@@ -2814,6 +3641,8 @@ function FoodReport({
                     "6px",
                   color:
                     "#073b27",
+                  overflowWrap:
+                    "anywhere",
                 }}
               >
                 {formatDate(
@@ -2853,6 +3682,8 @@ function FoodReport({
                     "6px",
                   color:
                     "#073b27",
+                  overflowWrap:
+                    "anywhere",
                 }}
               >
                 {formatDate(
@@ -2882,6 +3713,9 @@ function FoodReport({
                   "space-between",
                 alignItems:
                   "center",
+                gap: "12px",
+                flexWrap:
+                  "wrap",
               }}
             >
               <span
@@ -2908,6 +3742,8 @@ function FoodReport({
                       : "#08a94f",
                   fontSize:
                     "20px",
+                  overflowWrap:
+                    "anywhere",
                 }}
               >
                 {report.remainingShelfLife !==
@@ -2957,12 +3793,15 @@ function FoodReport({
                   "flex",
                 justifyContent:
                   "space-between",
+                gap: "10px",
                 marginTop:
                   "9px",
                 color:
                   "#8a9993",
                 fontSize:
                   "11px",
+                flexWrap:
+                  "wrap",
               }}
             >
               <span>
@@ -3004,6 +3843,7 @@ function FoodReport({
               "1px solid rgba(8,169,79,0.09)",
             boxShadow:
               "0 15px 45px rgba(0,70,35,0.06)",
+            minWidth: 0,
           }}
         >
           <span
@@ -3076,12 +3916,17 @@ function FoodReport({
                     "center",
                   fontSize:
                     "22px",
+                  flexShrink: 0,
                 }}
               >
                 ❄️
               </div>
 
-              <div>
+              <div
+                style={{
+                  minWidth: 0,
+                }}
+              >
                 <div
                   style={{
                     fontSize:
@@ -3103,6 +3948,8 @@ function FoodReport({
                       "4px",
                     color:
                       "#073b27",
+                    overflowWrap:
+                      "anywhere",
                   }}
                 >
                   {food.storage_condition ||
@@ -3205,6 +4052,7 @@ function FoodReport({
                         "#f8fcf9",
                       border:
                         "1px solid #e7f3eb",
+                      minWidth: 0,
                     }}
                   >
                     <div
@@ -3247,6 +4095,8 @@ function FoodReport({
                           "#073b27",
                         fontSize:
                           "12px",
+                        overflowWrap:
+                          "anywhere",
                       }}
                     >
                       {item.value}
@@ -3282,12 +4132,17 @@ function FoodReport({
                   style={{
                     fontSize:
                       "20px",
+                    flexShrink: 0,
                   }}
                 >
                   🤖
                 </span>
 
-                <div>
+                <div
+                  style={{
+                    minWidth: 0,
+                  }}
+                >
                   <strong
                     style={{
                       color:
@@ -3328,7 +4183,8 @@ function FoodReport({
 
       <section
         style={{
-          maxWidth: "1250px",
+          maxWidth:
+            "1250px",
           margin:
             "20px auto 0",
           background:
@@ -3341,6 +4197,7 @@ function FoodReport({
             "1px solid rgba(8,169,79,0.09)",
           boxShadow:
             "0 15px 45px rgba(0,70,35,0.06)",
+          width: "100%",
         }}
       >
         <div
@@ -3357,7 +4214,11 @@ function FoodReport({
               "wrap",
           }}
         >
-          <div>
+          <div
+            style={{
+              minWidth: 0,
+            }}
+          >
             <span
               style={{
                 fontSize:
@@ -3416,6 +4277,7 @@ function FoodReport({
                 "12px",
               fontWeight:
                 "800",
+              flexShrink: 0,
             }}
           >
             ✦ AI Prediction
@@ -3521,6 +4383,7 @@ function FoodReport({
                     "1px solid #e7f3eb",
                   minHeight:
                     "125px",
+                  minWidth: 0,
                 }}
               >
                 <div
@@ -3561,6 +4424,8 @@ function FoodReport({
                       "17px",
                     fontWeight:
                       "850",
+                    overflowWrap:
+                      "anywhere",
                   }}
                 >
                   {item.value}
@@ -3956,6 +4821,7 @@ function FoodReport({
                 "1px solid rgba(8,169,79,0.09)",
               boxShadow:
                 "0 15px 45px rgba(0,70,35,0.06)",
+              width: "100%",
             }}
           >
             <div
@@ -3972,7 +4838,11 @@ function FoodReport({
                   "wrap",
               }}
             >
-              <div>
+              <div
+                style={{
+                  minWidth: 0,
+                }}
+              >
                 <span
                   style={{
                     fontSize:
@@ -4035,6 +4905,7 @@ function FoodReport({
                     "12px",
                   fontWeight:
                     "800",
+                  flexShrink: 0,
                 }}
               >
                 🤖 AI Visual Inspection
@@ -4085,6 +4956,8 @@ function FoodReport({
                     "12px",
                   fontWeight:
                     "700",
+                  overflowWrap:
+                    "anywhere",
                 }}
               >
                 {visualAnalysisError}
@@ -4185,6 +5058,8 @@ function FoodReport({
                         "850",
                       boxShadow:
                         "0 8px 20px rgba(0,0,0,.08)",
+                      overflowWrap:
+                        "anywhere",
                     }}
                   >
                     {annotatedImagePath
@@ -4202,6 +5077,7 @@ function FoodReport({
                     "repeat(2,minmax(0,1fr))",
                   gap:
                     "12px",
+                  minWidth: 0,
                 }}
               >
                 {items.map(
@@ -4235,6 +5111,7 @@ function FoodReport({
                             "160px",
                           position:
                             "relative",
+                          minWidth: 0,
                         }}
                       >
                         <div
@@ -4245,6 +5122,7 @@ function FoodReport({
                               "center",
                             justifyContent:
                               "space-between",
+                            gap: "8px",
                           }}
                         >
                           <div
@@ -4265,6 +5143,7 @@ function FoodReport({
                                 "center",
                               fontSize:
                                 "21px",
+                              flexShrink: 0,
                             }}
                           >
                             {item.icon}
@@ -4292,6 +5171,7 @@ function FoodReport({
                                 "900",
                               fontSize:
                                 "16px",
+                              flexShrink: 0,
                             }}
                           >
                             {theme.ic}
@@ -4312,6 +5192,8 @@ function FoodReport({
                               ".7px",
                             textTransform:
                               "uppercase",
+                            overflowWrap:
+                              "anywhere",
                           }}
                         >
                           {item.title}
@@ -4329,6 +5211,8 @@ function FoodReport({
                               "850",
                             lineHeight:
                               1.25,
+                            overflowWrap:
+                              "anywhere",
                           }}
                         >
                           {displayValue}
@@ -4384,6 +5268,7 @@ function FoodReport({
                                   "850",
                                 color:
                                   theme.tx,
+                                flexShrink: 0,
                               }}
                             >
                               {Math.round(
@@ -4493,9 +5378,14 @@ function FoodReport({
             "20px",
           flexWrap:
             "wrap",
+          width: "100%",
         }}
       >
-        <div>
+        <div
+          style={{
+            minWidth: 0,
+          }}
+        >
           <strong
             style={{
               color:
@@ -4515,6 +5405,8 @@ function FoodReport({
                 "11px",
               marginTop:
                 "4px",
+              lineHeight:
+                1.5,
             }}
           >
             Generated from the food item's recorded inventory,
@@ -4530,6 +5422,8 @@ function FoodReport({
               "12px",
             fontWeight:
               "800",
+            overflowWrap:
+              "anywhere",
           }}
         >
           Freshness • Shelf Life • Storage • AI Recommendations

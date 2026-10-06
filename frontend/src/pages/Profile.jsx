@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { getCurrentUser } from "../api";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  getCurrentUser,
+} from "../api";
 
 
 // ============================================================
@@ -109,6 +116,7 @@ function Profile({
   onBack,
   onLogout,
 }) {
+
   const [user, setUser] =
     useState(null);
 
@@ -124,48 +132,66 @@ function Profile({
   // ==========================================================
 
   useEffect(() => {
+
     let mounted = true;
+
 
     const loadProfile =
       async () => {
+
         try {
+
           setLoading(true);
           setError("");
+
 
           const userData =
             await getCurrentUser();
 
+
           if (!mounted) {
             return;
           }
 
+
           setUser(userData);
+
         } catch (err) {
+
           if (!mounted) {
             return;
           }
+
 
           console.error(
             "Profile loading error:",
             err
           );
 
+
           setError(
             err?.message ||
               "Failed to load profile."
           );
+
         } finally {
+
           if (mounted) {
             setLoading(false);
           }
+
         }
+
       };
 
+
     loadProfile();
+
 
     return () => {
       mounted = false;
     };
+
   }, []);
 
 
@@ -177,6 +203,7 @@ function Profile({
     normaliseRole(
       user?.role
     );
+
 
   const roleConfig =
     useMemo(
@@ -224,7 +251,552 @@ function Profile({
 
 
   return (
-    <div className="dashboard-page">
+
+    <div
+      className="dashboard-page profile-page"
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        overflowX: "hidden",
+      }}
+    >
+
+      {/* ======================================================
+          RESPONSIVE PROFILE STYLES
+      ====================================================== */}
+
+      <style>
+        {`
+
+          .profile-page {
+            width: 100%;
+            min-width: 0;
+          }
+
+
+          .profile-header {
+            min-width: 0;
+          }
+
+
+          .profile-main-card {
+            width: 100%;
+            box-sizing: border-box;
+          }
+
+
+          .profile-summary {
+            min-width: 0;
+          }
+
+
+          .profile-summary-info {
+            min-width: 0;
+          }
+
+
+          .profile-summary-name {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .profile-summary-email {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .profile-role-information {
+            min-width: 0;
+          }
+
+
+          .profile-role-content {
+            min-width: 0;
+          }
+
+
+          .profile-role-description {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .profile-responsibilities {
+            width: 100%;
+          }
+
+
+          .profile-responsibility-item {
+            min-width: 0;
+          }
+
+
+          .profile-responsibility-text {
+            min-width: 0;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .profile-information-header {
+            min-width: 0;
+          }
+
+
+          .profile-information-title {
+            min-width: 0;
+          }
+
+
+          .profile-information-grid {
+            width: 100%;
+          }
+
+
+          .profile-access-note {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .profile-back-button {
+            min-height: 46px;
+            touch-action: manipulation;
+          }
+
+
+          @media (max-width: 900px) {
+
+            .profile-main-card {
+              border-radius: 24px !important;
+              padding: 30px !important;
+            }
+
+
+            .profile-summary {
+              gap: 22px !important;
+              padding: 23px !important;
+            }
+
+
+            .profile-summary-name {
+              font-size: 26px !important;
+            }
+
+
+            .profile-responsibilities {
+              grid-template-columns:
+                repeat(2, minmax(0, 1fr)) !important;
+            }
+
+          }
+
+
+          @media (max-width: 700px) {
+
+            .profile-main-card {
+              border-radius: 22px !important;
+              padding: 22px !important;
+            }
+
+
+            .profile-summary {
+              align-items: flex-start !important;
+              flex-direction: column !important;
+              gap: 18px !important;
+              padding: 21px !important;
+            }
+
+
+            .profile-avatar {
+              width: 88px !important;
+              height: 88px !important;
+            }
+
+
+            .profile-avatar-inner {
+              font-size: 33px !important;
+            }
+
+
+            .profile-active-dot {
+              width: 20px !important;
+              height: 20px !important;
+              bottom: 4px !important;
+              right: 0 !important;
+            }
+
+
+            .profile-summary-name {
+              font-size: 24px !important;
+            }
+
+
+            .profile-summary-email {
+              font-size: 14px !important;
+              margin-bottom: 14px !important;
+            }
+
+
+            .profile-role-information {
+              padding: 20px !important;
+            }
+
+
+            .profile-role-heading {
+              font-size: 19px !important;
+            }
+
+
+            .profile-responsibilities {
+              grid-template-columns:
+                1fr !important;
+            }
+
+
+            .profile-information-grid {
+              grid-template-columns:
+                1fr !important;
+            }
+
+          }
+
+
+          @media (max-width: 560px) {
+
+            .profile-header {
+              min-height: 70px !important;
+            }
+
+
+            .profile-header .brand {
+              min-width: 0 !important;
+              max-width: calc(100% - 85px);
+            }
+
+
+            .profile-header .brand-icon {
+              width: 42px !important;
+              height: 42px !important;
+              min-width: 42px !important;
+              border-radius: 13px !important;
+              font-size: 23px !important;
+            }
+
+
+            .profile-header .brand strong {
+              font-size: 16px !important;
+            }
+
+
+            .profile-header .brand span {
+              font-size: 9px !important;
+            }
+
+
+            .profile-header .topbar-right {
+              flex-shrink: 0 !important;
+            }
+
+
+            .profile-header .logout-button {
+              padding:
+                9px 12px !important;
+              border-radius:
+                11px !important;
+              font-size:
+                11px !important;
+            }
+
+
+            .profile-main-content {
+              padding-top: 18px !important;
+            }
+
+
+            .profile-main-card {
+              border-radius: 19px !important;
+              padding: 16px !important;
+            }
+
+
+            .profile-back-button {
+              width: 100%;
+              justify-content: center;
+              margin-bottom: 15px !important;
+            }
+
+
+            .profile-section-title {
+              margin-bottom: 22px !important;
+            }
+
+
+            .profile-section-title h1 {
+              font-size: 27px !important;
+              line-height: 1.12 !important;
+            }
+
+
+            .profile-section-title p {
+              font-size: 12px !important;
+              line-height: 1.55 !important;
+            }
+
+
+            .profile-summary {
+              border-radius: 19px !important;
+              padding: 18px !important;
+              margin-bottom: 20px !important;
+            }
+
+
+            .profile-summary-name {
+              font-size: 22px !important;
+              line-height: 1.2 !important;
+            }
+
+
+            .profile-summary-email {
+              font-size: 13px !important;
+              line-height: 1.5 !important;
+            }
+
+
+            .profile-badge-row {
+              gap: 8px !important;
+            }
+
+
+            .profile-role-badge,
+            .profile-status-badge {
+              max-width: 100%;
+              padding:
+                8px 11px !important;
+              font-size: 11px !important;
+            }
+
+
+            .profile-role-information {
+              margin-bottom: 22px !important;
+              padding: 17px !important;
+              border-radius: 18px !important;
+            }
+
+
+            .profile-role-header {
+              align-items: flex-start !important;
+              gap: 11px !important;
+            }
+
+
+            .profile-role-icon {
+              width: 43px !important;
+              height: 43px !important;
+              min-width: 43px !important;
+              border-radius: 13px !important;
+              font-size: 20px !important;
+            }
+
+
+            .profile-role-label {
+              font-size: 9px !important;
+            }
+
+
+            .profile-role-heading {
+              font-size: 17px !important;
+              line-height: 1.25 !important;
+            }
+
+
+            .profile-role-description {
+              font-size: 11px !important;
+              line-height: 1.55 !important;
+            }
+
+
+            .profile-responsibilities {
+              margin-top: 17px !important;
+              gap: 8px !important;
+            }
+
+
+            .profile-responsibility-item {
+              padding: 10px 11px !important;
+              border-radius: 11px !important;
+              font-size: 10.5px !important;
+            }
+
+
+            .profile-information-header {
+              gap: 9px !important;
+              margin-bottom: 12px !important;
+            }
+
+
+            .profile-information-header-icon {
+              width: 38px !important;
+              height: 38px !important;
+              min-width: 38px !important;
+              border-radius: 11px !important;
+              font-size: 18px !important;
+            }
+
+
+            .profile-information-title h3 {
+              font-size: 16px !important;
+            }
+
+
+            .profile-information-title p {
+              font-size: 10px !important;
+            }
+
+
+            .profile-access-note {
+              margin-top: 16px !important;
+              padding: 13px 14px !important;
+              border-radius: 13px !important;
+              font-size: 10.5px !important;
+              line-height: 1.55 !important;
+            }
+
+
+            .profile-final-back {
+              height: 52px !important;
+              margin-top: 22px !important;
+              border-radius: 14px !important;
+              font-size: 13px !important;
+            }
+
+          }
+
+
+          @media (max-width: 390px) {
+
+            .profile-header {
+              padding-left: 12px !important;
+              padding-right: 12px !important;
+            }
+
+
+            .profile-header .brand {
+              gap: 8px !important;
+              max-width: calc(100% - 78px);
+            }
+
+
+            .profile-header .brand-icon {
+              width: 38px !important;
+              height: 38px !important;
+              min-width: 38px !important;
+              font-size: 21px !important;
+              border-radius: 11px !important;
+            }
+
+
+            .profile-header .brand strong {
+              font-size: 14px !important;
+            }
+
+
+            .profile-header .brand span {
+              font-size: 8px !important;
+            }
+
+
+            .profile-header .logout-button {
+              padding:
+                8px 10px !important;
+              font-size:
+                10px !important;
+            }
+
+
+            .profile-main-card {
+              padding: 12px !important;
+              border-radius: 17px !important;
+            }
+
+
+            .profile-section-title h1 {
+              font-size: 24px !important;
+            }
+
+
+            .profile-section-title p {
+              font-size: 11px !important;
+            }
+
+
+            .profile-summary {
+              padding: 15px !important;
+              border-radius: 16px !important;
+            }
+
+
+            .profile-avatar {
+              width: 78px !important;
+              height: 78px !important;
+            }
+
+
+            .profile-avatar-inner {
+              font-size: 29px !important;
+            }
+
+
+            .profile-summary-name {
+              font-size: 20px !important;
+            }
+
+
+            .profile-summary-email {
+              font-size: 12px !important;
+            }
+
+
+            .profile-role-badge,
+            .profile-status-badge {
+              padding:
+                7px 9px !important;
+              font-size:
+                10px !important;
+            }
+
+
+            .profile-role-information {
+              padding: 14px !important;
+              border-radius: 16px !important;
+            }
+
+
+            .profile-responsibility-item {
+              font-size: 10px !important;
+            }
+
+          }
+
+
+          @media (prefers-reduced-motion: reduce) {
+
+            .profile-page *,
+            .profile-page *::before,
+            .profile-page *::after {
+              scroll-behavior: auto !important;
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+            }
+
+          }
+
+        `}
+      </style>
+
 
       {/* ======================================================
           AMBIENT BACKGROUND
@@ -238,17 +810,20 @@ function Profile({
         className="ambient ambient-two"
       />
 
+
       <div
         className="floating-food dashboard-food-one"
       >
         🍎
       </div>
 
+
       <div
         className="floating-food dashboard-food-two"
       >
         🥕
       </div>
+
 
       <div
         className="floating-food dashboard-food-three"
@@ -262,7 +837,7 @@ function Profile({
       ====================================================== */}
 
       <header
-        className="topbar"
+        className="topbar profile-header"
         style={{
           position: "relative",
           zIndex: 10,
@@ -281,7 +856,12 @@ function Profile({
             🍏
           </div>
 
-          <div>
+
+          <div
+            style={{
+              minWidth: 0,
+            }}
+          >
 
             <strong>
               FreshGuard
@@ -315,14 +895,16 @@ function Profile({
           MAIN
       ====================================================== */}
 
-      <main className="dashboard-content">
+      <main
+        className="dashboard-content profile-main-content"
+      >
 
         {/* ====================================================
             BACK BUTTON
         ==================================================== */}
 
         <button
-          className="back-button"
+          className="back-button profile-back-button"
           onClick={onBack}
           type="button"
           style={{
@@ -340,7 +922,7 @@ function Profile({
         ==================================================== */}
 
         <section
-          className="content-card"
+          className="content-card profile-main-card"
           style={{
             position: "relative",
             overflow: "hidden",
@@ -353,6 +935,8 @@ function Profile({
             boxShadow:
               "0 25px 70px rgba(20, 100, 60, 0.12)",
             backdropFilter:
+              "blur(20px)",
+            WebkitBackdropFilter:
               "blur(20px)",
           }}
         >
@@ -375,6 +959,7 @@ function Profile({
             }}
           />
 
+
           <div
             style={{
               position: "absolute",
@@ -395,7 +980,7 @@ function Profile({
           ================================================== */}
 
           <div
-            className="section-title"
+            className="section-title profile-section-title"
             style={{
               position: "relative",
               zIndex: 2,
@@ -419,9 +1004,11 @@ function Profile({
               ACCOUNT
             </span>
 
+
             <h1>
               My Profile
             </h1>
+
 
             <p>
               View your FreshGuard account
@@ -444,6 +1031,8 @@ function Profile({
                 position: "relative",
                 zIndex: 3,
                 marginBottom: "25px",
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
               }}
             >
               ⚠️ {error}
@@ -481,6 +1070,7 @@ function Profile({
                 🍏
               </div>
 
+
               <strong
                 style={{
                   fontSize: "20px",
@@ -489,6 +1079,7 @@ function Profile({
               >
                 Loading Profile...
               </strong>
+
 
               <p
                 style={{
@@ -523,6 +1114,7 @@ function Profile({
               ================================================= */}
 
               <div
+                className="profile-summary"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -542,6 +1134,7 @@ function Profile({
                 {/* AVATAR */}
 
                 <div
+                  className="profile-avatar"
                   style={{
                     position: "relative",
                     flexShrink: 0,
@@ -557,6 +1150,7 @@ function Profile({
                 >
 
                   <div
+                    className="profile-avatar-inner"
                     style={{
                       width: "100%",
                       height: "100%",
@@ -578,6 +1172,7 @@ function Profile({
                   {/* ACTIVE DOT */}
 
                   <span
+                    className="profile-active-dot"
                     style={{
                       position: "absolute",
                       right: "2px",
@@ -602,6 +1197,7 @@ function Profile({
                 {/* USER BASIC INFO */}
 
                 <div
+                  className="profile-summary-info"
                   style={{
                     flex: 1,
                     minWidth: 0,
@@ -609,6 +1205,7 @@ function Profile({
                 >
 
                   <h2
+                    className="profile-summary-name"
                     style={{
                       margin: "0 0 6px",
                       fontSize: "30px",
@@ -620,12 +1217,15 @@ function Profile({
                       "FreshGuard User"}
                   </h2>
 
+
                   <p
+                    className="profile-summary-email"
                     style={{
                       margin: "0 0 18px",
                       fontSize: "16px",
                       color: "#6c8077",
                       wordBreak: "break-word",
+                      overflowWrap: "anywhere",
                     }}
                   >
                     {user.email ||
@@ -636,6 +1236,7 @@ function Profile({
                   {/* ROLE + STATUS */}
 
                   <div
+                    className="profile-badge-row"
                     style={{
                       display: "flex",
                       flexWrap: "wrap",
@@ -646,6 +1247,7 @@ function Profile({
                     {/* ROLE BADGE */}
 
                     <div
+                      className="profile-role-badge"
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
@@ -659,6 +1261,8 @@ function Profile({
                           "1px solid rgba(30,160,90,0.15)",
                         color: "#12623d",
                         fontWeight: "700",
+                        maxWidth: "100%",
+                        overflowWrap: "anywhere",
                       }}
                     >
 
@@ -676,6 +1280,7 @@ function Profile({
                     {/* STATUS BADGE */}
 
                     <div
+                      className="profile-status-badge"
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
@@ -721,6 +1326,7 @@ function Profile({
               ================================================= */}
 
               <div
+                className="profile-role-information"
                 style={{
                   marginBottom: "30px",
                   padding: "24px",
@@ -735,6 +1341,7 @@ function Profile({
               >
 
                 <div
+                  className="profile-role-header"
                   style={{
                     display: "flex",
                     alignItems: "flex-start",
@@ -743,6 +1350,7 @@ function Profile({
                 >
 
                   <div
+                    className="profile-role-icon"
                     style={{
                       width: "50px",
                       height: "50px",
@@ -759,13 +1367,16 @@ function Profile({
                     {roleConfig.icon}
                   </div>
 
+
                   <div
+                    className="profile-role-content"
                     style={{
                       flex: 1,
                     }}
                   >
 
                     <div
+                      className="profile-role-label"
                       style={{
                         color: "#08a94f",
                         fontSize: "11px",
@@ -778,19 +1389,24 @@ function Profile({
                       Your FreshGuard Role
                     </div>
 
+
                     <h3
+                      className="profile-role-heading"
                       style={{
                         margin:
                           "6px 0 5px",
                         color: "#073d27",
                         fontSize: "21px",
                         fontWeight: "850",
+                        overflowWrap: "anywhere",
                       }}
                     >
                       {displayRole}
                     </h3>
 
+
                     <p
+                      className="profile-role-description"
                       style={{
                         margin: 0,
                         color: "#71827b",
@@ -809,6 +1425,7 @@ function Profile({
                 {/* ROLE RESPONSIBILITIES */}
 
                 <div
+                  className="profile-responsibilities"
                   style={{
                     marginTop: "22px",
                     display: "grid",
@@ -820,8 +1437,10 @@ function Profile({
 
                   {roleConfig.responsibilities.map(
                     (item) => (
+
                       <div
                         key={item}
+                        className="profile-responsibility-item"
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -838,19 +1457,26 @@ function Profile({
                           fontWeight: "650",
                         }}
                       >
+
                         <span
                           style={{
                             color: "#08a94f",
                             fontWeight: "900",
+                            flexShrink: 0,
                           }}
                         >
                           ✓
                         </span>
 
-                        <span>
+
+                        <span
+                          className="profile-responsibility-text"
+                        >
                           {item}
                         </span>
+
                       </div>
+
                     )
                   )}
 
@@ -864,6 +1490,7 @@ function Profile({
               ================================================= */}
 
               <div
+                className="profile-information-header"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -873,9 +1500,11 @@ function Profile({
               >
 
                 <div
+                  className="profile-information-header-icon"
                   style={{
                     width: "42px",
                     height: "42px",
+                    flexShrink: 0,
                     borderRadius: "12px",
                     display: "flex",
                     alignItems: "center",
@@ -888,7 +1517,10 @@ function Profile({
                   📋
                 </div>
 
-                <div>
+
+                <div
+                  className="profile-information-title"
+                >
 
                   <h3
                     style={{
@@ -899,6 +1531,7 @@ function Profile({
                   >
                     Account Information
                   </h3>
+
 
                   <p
                     style={{
@@ -921,6 +1554,7 @@ function Profile({
               ================================================= */}
 
               <div
+                className="profile-information-grid"
                 style={{
                   display: "grid",
                   gridTemplateColumns:
@@ -1008,6 +1642,7 @@ function Profile({
               ================================================= */}
 
               <div
+                className="profile-access-note"
                 style={{
                   marginTop: "22px",
                   padding: "16px 18px",
@@ -1021,14 +1656,18 @@ function Profile({
                   lineHeight: 1.6,
                 }}
               >
+
                 🔐{" "}
+
                 <strong>
                   Role-based access:
                 </strong>{" "}
+
                 Your FreshGuard dashboard
                 and available features are
                 determined by the role assigned
                 to this account.
+
               </div>
 
 
@@ -1037,7 +1676,7 @@ function Profile({
               ================================================= */}
 
               <button
-                className="primary-button"
+                className="primary-button profile-final-back"
                 onClick={onBack}
                 type="button"
                 style={{
@@ -1078,8 +1717,11 @@ function ProfileInfoCard({
   badge = false,
   status = null,
 }) {
+
   return (
+
     <div
+      className="profile-info-card"
       style={{
         display: "flex",
         alignItems: "center",
@@ -1095,12 +1737,15 @@ function ProfileInfoCard({
           "0 7px 22px rgba(20,100,60,0.05)",
         transition:
           "transform 0.2s ease, box-shadow 0.2s ease",
+        minWidth: 0,
+        boxSizing: "border-box",
       }}
     >
 
       {/* ICON */}
 
       <div
+        className="profile-info-icon"
         style={{
           flexShrink: 0,
           width: "48px",
@@ -1125,6 +1770,7 @@ function ProfileInfoCard({
       {/* TEXT */}
 
       <div
+        className="profile-info-text"
         style={{
           minWidth: 0,
           flex: 1,
@@ -1152,6 +1798,8 @@ function ProfileInfoCard({
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
+              maxWidth: "100%",
+              boxSizing: "border-box",
               padding:
                 "6px 12px",
               borderRadius: "9px",
@@ -1162,6 +1810,8 @@ function ProfileInfoCard({
                 "1px solid rgba(30,180,90,0.15)",
               fontSize: "14px",
               fontWeight: "800",
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
             }}
           >
             {value}
@@ -1174,6 +1824,8 @@ function ProfileInfoCard({
               display: "inline-flex",
               alignItems: "center",
               gap: "6px",
+              maxWidth: "100%",
+              boxSizing: "border-box",
               padding:
                 "6px 12px",
               borderRadius: "9px",
@@ -1193,6 +1845,7 @@ function ProfileInfoCard({
               fontWeight: "800",
             }}
           >
+
             <span>
               ●
             </span>
@@ -1209,6 +1862,7 @@ function ProfileInfoCard({
               fontSize: "15px",
               fontWeight: "700",
               wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
             {value || "—"}

@@ -411,7 +411,634 @@ function FoodInventory({
 
   return (
 
-    <div className="inventory-page">
+    <div
+      className="inventory-page"
+      style={{
+        width: "100%",
+        minHeight: "100vh",
+        boxSizing: "border-box",
+        overflowX: "hidden",
+      }}
+    >
+
+      {/* =====================================================
+          RESPONSIVE INVENTORY STYLES
+      ===================================================== */}
+
+      <style>
+        {`
+
+          .inventory-page {
+            width: 100%;
+            min-height: 100vh;
+            box-sizing: border-box;
+          }
+
+
+          .inventory-page *,
+          .inventory-page *::before,
+          .inventory-page *::after {
+            box-sizing: border-box;
+          }
+
+
+          .inventory-container {
+            width: min(
+              calc(100% - 40px),
+              1400px
+            );
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+          }
+
+
+          .inventory-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+          }
+
+
+          .inventory-header > div {
+            min-width: 0;
+          }
+
+
+          .inventory-header h1,
+          .inventory-header p {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .inventory-add-button {
+            flex-shrink: 0;
+            white-space: nowrap;
+            touch-action: manipulation;
+          }
+
+
+          .back-button {
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            touch-action: manipulation;
+          }
+
+
+          .error-box {
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          /* ==================================================
+             TABLE WRAPPER
+          ================================================== */
+
+          .inventory-table-wrapper {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: visible;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            overscroll-behavior-x: contain;
+          }
+
+
+          .inventory-table {
+            width: 100%;
+            min-width: 920px;
+            border-collapse: separate;
+            border-spacing: 0;
+          }
+
+
+          .inventory-table th,
+          .inventory-table td {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .inventory-table th:first-child,
+          .inventory-table td:first-child {
+            min-width: 180px;
+          }
+
+
+          .inventory-table th:nth-child(2),
+          .inventory-table td:nth-child(2) {
+            min-width: 120px;
+          }
+
+
+          .inventory-table th:nth-child(3),
+          .inventory-table td:nth-child(3) {
+            min-width: 250px;
+          }
+
+
+          .inventory-table th:nth-child(4),
+          .inventory-table td:nth-child(4) {
+            min-width: 125px;
+          }
+
+
+          .inventory-table th:nth-child(5),
+          .inventory-table td:nth-child(5) {
+            min-width: 125px;
+          }
+
+
+          .inventory-table th:last-child,
+          .inventory-table td:last-child {
+            min-width: 105px;
+          }
+
+
+          /* ==================================================
+             FOOD NAME
+          ================================================== */
+
+          .food-name-cell {
+            min-width: 0;
+            max-width: 260px;
+          }
+
+
+          .food-name-cell strong {
+            min-width: 0;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .food-icon {
+            flex-shrink: 0;
+          }
+
+
+          /* ==================================================
+             FRESHNESS
+          ================================================== */
+
+          .freshness-cell {
+            min-width: 0;
+          }
+
+
+          .freshness-info {
+            min-width: 0;
+            width: 100%;
+          }
+
+
+          .freshness-progress {
+            max-width: 100%;
+          }
+
+
+          .freshness-progress-bar {
+            max-width: 100%;
+          }
+
+
+          /* ==================================================
+             SCORE
+          ================================================== */
+
+          .score-cell {
+            min-width: 110px;
+          }
+
+
+          .score-ring {
+            flex-shrink: 0;
+          }
+
+
+          /* ==================================================
+             ACTION BUTTONS
+          ================================================== */
+
+          .inventory-page .food-menu {
+            flex: 0 0 auto;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+          }
+
+
+          /* ==================================================
+             LOADING / EMPTY
+          ================================================== */
+
+          .inventory-loading,
+          .empty-state {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+
+
+          .empty-state p,
+          .empty-state h2 {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+
+
+          .empty-button {
+            max-width: 100%;
+            touch-action: manipulation;
+          }
+
+
+          /* ==================================================
+             TABLET
+          ================================================== */
+
+          @media (max-width: 900px) {
+
+            .inventory-container {
+              width: min(
+                calc(100% - 32px),
+                100%
+              );
+            }
+
+
+            .inventory-header {
+              gap: 18px;
+            }
+
+
+            .inventory-header h1 {
+              font-size: clamp(
+                28px,
+                5vw,
+                42px
+              );
+            }
+
+
+            .inventory-header p {
+              font-size: 13px;
+            }
+
+
+            .inventory-table {
+              min-width: 880px;
+            }
+
+          }
+
+
+          /* ==================================================
+             MOBILE
+          ================================================== */
+
+          @media (max-width: 700px) {
+
+            .inventory-container {
+              width: calc(100% - 24px);
+            }
+
+
+            .inventory-header {
+              align-items: stretch;
+              flex-direction: column;
+              gap: 16px;
+            }
+
+
+            .inventory-add-button {
+              width: 100%;
+              min-height: 48px;
+              justify-content: center;
+            }
+
+
+            .back-button {
+              margin-bottom: 18px;
+            }
+
+
+            .inventory-table-wrapper {
+              margin-left: 0;
+              margin-right: 0;
+              border-radius: 14px;
+            }
+
+
+            .inventory-table {
+              min-width: 850px;
+            }
+
+
+            .inventory-table th,
+            .inventory-table td {
+              padding-left: 12px;
+              padding-right: 12px;
+            }
+
+          }
+
+
+          /* ==================================================
+             SMALL MOBILE
+          ================================================== */
+
+          @media (max-width: 520px) {
+
+            .inventory-container {
+              width: calc(100% - 20px);
+            }
+
+
+            .inventory-header h1 {
+              font-size: 28px;
+              line-height: 1.15;
+            }
+
+
+            .inventory-header p {
+              font-size: 12px;
+              line-height: 1.55;
+            }
+
+
+            .inventory-add-button {
+              min-height: 47px;
+              font-size: 13px;
+            }
+
+
+            .back-button {
+              font-size: 12px;
+            }
+
+
+            .inventory-table {
+              min-width: 820px;
+            }
+
+
+            .inventory-table th,
+            .inventory-table td {
+              padding-top: 12px;
+              padding-bottom: 12px;
+              font-size: 12px;
+            }
+
+
+            .food-name-cell {
+              max-width: 190px;
+            }
+
+
+            .food-name-cell strong {
+              font-size: 12px;
+            }
+
+
+            .category-badge {
+              font-size: 10px;
+              white-space: nowrap;
+            }
+
+
+            .freshness-status {
+              font-size: 10px;
+            }
+
+
+            .freshness-percentage {
+              font-size: 11px;
+            }
+
+
+            .freshness-info > div[style] {
+              font-size: 10px !important;
+            }
+
+
+            .score-cell > div[style] {
+              font-size: 10px !important;
+            }
+
+
+            .inventory-page .food-menu {
+              width: 38px;
+              height: 38px;
+              min-width: 38px;
+              min-height: 38px;
+            }
+
+
+            .added-date {
+              font-size: 11px;
+              white-space: nowrap;
+            }
+
+
+            .empty-state {
+              padding-left: 16px !important;
+              padding-right: 16px !important;
+            }
+
+
+            .empty-state h2 {
+              font-size: 21px;
+            }
+
+
+            .empty-state p {
+              font-size: 12px;
+              line-height: 1.55;
+            }
+
+
+            .empty-button {
+              width: 100%;
+              min-height: 47px;
+            }
+
+          }
+
+
+          /* ==================================================
+             VERY SMALL MOBILE
+          ================================================== */
+
+          @media (max-width: 390px) {
+
+            .inventory-container {
+              width: calc(100% - 16px);
+            }
+
+
+            .inventory-header h1 {
+              font-size: 25px;
+            }
+
+
+            .inventory-header p {
+              font-size: 11px;
+            }
+
+
+            .inventory-table {
+              min-width: 790px;
+            }
+
+
+            .inventory-table th,
+            .inventory-table td {
+              padding-left: 10px;
+              padding-right: 10px;
+              font-size: 11px;
+            }
+
+
+            .food-name-cell {
+              max-width: 175px;
+            }
+
+
+            .inventory-page .food-menu {
+              width: 36px;
+              height: 36px;
+              min-width: 36px;
+              min-height: 36px;
+              font-size: 13px;
+            }
+
+
+            .empty-state h2 {
+              font-size: 19px;
+            }
+
+          }
+
+
+          /* ==================================================
+             320PX DEVICES
+          ================================================== */
+
+          @media (max-width: 340px) {
+
+            .inventory-container {
+              width: calc(100% - 12px);
+            }
+
+
+            .inventory-header h1 {
+              font-size: 23px;
+            }
+
+
+            .inventory-header p {
+              font-size: 10px;
+            }
+
+
+            .inventory-table {
+              min-width: 760px;
+            }
+
+
+            .inventory-table th,
+            .inventory-table td {
+              padding-left: 8px;
+              padding-right: 8px;
+            }
+
+
+            .food-name-cell {
+              max-width: 155px;
+            }
+
+
+            .inventory-page .food-menu {
+              width: 34px;
+              height: 34px;
+              min-width: 34px;
+              min-height: 34px;
+            }
+
+          }
+
+
+          /* ==================================================
+             LANDSCAPE MOBILE
+          ================================================== */
+
+          @media (orientation: landscape)
+            and (max-height: 600px) {
+
+            .inventory-container {
+              padding-top: 10px;
+              padding-bottom: 20px;
+            }
+
+
+            .inventory-header {
+              flex-direction: row;
+              align-items: center;
+            }
+
+
+            .inventory-add-button {
+              width: auto;
+            }
+
+
+            .inventory-table-wrapper {
+              max-height: 70vh;
+              overflow: auto;
+            }
+
+          }
+
+
+          /* ==================================================
+             REDUCED MOTION
+          ================================================== */
+
+          @media (prefers-reduced-motion: reduce) {
+
+            .inventory-page *,
+            .inventory-page *::before,
+            .inventory-page *::after {
+              animation-duration:
+                0.01ms !important;
+
+              animation-iteration-count:
+                1 !important;
+
+              transition-duration:
+                0.01ms !important;
+
+              scroll-behavior:
+                auto !important;
+            }
+
+          }
+
+        `}
+      </style>
 
 
       {/* =====================================================
@@ -940,6 +1567,7 @@ function FoodInventory({
                             alignItems: "center",
                             justifyContent: "center",
                             gap: "8px",
+                            flexWrap: "nowrap",
                           }}
                         >
 

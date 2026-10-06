@@ -1350,17 +1350,26 @@ const AdministratorReports = ({ onBack }) => {
   return (
     <div className="admin-report-page">
       <style>{`
-        .admin-report-page {
-          min-height: 100vh;
-          padding: 24px;
-          background: #f5f7fb;
-          color: #172033;
+        * {
           box-sizing: border-box;
         }
 
+        .admin-report-page {
+          min-height: 100vh;
+          width: 100%;
+          max-width: 100%;
+          padding: 24px;
+          background: #f5f7fb;
+          color: #172033;
+          overflow-x: hidden;
+          -webkit-text-size-adjust: 100%;
+        }
+
         .admin-report-container {
+          width: 100%;
           max-width: 1500px;
           margin: 0 auto;
+          min-width: 0;
         }
 
         .admin-report-topbar {
@@ -1370,6 +1379,7 @@ const AdministratorReports = ({ onBack }) => {
           gap: 16px;
           margin-bottom: 24px;
           flex-wrap: wrap;
+          min-width: 0;
         }
 
         .admin-report-back {
@@ -1380,12 +1390,16 @@ const AdministratorReports = ({ onBack }) => {
           cursor: pointer;
           color: #26364f;
           padding: 8px 0;
+          min-height: 40px;
+          white-space: nowrap;
+          touch-action: manipulation;
         }
 
         .admin-report-actions {
           display: flex;
           gap: 10px;
           flex-wrap: wrap;
+          min-width: 0;
         }
 
         .admin-report-button {
@@ -1394,8 +1408,11 @@ const AdministratorReports = ({ onBack }) => {
           color: #26364f;
           border-radius: 10px;
           padding: 10px 14px;
+          min-height: 42px;
           font-weight: 700;
           cursor: pointer;
+          touch-action: manipulation;
+          white-space: nowrap;
         }
 
         .admin-report-button.primary {
@@ -1425,6 +1442,7 @@ const AdministratorReports = ({ onBack }) => {
             51,
             .14
           );
+          overflow: hidden;
         }
 
         .admin-report-kicker {
@@ -1439,6 +1457,7 @@ const AdministratorReports = ({ onBack }) => {
           margin: 0;
           font-size: 32px;
           line-height: 1.15;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-hero p {
@@ -1446,6 +1465,7 @@ const AdministratorReports = ({ onBack }) => {
           max-width: 900px;
           line-height: 1.6;
           opacity: .88;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-alert {
@@ -1456,9 +1476,12 @@ const AdministratorReports = ({ onBack }) => {
           padding: 14px 16px;
           margin-bottom: 20px;
           font-weight: 600;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-section {
+          width: 100%;
+          min-width: 0;
           background: #fff;
           border: 1px solid #e2e7ef;
           border-radius: 18px;
@@ -1477,6 +1500,12 @@ const AdministratorReports = ({ onBack }) => {
           justify-content: space-between;
           gap: 16px;
           margin-bottom: 20px;
+          min-width: 0;
+        }
+
+        .admin-report-section-heading > div {
+          min-width: 0;
+          max-width: 100%;
         }
 
         .admin-report-section-number {
@@ -1490,12 +1519,15 @@ const AdministratorReports = ({ onBack }) => {
         .admin-report-section h2 {
           margin: 0;
           font-size: 22px;
+          line-height: 1.25;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-section-heading p {
           margin: 7px 0 0;
           color: #657086;
           line-height: 1.5;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-stat-grid {
@@ -1505,21 +1537,26 @@ const AdministratorReports = ({ onBack }) => {
             minmax(0, 1fr)
           );
           gap: 14px;
+          width: 100%;
+          min-width: 0;
         }
 
         .admin-report-stat-card {
+          width: 100%;
+          min-width: 0;
           border: 1px solid #e4e8ef;
           border-radius: 14px;
           padding: 16px;
           display: flex;
           gap: 12px;
-          min-width: 0;
           background: #fbfcfe;
+          overflow: hidden;
         }
 
         .admin-report-stat-icon {
           width: 42px;
           height: 42px;
+          min-width: 42px;
           border-radius: 12px;
           display: flex;
           align-items: center;
@@ -1529,22 +1566,31 @@ const AdministratorReports = ({ onBack }) => {
           flex: 0 0 auto;
         }
 
+        .admin-report-stat-content {
+          min-width: 0;
+          flex: 1;
+        }
+
         .admin-report-stat-label {
           font-size: 12px;
           color: #69758a;
           font-weight: 700;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-stat-value {
           font-size: 24px;
           font-weight: 900;
           margin: 3px 0;
+          line-height: 1.2;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-stat-description {
           color: #7b8494;
           font-size: 11px;
           line-height: 1.4;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-role-grid {
@@ -1554,24 +1600,31 @@ const AdministratorReports = ({ onBack }) => {
             minmax(0, 1fr)
           );
           gap: 12px;
+          width: 100%;
+          min-width: 0;
         }
 
         .admin-report-role-card {
+          min-width: 0;
           border: 1px solid #e2e7ef;
           border-radius: 14px;
           padding: 16px;
           background: #fbfcfe;
+          overflow: hidden;
         }
 
         .admin-report-role-card h3 {
           margin: 10px 0 3px;
           font-size: 15px;
+          line-height: 1.3;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-role-card p {
           margin: 0;
           color: #707b8e;
           font-size: 12px;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-role-icon {
@@ -1589,10 +1642,12 @@ const AdministratorReports = ({ onBack }) => {
         }
 
         .admin-report-role-metric {
+          min-width: 0;
           border-radius: 9px;
           background: #fff;
           border: 1px solid #e9edf3;
           padding: 8px;
+          overflow: hidden;
         }
 
         .admin-report-role-metric small {
@@ -1600,18 +1655,22 @@ const AdministratorReports = ({ onBack }) => {
           color: #7a8495;
           font-size: 10px;
           font-weight: 700;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-role-metric strong {
           display: block;
           margin-top: 2px;
           font-size: 14px;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-role {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 4px;
+          max-width: 100%;
           border-radius: 999px;
           padding: 5px 9px;
           background: #eef2f8;
@@ -1628,11 +1687,15 @@ const AdministratorReports = ({ onBack }) => {
             repeat(4, 1fr);
           gap: 10px;
           margin-bottom: 16px;
+          width: 100%;
+          min-width: 0;
         }
 
         .admin-report-filter-bar input,
         .admin-report-filter-bar select {
           width: 100%;
+          min-width: 0;
+          min-height: 44px;
           box-sizing: border-box;
           border: 1px solid #d9dfeb;
           border-radius: 10px;
@@ -1640,13 +1703,30 @@ const AdministratorReports = ({ onBack }) => {
           background: #fff;
           color: #1f2937;
           outline: none;
+          font: inherit;
+        }
+
+        .admin-report-filter-bar input:focus,
+        .admin-report-filter-bar select:focus {
+          border-color: #64748b;
+          box-shadow: 0 0 0 3px rgba(
+            100,
+            116,
+            139,
+            .10
+          );
         }
 
         .admin-report-table-wrap {
           width: 100%;
+          max-width: 100%;
           overflow-x: auto;
+          overflow-y: hidden;
           border: 1px solid #e2e7ef;
           border-radius: 13px;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-x: contain;
+          scrollbar-width: thin;
         }
 
         .admin-report-table {
@@ -1682,19 +1762,24 @@ const AdministratorReports = ({ onBack }) => {
           align-items: center;
           gap: 9px;
           font-weight: 800;
+          min-width: 150px;
         }
 
         .admin-report-food-icon {
           font-size: 22px;
+          flex: 0 0 auto;
         }
 
         .admin-report-quality,
         .admin-report-risk {
           display: inline-flex;
+          align-items: center;
+          justify-content: center;
           padding: 5px 8px;
           border-radius: 999px;
           font-size: 10px;
           font-weight: 900;
+          white-space: nowrap;
         }
 
         .quality-fresh,
@@ -1756,21 +1841,27 @@ const AdministratorReports = ({ onBack }) => {
           color: #657086;
           font-size: 11px;
           padding: 12px;
+          white-space: nowrap;
         }
 
         .admin-report-user-table td {
           padding: 12px;
           border-top: 1px solid #edf0f4;
           font-size: 12px;
+          vertical-align: middle;
         }
 
         .admin-report-user-name {
           font-weight: 800;
+          overflow-wrap: anywhere;
+          word-break: break-word;
         }
 
         .admin-report-user-email {
           color: #788396;
           margin-top: 2px;
+          overflow-wrap: anywhere;
+          word-break: break-word;
         }
 
         .admin-report-empty {
@@ -1786,25 +1877,32 @@ const AdministratorReports = ({ onBack }) => {
             minmax(0, 1fr)
           );
           gap: 10px;
+          width: 100%;
+          min-width: 0;
         }
 
         .admin-report-completeness-card {
+          min-width: 0;
           border: 1px solid #e2e7ef;
           border-radius: 12px;
           padding: 13px;
           background: #fbfcfe;
+          overflow: hidden;
         }
 
         .admin-report-completeness-card strong {
           display: block;
           font-size: 20px;
           margin-bottom: 4px;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-completeness-card span {
           color: #6e788a;
           font-size: 11px;
           font-weight: 700;
+          line-height: 1.35;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-note {
@@ -1816,10 +1914,14 @@ const AdministratorReports = ({ onBack }) => {
           color: #596579;
           font-size: 12px;
           line-height: 1.55;
+          overflow-wrap: anywhere;
+          word-break: break-word;
         }
 
         .admin-report-loading {
           min-height: 70vh;
+          width: 100%;
+          padding: 30px 18px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -1834,19 +1936,28 @@ const AdministratorReports = ({ onBack }) => {
 
         .admin-report-loading h2 {
           margin: 0 0 7px;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-loading p {
           color: #707b8e;
+          max-width: 600px;
+          line-height: 1.5;
+          overflow-wrap: anywhere;
         }
 
         .admin-report-footer {
           text-align: center;
           color: #7b8494;
           font-size: 12px;
-          padding: 12px 0 30px;
+          line-height: 1.55;
+          padding: 12px 10px 30px;
+          overflow-wrap: anywhere;
         }
 
+        /*
+          TABLET / SMALL LAPTOP
+        */
         @media (max-width: 1200px) {
           .admin-report-stat-grid {
             grid-template-columns: repeat(
@@ -1877,17 +1988,144 @@ const AdministratorReports = ({ onBack }) => {
           }
         }
 
+        /*
+          TABLET
+        */
+        @media (max-width: 900px) {
+          .admin-report-page {
+            padding: 18px;
+          }
+
+          .admin-report-topbar {
+            align-items: flex-start;
+          }
+
+          .admin-report-actions {
+            width: 100%;
+          }
+
+          .admin-report-actions
+            .admin-report-button {
+            flex: 1 1 180px;
+          }
+
+          .admin-report-hero {
+            padding: 25px;
+            border-radius: 19px;
+          }
+
+          .admin-report-hero h1 {
+            font-size: 29px;
+          }
+
+          .admin-report-section {
+            padding: 19px;
+            border-radius: 16px;
+          }
+
+          .admin-report-stat-grid {
+            grid-template-columns: repeat(
+              2,
+              minmax(0, 1fr)
+            );
+          }
+
+          .admin-report-role-grid {
+            grid-template-columns: repeat(
+              2,
+              minmax(0, 1fr)
+            );
+          }
+
+          .admin-report-completeness {
+            grid-template-columns: repeat(
+              2,
+              minmax(0, 1fr)
+            );
+          }
+
+          .admin-report-filter-bar {
+            grid-template-columns: repeat(
+              2,
+              minmax(0, 1fr)
+            );
+          }
+        }
+
+        /*
+          MOBILE
+        */
         @media (max-width: 700px) {
           .admin-report-page {
             padding: 14px;
           }
 
+          .admin-report-topbar {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            margin-bottom: 16px;
+          }
+
+          .admin-report-back {
+            width: 100%;
+            text-align: left;
+            padding: 8px 2px;
+          }
+
+          .admin-report-actions {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+          }
+
+          .admin-report-actions
+            .admin-report-button {
+            width: 100%;
+            min-height: 44px;
+            flex: none;
+          }
+
           .admin-report-hero {
-            padding: 22px;
+            padding: 22px 18px;
+            margin-bottom: 16px;
+            border-radius: 17px;
+          }
+
+          .admin-report-kicker {
+            font-size: 10px;
+            letter-spacing: 1.1px;
+            line-height: 1.4;
           }
 
           .admin-report-hero h1 {
             font-size: 25px;
+            line-height: 1.2;
+          }
+
+          .admin-report-hero p {
+            font-size: 13px;
+            line-height: 1.55;
+          }
+
+          .admin-report-section {
+            padding: 16px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+          }
+
+          .admin-report-section-heading {
+            margin-bottom: 16px;
+          }
+
+          .admin-report-section h2 {
+            font-size: 19px;
+          }
+
+          .admin-report-section-heading p {
+            font-size: 13px;
           }
 
           .admin-report-stat-grid,
@@ -1897,11 +2135,388 @@ const AdministratorReports = ({ onBack }) => {
             grid-template-columns: 1fr;
           }
 
-          .admin-report-section {
-            padding: 16px;
+          .admin-report-stat-card {
+            padding: 14px;
+          }
+
+          .admin-report-stat-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            font-size: 20px;
+          }
+
+          .admin-report-stat-value {
+            font-size: 22px;
+          }
+
+          .admin-report-role-card {
+            padding: 14px;
+          }
+
+          .admin-report-role-metrics {
+            grid-template-columns: repeat(
+              2,
+              minmax(0, 1fr)
+            );
+          }
+
+          .admin-report-filter-bar {
+            gap: 8px;
+          }
+
+          .admin-report-filter-bar input,
+          .admin-report-filter-bar select {
+            min-height: 46px;
+            font-size: 16px;
+          }
+
+          .admin-report-table-wrap {
+            border-radius: 11px;
+          }
+
+          .admin-report-table {
+            min-width: 1650px;
+          }
+
+          .admin-report-user-table {
+            min-width: 1000px;
+          }
+
+          .admin-report-table th,
+          .admin-report-table td,
+          .admin-report-user-table th,
+          .admin-report-user-table td {
+            padding: 10px;
+          }
+
+          .admin-report-note {
+            font-size: 11px;
+            padding: 12px;
           }
         }
 
+        /*
+          SMALL MOBILE
+        */
+        @media (max-width: 480px) {
+          .admin-report-page {
+            padding: 10px;
+          }
+
+          .admin-report-hero {
+            padding: 19px 15px;
+            border-radius: 15px;
+          }
+
+          .admin-report-hero h1 {
+            font-size: 22px;
+          }
+
+          .admin-report-hero p {
+            font-size: 12px;
+          }
+
+          .admin-report-section {
+            padding: 13px;
+            border-radius: 13px;
+          }
+
+          .admin-report-section-number {
+            font-size: 9px;
+            letter-spacing: 1.1px;
+          }
+
+          .admin-report-section h2 {
+            font-size: 17px;
+          }
+
+          .admin-report-section-heading p {
+            font-size: 12px;
+          }
+
+          .admin-report-stat-card {
+            gap: 10px;
+            padding: 12px;
+            border-radius: 12px;
+          }
+
+          .admin-report-stat-icon {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 10px;
+            font-size: 18px;
+          }
+
+          .admin-report-stat-label {
+            font-size: 11px;
+          }
+
+          .admin-report-stat-value {
+            font-size: 20px;
+          }
+
+          .admin-report-stat-description {
+            font-size: 10px;
+          }
+
+          .admin-report-role-card {
+            padding: 12px;
+            border-radius: 12px;
+          }
+
+          .admin-report-role-icon {
+            font-size: 22px;
+          }
+
+          .admin-report-role-card h3 {
+            font-size: 14px;
+          }
+
+          .admin-report-role-card p {
+            font-size: 11px;
+          }
+
+          .admin-report-role-metrics {
+            gap: 6px;
+          }
+
+          .admin-report-role-metric {
+            padding: 7px;
+          }
+
+          .admin-report-role-metric small {
+            font-size: 9px;
+          }
+
+          .admin-report-role-metric strong {
+            font-size: 12px;
+          }
+
+          .admin-report-role {
+            font-size: 10px;
+            padding: 5px 7px;
+          }
+
+          .admin-report-filter-bar input,
+          .admin-report-filter-bar select {
+            min-height: 45px;
+            padding: 10px;
+            border-radius: 9px;
+          }
+
+          .admin-report-note {
+            margin-top: 12px;
+            padding: 10px 11px;
+            font-size: 10px;
+            line-height: 1.5;
+          }
+
+          .admin-report-footer {
+            font-size: 10px;
+            padding-bottom: 20px;
+          }
+
+          .admin-report-loading {
+            min-height: 65vh;
+          }
+
+          .admin-report-loading-icon {
+            font-size: 40px;
+          }
+
+          .admin-report-loading h2 {
+            font-size: 19px;
+          }
+
+          .admin-report-loading p {
+            font-size: 12px;
+          }
+        }
+
+        /*
+          EXTRA SMALL PHONES
+        */
+        @media (max-width: 390px) {
+          .admin-report-page {
+            padding: 8px;
+          }
+
+          .admin-report-hero {
+            padding: 17px 13px;
+          }
+
+          .admin-report-hero h1 {
+            font-size: 20px;
+          }
+
+          .admin-report-section {
+            padding: 11px;
+          }
+
+          .admin-report-section h2 {
+            font-size: 16px;
+          }
+
+          .admin-report-stat-card {
+            padding: 10px;
+          }
+
+          .admin-report-stat-icon {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            font-size: 17px;
+          }
+
+          .admin-report-stat-value {
+            font-size: 19px;
+          }
+
+          .admin-report-role-metrics {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .admin-report-table {
+            min-width: 1600px;
+          }
+
+          .admin-report-user-table {
+            min-width: 980px;
+          }
+        }
+
+        /*
+          VERY SMALL PHONES
+        */
+        @media (max-width: 340px) {
+          .admin-report-page {
+            padding: 6px;
+          }
+
+          .admin-report-hero {
+            padding: 15px 11px;
+            border-radius: 13px;
+          }
+
+          .admin-report-hero h1 {
+            font-size: 18px;
+          }
+
+          .admin-report-hero p {
+            font-size: 11px;
+          }
+
+          .admin-report-section {
+            padding: 9px;
+          }
+
+          .admin-report-section h2 {
+            font-size: 15px;
+          }
+
+          .admin-report-stat-card {
+            gap: 8px;
+            padding: 9px;
+          }
+
+          .admin-report-stat-icon {
+            width: 31px;
+            height: 31px;
+            min-width: 31px;
+            font-size: 15px;
+          }
+
+          .admin-report-stat-label {
+            font-size: 10px;
+          }
+
+          .admin-report-stat-value {
+            font-size: 17px;
+          }
+
+          .admin-report-stat-description {
+            font-size: 9px;
+          }
+
+          .admin-report-role-card {
+            padding: 10px;
+          }
+
+          .admin-report-role-metric {
+            padding: 6px;
+          }
+
+          .admin-report-role-metric strong {
+            font-size: 11px;
+          }
+
+          .admin-report-filter-bar input,
+          .admin-report-filter-bar select {
+            font-size: 15px;
+          }
+        }
+
+        /*
+          LANDSCAPE PHONES
+        */
+        @media (
+          orientation: landscape
+        ) and (max-height: 600px) {
+          .admin-report-page {
+            padding: 12px 16px;
+          }
+
+          .admin-report-hero {
+            padding: 18px 22px;
+          }
+
+          .admin-report-section {
+            padding: 15px 18px;
+          }
+
+          .admin-report-loading {
+            min-height: 85vh;
+          }
+        }
+
+        /*
+          TOUCH DEVICES
+        */
+        @media (hover: none) and (pointer: coarse) {
+          .admin-report-button,
+          .admin-report-back,
+          .admin-report-filter-bar input,
+          .admin-report-filter-bar select {
+            touch-action: manipulation;
+          }
+
+          .admin-report-button {
+            min-height: 44px;
+          }
+
+          .admin-report-table-wrap {
+            scrollbar-width: auto;
+          }
+        }
+
+        /*
+          REDUCED MOTION
+        */
+        @media (prefers-reduced-motion: reduce) {
+          .admin-report-page *,
+          .admin-report-page *::before,
+          .admin-report-page *::after {
+            scroll-behavior: auto !important;
+            transition: none !important;
+            animation: none !important;
+          }
+        }
+
+        /*
+          PRINT / PDF
+        */
         @media print {
           .admin-report-topbar,
           .admin-report-actions,
@@ -1912,15 +2527,53 @@ const AdministratorReports = ({ onBack }) => {
           .admin-report-page {
             background: #fff;
             padding: 0;
+            overflow: visible;
+          }
+
+          .admin-report-container {
+            max-width: none;
+            width: 100%;
           }
 
           .admin-report-section {
             box-shadow: none;
             break-inside: avoid;
+            page-break-inside: avoid;
           }
 
           .admin-report-hero {
             box-shadow: none;
+          }
+
+          .admin-report-table-wrap {
+            overflow: visible;
+            border: 1px solid #ddd;
+          }
+
+          .admin-report-table {
+            min-width: 0;
+            width: 100%;
+            font-size: 8px;
+          }
+
+          .admin-report-table th,
+          .admin-report-table td {
+            padding: 5px;
+            font-size: 8px;
+          }
+
+          .admin-report-user-table {
+            min-width: 0;
+          }
+
+          .admin-report-user-table th,
+          .admin-report-user-table td {
+            padding: 5px;
+            font-size: 8px;
+          }
+
+          .admin-report-footer {
+            padding-bottom: 0;
           }
         }
       `}</style>
@@ -1930,6 +2583,7 @@ const AdministratorReports = ({ onBack }) => {
           <button
             className="admin-report-back"
             onClick={onBack}
+            type="button"
           >
             ← Back to Dashboard
           </button>
@@ -1941,6 +2595,7 @@ const AdministratorReports = ({ onBack }) => {
                 loadAdministratorReport(true)
               }
               disabled={refreshing}
+              type="button"
             >
               {refreshing
                 ? "Refreshing..."
@@ -1950,6 +2605,7 @@ const AdministratorReports = ({ onBack }) => {
             <button
               className="admin-report-button"
               onClick={printReport}
+              type="button"
             >
               📄 Export PDF
             </button>
@@ -1960,6 +2616,7 @@ const AdministratorReports = ({ onBack }) => {
               disabled={
                 filteredFoods.length === 0
               }
+              type="button"
             >
               📊 Export Excel
             </button>
