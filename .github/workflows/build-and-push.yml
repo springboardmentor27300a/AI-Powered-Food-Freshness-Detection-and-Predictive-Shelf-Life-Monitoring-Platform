@@ -29,6 +29,7 @@ jobs:
             freshsenseacr2026.azurecr.io/freshsense-backend:latest
             freshsenseacr2026.azurecr.io/freshsense-backend:v2
             freshsenseacr2026.azurecr.io/freshsense-backend:v3
+            freshsenseacr2026.azurecr.io/freshsense-backend:v4
 
       - name: Build & Push Frontend Image
         uses: docker/build-push-action@v6
@@ -39,3 +40,4 @@ jobs:
             freshsenseacr2026.azurecr.io/freshsense-frontend:latest
             freshsenseacr2026.azurecr.io/freshsense-frontend:v2
             freshsenseacr2026.azurecr.io/freshsense-frontend:v3
+            freshsenseacr2026.azurecr.io/freshsense-frontend:v4
