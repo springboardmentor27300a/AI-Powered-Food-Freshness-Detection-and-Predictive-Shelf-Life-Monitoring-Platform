@@ -2,15 +2,29 @@
 
 <p align="center">
 
-### 🤖 AI-Powered Food Freshness, Shelf-Life & Storage Intelligence Platform
+# 🤖 AI-Powered Food Freshness, Shelf-Life & Storage Intelligence Platform
 
-**Computer Vision • Deep Learning • Shelf-Life Prediction • Storage Intelligence • Inventory • Role-Based Dashboards • Analytics**
+### Computer Vision • Deep Learning • Shelf-Life Prediction • Storage Intelligence • Inventory • Role-Based Dashboards • Analytics
+
+</p>
+
+<p align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)
+![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791?logo=postgresql)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-AI-FF6F00?logo=tensorflow)
+![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8?logo=opencv)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker)
+![Render](https://img.shields.io/badge/Deployment-Render-46E3B7)
+![License](https://img.shields.io/badge/Project-Academic%20%2F%20Portfolio-lightgrey)
 
 </p>
 
 ---
 
-## 🌟 Project at a Glance
+# 🌟 Project at a Glance
 
 The **Food Freshness Monitoring Platform** is a full-stack AI-powered web application developed to intelligently monitor and analyze food quality.
 
@@ -101,7 +115,7 @@ It combines food image analysis, AI freshness prediction, visual condition, stor
 
 # 1. Project Overview
 
-The **Food Freshness Monitoring Platform** is designed to solve a practical food-quality monitoring problem using Artificial Intelligence and Computer Vision.
+The **Food Freshness Monitoring Platform** is an AI-powered full-stack web application designed to monitor food freshness and quality.
 
 Traditional food monitoring generally depends on:
 
@@ -110,11 +124,20 @@ Traditional food monitoring generally depends on:
 - Human judgment
 - Basic storage information
 
-However, food quality can change because of storage conditions, handling, product age and visible deterioration.
+However, the actual condition of food can be influenced by many factors.
 
-Therefore, this project combines multiple sources of information into one platform.
+For example:
 
-### Core intelligence
+- Storage temperature can affect quality.
+- Humidity can influence deterioration.
+- Packaging can influence protection.
+- Product age can affect remaining life.
+- Physical damage can accelerate spoilage.
+- Visible color and texture changes can indicate deterioration.
+
+Therefore, this project combines multiple food-quality signals into one platform.
+
+## Core Intelligence
 
 ```text
 Food Image
