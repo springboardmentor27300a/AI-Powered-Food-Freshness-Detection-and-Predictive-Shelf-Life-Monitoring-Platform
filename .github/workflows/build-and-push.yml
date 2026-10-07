@@ -21,14 +21,14 @@ jobs:
           password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build & Push Backend Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./Backend
           push: true
           tags: freshsenseacr2026.azurecr.io/freshsense-backend:latest
 
       - name: Build & Push Frontend Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./Frontend
           push: true
