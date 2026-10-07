@@ -236,23 +236,23 @@ export default function FreshnessAnalyticsHub({ user, warehouses = [], batches =
   const handleExportReport = () => {
     const reportText = `# FRESHSENSE AI — EXECUTIVE FRESHNESS & SHELF-LIFE AUDIT REPORT
 Generated: ${new Date().toUTCString()}
-Platform Status: MILESTONE 3 OPERATIONAL
+Platform Status: MILESTONE 4 OPERATIONAL (AZURE READY)
 
 ## 1. Executive KPIs
-- Total Inventory Monitored: ${dashboardStats?.total_quantity_kg || 1700} kg
-- Average Freshness Health Score: ${dashboardStats?.average_freshness_score || 91.2}/100
-- Economic Inventory at Risk: $${dashboardStats?.economic_value_at_risk || 420.00}
-- Total Food Waste Diverted: ${dashboardStats?.total_waste_diverted_kg || 255} kg ($${dashboardStats?.total_waste_diverted_dollars || 688.50} Saved)
-- Cold Storage Network Compliance: ${dashboardStats?.cold_storage_compliance_rate || 96.5}%
+- Total Inventory Monitored: ${dashboardStats?.total_quantity_kg ?? 0} kg
+- Average Freshness Health Score: ${dashboardStats?.average_freshness_score ?? 0}/100
+- Economic Inventory at Risk: $${(dashboardStats?.economic_value_at_risk ?? 0).toFixed(2)}
+- Total Food Waste Diverted: ${(dashboardStats?.total_waste_diverted_kg ?? 0).toFixed(0)} kg ($${(dashboardStats?.total_waste_diverted_dollars ?? 0).toFixed(2)} Saved)
+- Cold Storage Network Compliance: ${dashboardStats?.cold_storage_compliance_rate ?? 100}%
 
 ## 2. Shelf-Life Risk Distribution
-- Critical (< 3 Days): ${dashboardStats?.shelf_life_distribution?.['Critical (<3 Days)'] || 0} Batches
-- Warning (3 - 7 Days): ${dashboardStats?.shelf_life_distribution?.['Warning (3-7 Days)'] || 1} Batches
-- Good (8 - 14 Days): ${dashboardStats?.shelf_life_distribution?.['Good (8-14 Days)'] || 2} Batches
-- Optimal (> 14 Days): ${dashboardStats?.shelf_life_distribution?.['Optimal (>14 Days)'] || 1} Batches
+- Critical (< 3 Days): ${dashboardStats?.shelf_life_distribution?.['Critical (<3 Days)'] ?? 0} Batches
+- Warning (3 - 7 Days): ${dashboardStats?.shelf_life_distribution?.['Warning (3-7 Days)'] ?? 0} Batches
+- Good (8 - 14 Days): ${dashboardStats?.shelf_life_distribution?.['Good (8-14 Days)'] ?? 0} Batches
+- Optimal (> 14 Days): ${dashboardStats?.shelf_life_distribution?.['Optimal (>14 Days)'] ?? 0} Batches
 
 ## 3. Storage Telemetry Status
-- Active Cold Zones: ${zones.length || 4} monitored chambers
+- Active Cold Zones: ${zones.length} monitored chambers
 - Active Environmental Excursions: ${alerts.length} unresolved
 
 ## 4. Operational Directives
@@ -1346,45 +1346,56 @@ Platform Status: MILESTONE 3 OPERATIONAL
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 500, marginBottom: '5px' }}>
-                    <span style={{ color: '#F87171' }}>🔴 Critical Risk (&lt; 3 Days)</span>
-                    <span style={{ fontWeight: 600 }}>{dashboardStats?.shelf_life_distribution?.['Critical (<3 Days)'] ?? 0} Batches</span>
-                  </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 9999, overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.max(8, (dashboardStats?.shelf_life_distribution?.['Critical (<3 Days)'] || 1) * 20)}%`, background: '#F87171', height: '100%' }} />
-                  </div>
-                </div>
+                {(() => {
+                  const crit = dashboardStats?.shelf_life_distribution?.['Critical (<3 Days)'] ?? 0;
+                  const warn = dashboardStats?.shelf_life_distribution?.['Warning (3-7 Days)'] ?? 0;
+                  const good = dashboardStats?.shelf_life_distribution?.['Good (8-14 Days)'] ?? 0;
+                  const opt = dashboardStats?.shelf_life_distribution?.['Optimal (>14 Days)'] ?? 0;
+                  const tot = crit + warn + good + opt || 1;
+                  return (
+                    <>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 500, marginBottom: '5px' }}>
+                          <span style={{ color: '#F87171' }}>🔴 Critical Risk (&lt; 3 Days)</span>
+                          <span style={{ fontWeight: 600 }}>{crit} Batches</span>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 9999, overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.round((crit / tot) * 100)}%`, background: '#F87171', height: '100%' }} />
+                        </div>
+                      </div>
 
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 500, marginBottom: '5px' }}>
-                    <span style={{ color: '#FBBF24' }}>🟡 Warning Window (3 - 7 Days)</span>
-                    <span style={{ fontWeight: 600 }}>{dashboardStats?.shelf_life_distribution?.['Warning (3-7 Days)'] ?? 1} Batches</span>
-                  </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 9999, overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.max(12, (dashboardStats?.shelf_life_distribution?.['Warning (3-7 Days)'] || 1) * 35)}%`, background: '#FBBF24', height: '100%' }} />
-                  </div>
-                </div>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 500, marginBottom: '5px' }}>
+                          <span style={{ color: '#FBBF24' }}>🟡 Warning Window (3 - 7 Days)</span>
+                          <span style={{ fontWeight: 600 }}>{warn} Batches</span>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 9999, overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.round((warn / tot) * 100)}%`, background: '#FBBF24', height: '100%' }} />
+                        </div>
+                      </div>
 
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 500, marginBottom: '5px' }}>
-                    <span style={{ color: '#38BDF8' }}>🔵 Good Buffer (8 - 14 Days)</span>
-                    <span style={{ fontWeight: 600 }}>{dashboardStats?.shelf_life_distribution?.['Good (8-14 Days)'] ?? 2} Batches</span>
-                  </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 9999, overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.max(15, (dashboardStats?.shelf_life_distribution?.['Good (8-14 Days)'] || 2) * 35)}%`, background: '#38BDF8', height: '100%' }} />
-                  </div>
-                </div>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 500, marginBottom: '5px' }}>
+                          <span style={{ color: '#38BDF8' }}>🔵 Good Buffer (8 - 14 Days)</span>
+                          <span style={{ fontWeight: 600 }}>{good} Batches</span>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 9999, overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.round((good / tot) * 100)}%`, background: '#38BDF8', height: '100%' }} />
+                        </div>
+                      </div>
 
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 500, marginBottom: '5px' }}>
-                    <span style={{ color: '#34D399' }}>🟢 Optimal Fresh (&gt; 14 Days)</span>
-                    <span style={{ fontWeight: 600 }}>{dashboardStats?.shelf_life_distribution?.['Optimal (>14 Days)'] ?? 1} Batches</span>
-                  </div>
-                  <div style={{ background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 9999, overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.max(15, (dashboardStats?.shelf_life_distribution?.['Optimal (>14 Days)'] || 1) * 40)}%`, background: '#34D399', height: '100%' }} />
-                  </div>
-                </div>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 500, marginBottom: '5px' }}>
+                          <span style={{ color: '#34D399' }}>🟢 Optimal Fresh (&gt; 14 Days)</span>
+                          <span style={{ fontWeight: 600 }}>{opt} Batches</span>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.05)', height: 8, borderRadius: 9999, overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.round((opt / tot) * 100)}%`, background: '#34D399', height: '100%' }} />
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 

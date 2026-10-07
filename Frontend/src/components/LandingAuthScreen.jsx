@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
   // Auth Form Mode: 'signup' | 'login' | 'forgot_password'
@@ -21,8 +21,8 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Sample Produce for Scanner Simulator
-  const sampleItems = [
+  // Sample Produce for Scanner Simulator (Fallback only if 0 batches in MongoDB)
+  const defaultSampleItems = [
     {
       name: 'Organic Gala Apples',
       tag: 'BATCH-20260825-APL01',
@@ -64,7 +64,34 @@ export default function LandingAuthScreen({ onAuthSuccess, warehouses = [] }) {
     }
   ];
 
-  const currentSample = sampleItems[activeSample];
+  const [liveBatches, setLiveBatches] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/inventory/batches')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.slice(0, 5).map(b => ({
+            name: b.product_name,
+            tag: b.batch_id,
+            category: b.category,
+            warehouse: b.warehouse_name,
+            score: b.freshness_score,
+            status: b.freshness_status,
+            daysLeft: Math.max(0, Math.ceil((new Date(b.expiry_date) - new Date()) / (1000 * 60 * 60 * 24))),
+            temp: `${b.storage_temp_celsius}°C`,
+            humidity: `${b.storage_humidity_percent}% RH`,
+            discoloration: `${Math.max(0.1, (100 - b.freshness_score) * 0.1).toFixed(1)}%`,
+            image: b.image_url || 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80'
+          }));
+          setLiveBatches(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const sampleItems = liveBatches.length > 0 ? liveBatches : defaultSampleItems;
+  const currentSample = sampleItems[activeSample] || sampleItems[0];
 
   const handleSelectSample = (index) => {
     setIsScanning(true);

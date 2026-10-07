@@ -20,6 +20,8 @@ def generate_unique_otp() -> str:
     return f"{secrets.randbelow(900000) + 100000}"
 
 def format_user_doc(user_doc) -> UserResponse:
+    # Default is_approved to True unless explicitly False for Retail Managers
+    is_appr = user_doc.get("is_approved", True if user_doc.get("role") != "Retail Manager" else user_doc.get("is_approved", True))
     return UserResponse(
         id=str(user_doc["_id"]),
         name=user_doc["name"],
@@ -30,6 +32,7 @@ def format_user_doc(user_doc) -> UserResponse:
         warehouse_name=user_doc.get("warehouse_name"),
         badge_id=user_doc.get("badge_id"),
         phone=user_doc.get("phone"),
+        is_approved=is_appr,
         created_at=user_doc.get("created_at", "").isoformat() if isinstance(user_doc.get("created_at"), datetime) else str(user_doc.get("created_at"))
     )
 
@@ -124,6 +127,7 @@ async def register(user_in: UserRegister):
         "warehouse_name": user_in.warehouse_name,
         "badge_id": user_in.badge_id,
         "phone": user_in.phone,
+        "is_approved": False if user_in.role == "Retail Manager" else True,
         "created_at": datetime.utcnow()
     }
     

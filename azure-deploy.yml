@@ -1,0 +1,71 @@
+# ═══════════════════════════════════════════════════════════════
+# FreshSense AI — Azure Container Apps Deployment Manifest
+# Deploys Backend (FastAPI) + Frontend (React/Nginx) as 
+# Azure Container Apps with shared environment
+# ═══════════════════════════════════════════════════════════════
+# 
+# Prerequisites:
+#   az login
+#   az extension add --name containerapp --upgrade
+#   az provider register --namespace Microsoft.App
+#   az provider register --namespace Microsoft.OperationalInsights
+#
+# Deploy Command:
+#   az containerapp compose create \
+#     --environment freshsense-env \
+#     --resource-group freshsense-rg \
+#     --location eastus \
+#     --compose-file-path azure-deploy.yml
+# ═══════════════════════════════════════════════════════════════
+
+version: "3.9"
+
+services:
+
+  # ── FreshSense AI FastAPI Backend ──
+  backend:
+    image: freshsenseacr2026.azurecr.io/freshsense-backend:latest
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=${MONGODB_URL}
+      - DATABASE_NAME=${DATABASE_NAME:-freshsense_db}
+      - SECRET_KEY=${SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      - PROJECT_NAME=FreshSense AI
+      - API_V1_STR=/api
+      - ENVIRONMENT=production
+      - PORT=8000
+      - ADMIN_REGISTRATION_KEY=${ADMIN_REGISTRATION_KEY}
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+  # ── FreshSense AI React Frontend ──
+  frontend:
+    image: freshsenseacr2026.azurecr.io/freshsense-frontend:latest
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M

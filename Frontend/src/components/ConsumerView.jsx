@@ -50,6 +50,14 @@ export default function ConsumerView({ batches = [], user = null }) {
         if (res.ok) {
           const data = await res.json();
           setPresets(data);
+          if (data.length > 0) {
+            handleExecuteScan({
+              sample_id: data[0].id,
+              product_name: data[0].product_name,
+              category: data[0].category,
+              image_url: data[0].image_url
+            });
+          }
         }
       } catch (err) {
         console.error('Failed to fetch presets:', err);
@@ -302,11 +310,11 @@ export default function ConsumerView({ batches = [], user = null }) {
 
   // Calculate quick stats
   const totalScansCount = scanHistory.length;
-  const avgFreshness = totalScansCount > 0 ? Math.round(scanHistory.reduce((acc, s) => acc + (s.composite_score || 0), 0) / totalScansCount) : 92;
+  const avgFreshness = totalScansCount > 0 ? Math.round(scanHistory.reduce((acc, s) => acc + (s.composite_score || 0), 0) / totalScansCount) : 0;
   const criticalSpoiledCount = scanHistory.filter((s) => s.status === 'Spoiled' || s.status === 'Near Spoilage').length;
 
-  const currentScore = scanResult?.composite_score || 95;
-  const currentStatus = scanResult?.status || 'Fresh';
+  const currentScore = scanResult?.composite_score ?? 0;
+  const currentStatus = scanResult?.status ?? 'Pending Scan';
 
   const getStatusBadgeClass = (statusStr) => {
     switch (statusStr) {

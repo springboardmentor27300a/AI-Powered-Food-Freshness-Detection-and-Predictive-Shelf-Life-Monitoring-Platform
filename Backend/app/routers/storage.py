@@ -282,6 +282,56 @@ async def simulate_iot_reading(req: SimulateReadingRequest):
         "compliance_status": status
     }
 
+class WarehouseStorageUpdateRequest(BaseModel):
+    warehouse_id: str
+    temperature_celsius: float
+    humidity_percent: float
+    airflow_cfm: Optional[float] = 400.0
+
+@router.post("/update-conditions")
+async def update_warehouse_storage_conditions(req: WarehouseStorageUpdateRequest):
+    """
+    Warehouse Operator updates storage conditions (temperature, humidity, airflow) for their assigned warehouse hub.
+    Workflow: Warehouse Operator -> Manages inventory, batches, storage conditions.
+    """
+    db = get_database()
+    temp = float(req.temperature_celsius)
+    hum = float(req.humidity_percent)
+    cfm = float(req.airflow_cfm or 400.0)
+    wh_code = req.warehouse_id.upper().strip()
+
+    status = "Critical" if temp > 6.5 or hum < 70 else ("Minor Excursion" if temp > 4.5 or hum < 80 else "Compliant")
+
+    await db.storage_zones.update_one(
+        {"$or": [{"warehouse_id": wh_code}, {"zone_id": f"ZONE-{wh_code}-A"}]},
+        {"$set": {
+            "warehouse_id": wh_code,
+            "temperature_celsius": temp,
+            "humidity_percent": hum,
+            "airflow_cfm": cfm,
+            "compliance_status": status,
+            "last_updated": datetime.utcnow().isoformat()
+        }},
+        upsert=True
+    )
+
+    await db.food_batches.update_many(
+        {"warehouse_id": wh_code, "status": "Available"},
+        {"$set": {
+            "storage_temp_celsius": temp,
+            "storage_humidity_percent": hum
+        }}
+    )
+
+    return {
+        "status": "success",
+        "message": f"Storage conditions updated for warehouse {wh_code}: {temp}°C, {hum}% RH.",
+        "warehouse_id": wh_code,
+        "temperature_celsius": temp,
+        "humidity_percent": hum,
+        "compliance_status": status
+    }
+
 @router.get("/compliance-summary")
 async def get_storage_compliance_summary():
     """

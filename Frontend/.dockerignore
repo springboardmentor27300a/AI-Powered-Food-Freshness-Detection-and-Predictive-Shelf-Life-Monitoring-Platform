@@ -1,0 +1,36 @@
+# Frontend .dockerignore
+# Exclude files that don't need to be in the Docker build context
+
+# Node modules (will be installed fresh in container)
+node_modules/
+
+# Build output (will be rebuilt)
+dist/
+build/
+.vite/
+
+# Environment files (injected at runtime)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker (don't include docker files themselves)
+Dockerfile*
+.dockerignore
+nginx.conf

@@ -50,7 +50,29 @@ class UserResponse(BaseModel):
     warehouse_name: Optional[str] = None
     badge_id: Optional[str] = None
     phone: Optional[str] = None
+    is_approved: bool = True
     created_at: Optional[str] = None
+
+class AdminUserResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    role: str
+    organization: Optional[str] = None
+    warehouse_id: Optional[str] = None
+    warehouse_name: Optional[str] = None
+    is_approved: bool = True
+    created_at: Optional[str] = None
+
+class AdminCreateRetailManager(BaseModel):
+    name: str = Field(..., example="Marcus Vance")
+    email: EmailStr = Field(..., example="marcus@freshmart.com")
+    password: str = Field(..., min_length=6, example="password123")
+    organization: Optional[str] = Field("FreshMart Retail Hubs", example="FreshMart Retail Hubs")
+    phone: Optional[str] = Field("+1 (555) 019-2831", example="+1 (555) 019-2831")
+
+class AdminApprovalToggle(BaseModel):
+    approved: bool
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -105,7 +127,7 @@ class BatchResponse(BaseModel):
     purchased_by_store: Optional[str] = None
     purchase_date: Optional[str] = None
 
-# --- WAREHOUSE SCHEMAS ---
+# --- WAREHOUSE & LOGISTICS HUB SCHEMAS ---
 
 class WarehouseCreate(BaseModel):
     name: str
@@ -114,6 +136,19 @@ class WarehouseCreate(BaseModel):
     capacity_kg: float
     temperature_range_c: str = "2°C - 4°C"
     humidity_range_pct: str = "85% - 90%"
+    assigned_operator_id: Optional[str] = None
+    assigned_operator_name: Optional[str] = None
+    assigned_operator_email: Optional[str] = None
+
+class AssignOperatorRequest(BaseModel):
+    operator_id: str
+    operator_name: Optional[str] = None
+    operator_email: Optional[str] = None
+
+class UpdateStorageConditionsRequest(BaseModel):
+    temperature_celsius: float
+    humidity_percent: float
+    airflow_cfm: Optional[float] = 400.0
 
 class WarehouseResponse(BaseModel):
     id: str
@@ -124,6 +159,11 @@ class WarehouseResponse(BaseModel):
     current_utilization_kg: float
     temperature_range_c: str
     humidity_range_pct: str
+    created_by_user_id: Optional[str] = None
+    created_by_name: Optional[str] = None
+    assigned_operator_id: Optional[str] = None
+    assigned_operator_name: Optional[str] = None
+    assigned_operator_email: Optional[str] = None
     created_at: str
 
 # --- CATEGORY SCHEMAS ---

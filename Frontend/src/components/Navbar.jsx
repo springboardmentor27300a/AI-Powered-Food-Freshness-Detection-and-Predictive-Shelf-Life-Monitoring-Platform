@@ -53,7 +53,7 @@ export default function Navbar({ user, role, setRole, theme, setTheme, onLogout 
                 FreshSense <span className="linear-accent-gradient">AI</span>
               </h1>
               <span className="linear-badge linear-badge-good" style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem' }}>
-                MILESTONE 3
+                MILESTONE 4 • AZURE READY
               </span>
             </div>
             

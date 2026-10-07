@@ -166,6 +166,7 @@ export default function App() {
                 onRegisterBatch={handleRegisterBatch}
                 user={user}
                 loading={loading}
+                onRefreshWarehouses={fetchData}
               />
             )}
 
@@ -176,6 +177,7 @@ export default function App() {
                 categories={categories}
                 onBuyBatch={handleBuyBatch}
                 user={user}
+                onRefreshWarehouses={fetchData}
               />
             )}
 

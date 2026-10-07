@@ -1,0 +1,66 @@
+# ═══════════════════════════════════════════════════════════════
+# FreshSense AI — Docker Compose
+# Full-Stack Deployment: FastAPI Backend + React Frontend
+# Cloud MongoDB Atlas (external) | Milestone 4
+# ═══════════════════════════════════════════════════════════════
+
+version: "3.9"
+
+services:
+
+  # ── FreshSense AI FastAPI Backend ──
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: freshsense_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # ── MongoDB Atlas (Cloud) ──
+      - MONGODB_URL=${MONGODB_URL}
+      - DATABASE_NAME=${DATABASE_NAME:-freshsense_db}
+
+      # ── JWT Auth ──
+      - SECRET_KEY=${SECRET_KEY:-freshsense-super-secret-key-change-in-production}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+
+      # ── Application ──
+      - PROJECT_NAME=FreshSense AI
+      - API_V1_STR=/api
+      - ENVIRONMENT=production
+      - PORT=8000
+
+      # ── Admin Key ──
+      - ADMIN_REGISTRATION_KEY=${ADMIN_REGISTRATION_KEY:-freshsense-admin-2024}
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - freshsense_net
+
+  # ── FreshSense AI React Frontend ──
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: freshsense_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - freshsense_net
+
+networks:
+  freshsense_net:
+    driver: bridge
+    name: freshsense_network

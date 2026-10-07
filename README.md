@@ -184,13 +184,57 @@ FreshSense AI/
 │   │   ├── components/  # FreshnessAnalyticsHub, Warehouse, Retail, Consumer, Admin
 │   │   ├── index.css    # Linear / Modern Design System
 │   │   └── App.jsx
+│   ├── Dockerfile       # Multi-stage Nginx production build (M4)
+│   ├── nginx.conf       # SPA routing + API proxy config (M4)
 │   └── package.json
+├── docker-compose.yml                           # Full-stack deployment (M4)
+├── azure-deploy.yml                             # Azure Container Apps manifest (M4)
+├── .env.example                                 # Environment variables template (M4)
 ├── Food_Freshness_Monitoring_Platform_PRD.md
 ├── Milestone1_Documentation_and_Datasets.md
 ├── Milestone3_Documentation.md
+├── Milestone4_Documentation.md                  # Analytics, Testing & Deployment (M4)
 └── README.md
 ```
 
 ---
 
-*Milestone 3 (Week 5–6) implemented and verified for the FreshSense AI Platform.*
+## 🚀 Milestone 4 — Deployment
+
+### Local Docker Deployment
+
+```bash
+# 1. Copy environment template
+cp .env.example .env
+# 2. Fill in your MongoDB Atlas URL and Secret Key in .env
+
+# 3. Build and start all containers
+docker-compose up --build -d
+
+# 4. Access the platform
+# Frontend: http://localhost
+# API docs: http://localhost:8000/docs
+```
+
+### Azure Container Apps Deployment
+
+```bash
+az login
+az group create --name freshsense-rg --location eastus
+az acr create --resource-group freshsense-rg --name freshsenseacr --sku Basic
+az acr build --registry freshsenseacr --image freshsense-backend:latest ./Backend
+az acr build --registry freshsenseacr --image freshsense-frontend:latest ./Frontend
+# See azure-deploy.yml for full Container Apps configuration
+```
+
+### E2E Validation
+
+```bash
+cd Backend
+python test_milestone4_e2e.py
+# Expected: ALL 14 MILESTONE 4 WORKFLOW VALIDATION TESTS PASSED
+```
+
+---
+
+*Milestone 4 (Week 7–8): Analytics, Testing & Deployment — **PRODUCTION READY** 🚀*

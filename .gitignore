@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
@@ -29,3 +29,15 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Docker
+*.tar
+docker-compose.override.yml
+
+# Azure
+.azure/
+azuredeploy.parameters.json
+
+# Logs
+*.log
+logs/
