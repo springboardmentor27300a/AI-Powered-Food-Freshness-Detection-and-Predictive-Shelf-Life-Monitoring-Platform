@@ -16,3 +16,6 @@ venv/
 *.log
 # Uploaded food images
 backend/uploads/
+# Database backups / migration archive
+*.dump
+migration_images.zip
