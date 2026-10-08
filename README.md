@@ -1,4 +1,4 @@
-# 🥬 FreshSense AI — Food Freshness Monitoring Platform
+# 🥬 FreshSense AI — Food Freshness Monitoring Platform-https://freshsense-frontend.redbay-ce3f59da.centralindia.azurecontainerapps.io/
 
 > An AI-powered platform that uses image analysis, environmental data, and storage information to estimate food freshness, predict shelf life, detect spoilage, and generate smart storage recommendations.
 
