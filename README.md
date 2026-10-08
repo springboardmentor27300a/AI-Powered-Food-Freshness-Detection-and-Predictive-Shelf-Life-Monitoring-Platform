@@ -1,4 +1,6 @@
-FoodCare – AI-Powered Food Freshness Monitoring Platform
+# FoodCare
+
+### AI-Powered Food Freshness Monitoring Platform
 
 🌐 **Live Website:** https://foodcare-frontend.onrender.com
 
