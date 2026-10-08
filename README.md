@@ -89,7 +89,6 @@ The image-analysis pipeline considers visible characteristics such as:
 
 The platform integrates computer-vision processing using **OpenCV** together with a CNN-based analysis pipeline.
 
-> A validated final CNN accuracy is not reported because a final trained model artifact and benchmark result were not available for this implementation.
 
 ### 🥬 Freshness Assessment
 
