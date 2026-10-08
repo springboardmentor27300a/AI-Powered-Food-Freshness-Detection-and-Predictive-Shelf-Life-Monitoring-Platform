@@ -1,0 +1,177 @@
+{
+  "samples": {
+    "fresh": 400,
+    "rotten": 400,
+    "semi": 400
+  },
+  "mean_food_coverage": {
+    "fresh": 0.2566,
+    "rotten": 0.2426
+  },
+  "full_frame_fallback_rate": {
+    "fresh": 0.0,
+    "rotten": 0.0
+  },
+  "features": {
+    "dark_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 6e-05,
+      "fresh_p50": 0.05397,
+      "fresh_p95": 0.23185,
+      "semi_p50": 0.04884,
+      "rotten_p50": 0.07256,
+      "rotten_p95": 0.27872,
+      "band_widened": false
+    },
+    "off_hue_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 0.0,
+      "fresh_p50": 0.00042,
+      "fresh_p95": 0.03302,
+      "semi_p50": 0.00081,
+      "rotten_p50": 0.00226,
+      "rotten_p95": 0.11079,
+      "band_widened": false
+    },
+    "browning_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 6e-05,
+      "fresh_p50": 0.04025,
+      "fresh_p95": 0.16122,
+      "semi_p50": 0.03617,
+      "rotten_p50": 0.04054,
+      "rotten_p95": 0.18839,
+      "band_widened": false
+    },
+    "bleached_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 0.00299,
+      "fresh_p50": 0.24297,
+      "fresh_p95": 0.37608,
+      "semi_p50": 0.22491,
+      "rotten_p50": 0.20554,
+      "rotten_p95": 0.39326,
+      "band_widened": false
+    },
+    "bright_specular_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 0.0,
+      "fresh_p50": 0.0,
+      "fresh_p95": 0.27339,
+      "semi_p50": 0.0,
+      "rotten_p50": 0.0,
+      "rotten_p95": 0.14558,
+      "band_widened": false
+    },
+    "p05_value": {
+      "direction": "low_bad",
+      "fresh_p05": 16.0,
+      "fresh_p50": 60.0,
+      "fresh_p95": 116.0,
+      "semi_p50": 61.0,
+      "rotten_p50": 53.0,
+      "rotten_p95": 126.05,
+      "band_widened": false
+    },
+    "edge_density": {
+      "direction": "band",
+      "fresh_p05": 0.10484,
+      "fresh_p50": 0.24991,
+      "fresh_p95": 0.3323,
+      "semi_p50": 0.27122,
+      "rotten_p50": 0.28535,
+      "rotten_p95": 0.34555,
+      "band_widened": false
+    },
+    "laplacian_var": {
+      "direction": "band",
+      "fresh_p05": 452.38238,
+      "fresh_p50": 2252.29165,
+      "fresh_p95": 12415.14056,
+      "semi_p50": 3376.49235,
+      "rotten_p50": 4879.8738,
+      "rotten_p95": 16817.62671,
+      "band_widened": false
+    },
+    "contrast": {
+      "direction": "band",
+      "fresh_p05": 22.95428,
+      "fresh_p50": 46.5406,
+      "fresh_p95": 66.67766,
+      "semi_p50": 46.0182,
+      "rotten_p50": 45.7378,
+      "rotten_p95": 70.57793,
+      "band_widened": false
+    },
+    "entropy": {
+      "direction": "band",
+      "fresh_p05": 0.71486,
+      "fresh_p50": 0.8606,
+      "fresh_p95": 0.95121,
+      "semi_p50": 0.8606,
+      "rotten_p50": 0.85815,
+      "rotten_p95": 0.96353,
+      "band_widened": false
+    },
+    "local_std_mean": {
+      "direction": "band",
+      "fresh_p05": 13.55217,
+      "fresh_p50": 23.08145,
+      "fresh_p95": 46.51333,
+      "semi_p50": 25.0506,
+      "rotten_p50": 30.25985,
+      "rotten_p95": 49.29234,
+      "band_widened": false
+    },
+    "mold_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 0.0,
+      "fresh_p50": 0.02037,
+      "fresh_p95": 0.07612,
+      "semi_p50": 0.01705,
+      "rotten_p50": 0.00986,
+      "rotten_p95": 0.07484,
+      "band_widened": false
+    },
+    "mold_fuzzy_score": {
+      "direction": "high_bad",
+      "fresh_p05": 1.0,
+      "fresh_p50": 1.3124,
+      "fresh_p95": 1.75972,
+      "semi_p50": 1.32635,
+      "rotten_p50": 1.2923,
+      "rotten_p95": 1.81457,
+      "band_widened": false
+    },
+    "mold_largest_region_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 0.0,
+      "fresh_p50": 0.00807,
+      "fresh_p95": 0.05282,
+      "semi_p50": 0.0066,
+      "rotten_p50": 0.00519,
+      "rotten_p95": 0.05179,
+      "band_widened": false
+    },
+    "spot_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 0.0,
+      "fresh_p50": 0.01894,
+      "fresh_p95": 0.11698,
+      "semi_p50": 0.01453,
+      "rotten_p50": 0.02866,
+      "rotten_p95": 0.16071,
+      "band_widened": false
+    },
+    "crack_fraction": {
+      "direction": "high_bad",
+      "fresh_p05": 0.0,
+      "fresh_p50": 0.0,
+      "fresh_p95": 0.01,
+      "semi_p50": 0.0,
+      "rotten_p50": 0.0,
+      "rotten_p95": 0.0,
+      "band_widened": true
+    }
+  }
+}

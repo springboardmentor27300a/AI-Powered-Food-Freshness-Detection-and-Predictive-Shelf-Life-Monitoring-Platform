@@ -1,12 +1,15 @@
-﻿__pycache__/
-*.py[cod]
-*.pyo
+# Keep the build context small and never bake local state into the image.
 .venv/
-venv/
-.env
-.git/
-.gitignore
-uploads/*
+__pycache__/
+*.py[cod]
+.pytest_cache/
+tests/
 *.db
-*.sqlite
-*.sqlite3
+*.log
+*.out
+*.err
+.env
+scratch_test_e2e.py
+train_log.txt
+ml/__pycache__/
+training/__pycache__/

@@ -1,583 +1,346 @@
-# 🥬 Food Freshness Monitoring Platform
+# Food Freshness Monitoring Platform
 
-Here's I am attaching live website link :-  https://food-freshness-monitoring-platform-1.onrender.com/
+A full-stack web application that helps households, retail stores and warehouses
+**register food batches, monitor expiry status, and detect food freshness from
+photos** using a real trained CNN plus OpenCV image analysis.
 
-## AI-Powered Food Freshness Detection & Predictive Shelf-Life Monitoring Platform
-
-An intelligent web-based platform designed to analyze food freshness using **Artificial Intelligence, Computer Vision, image analysis, and food storage intelligence**.
-
-The platform helps users monitor food freshness, estimate remaining shelf life, understand storage conditions, and receive intelligent recommendations for better food management.
-
----
-
-## 📌 Project Overview
-
-Food wastage is a major problem caused by improper storage, lack of freshness awareness, and difficulty in identifying food spoilage at an early stage.
-
-The **Food Freshness Monitoring Platform** addresses this problem by combining:
-
-- 🤖 Artificial Intelligence
-- 👁️ Computer Vision
-- 📷 Food Image Analysis
-- 🧠 Freshness Prediction
-- ⏳ Predictive Shelf-Life Monitoring
-- 🌡️ Storage Intelligence
-- 💡 Recommendation Engine
-- 👤 User & Role Management
-- 🗄️ PostgreSQL Database
-
-The platform allows users to add food items, provide relevant food and storage information, upload food images, and obtain freshness-related insights through the prediction and analysis pipeline.
+- **Milestone 1 (Weeks 1-2):** project setup, JWT authentication, role-based
+  access control and complete food inventory management.
+- **Milestone 2 (Weeks 3-4):** AI image-based freshness detection - real
+  AgriFreshNET dataset, real MobileNetV2 CNN training/evaluation, OpenCV visual
+  analysis, freshness scoring engine, analysis history in PostgreSQL, and
+  downloadable freshness reports.
 
 ---
 
-# 🎯 Objectives
+## 1. Features (Milestone 1)
 
-The major objectives of the project are:
-
-1. Detect and estimate the freshness condition of food.
-2. Analyze food images using Computer Vision.
-3. Provide a freshness score for food items.
-4. Estimate remaining shelf life.
-5. Monitor storage-related conditions.
-6. Identify possible spoilage indicators.
-7. Provide storage and food-management recommendations.
-8. Maintain a personalized food inventory.
-9. Provide role-based functionality.
-10. Reduce unnecessary food wastage through intelligent monitoring.
-
----
-
-# 🚀 Key Features
-
-## 🔐 Authentication & User Management
-
-- User registration
-- User login
-- Secure authentication
-- JWT-based authentication
-- Protected API routes
-- User-specific food inventory
-- User profile management
-- Role-based functionality
-
----
-
-## 👤 Role-Based Functionality
-
-The platform supports role-based access and functionality.
-
-Depending on the assigned role, users can access the relevant dashboard and platform features.
-
-Role-based functionality helps organize the platform according to different user requirements while keeping the existing food monitoring workflow intact.
-
----
-
-# 🏠 Dashboard
-
-The dashboard provides an overview of the user's food inventory and freshness information.
-
-It includes:
-
-- Total food items
-- Fresh food count
-- Pending items
-- Food inventory overview
-- Food freshness information
-- Navigation to major platform sections
-- Profile access
-- Add Food functionality
-
-The dashboard is designed to provide a quick overview of the user's current food status.
-
----
-
-# 🍎 Food Inventory Management
-
-Users can add and manage food items through the platform.
-
-Food records can contain information such as:
-
-- Food name
-- Food category
-- Freshness status
-- Freshness score
-- Food image
-- Manufacturing date
-- Expiry date
-- Storage condition
-- Storage temperature
-- Storage humidity
-- Packaging type
-- Storage duration
-- Air circulation
-- Light exposure
-- Remaining shelf life
-- Shelf-life confidence
-- Shelf-life risk
-- Storage compliance score
-- Overall health score
-
-Users can view their food inventory and manage individual food records.
-
----
-
-# 📷 Food Image Upload
-
-The platform supports food image uploads for freshness analysis.
-
-Supported image formats include:
-
-- `.jpg`
-- `.jpeg`
-- `.png`
-- `.webp`
-
-Uploaded images are processed through the food freshness analysis pipeline.
-
----
-
-# 🤖 AI-Based Freshness Prediction
-
-The platform uses a trained Machine Learning / Deep Learning model for food freshness classification.
-
-The model works with the following freshness classes:
-
-- 🟢 `fresh`
-- 🟡 `less_fresh`
-- 🔴 `rotten`
-
-The prediction pipeline processes the food image and generates a freshness-related result.
-
----
-
-# 📊 Freshness Score
-
-The platform generates a freshness score based on the AI prediction results and food freshness analysis.
-
-The freshness score helps users understand the current quality condition of a food item and is used as one of the important inputs for further food intelligence calculations.
-
-The freshness analysis contributes to:
-
-- Freshness classification
-- Food quality assessment
-- Overall food health score
-- Shelf-life estimation
-- Risk identification
-- Food-specific recommendations
-- Inventory reports
-
----
-
-# 👁️ Computer Vision & Food Image Analysis
-
-The platform uses Computer Vision techniques to analyze uploaded food images and identify visible quality and spoilage indicators.
-
-The visual analysis considers factors such as:
-
-- Color condition
-- Color degradation
-- Texture changes
-- Surface condition
-- Mold indicators
-- Bruising
-- Physical damage
-- Visible spoilage indicators
-
-The Computer Vision analysis works together with the AI freshness prediction pipeline to provide a more comprehensive understanding of food quality.
-
----
-
-# 🌡️ Storage Intelligence
-
-The platform analyzes food storage conditions along with freshness information.
-
-Storage intelligence can consider:
-
-- 🌡️ Temperature
-- 💧 Humidity
-- 📦 Packaging
-- ⏱️ Storage duration
-- 🌬️ Air circulation
-- 💡 Light exposure
-
-The system evaluates the available storage information and generates a **Storage Compliance Score**.
-
-The storage analysis helps identify whether the current storage environment is appropriate for the selected food item.
-
----
-
-# ⏳ Shelf-Life Intelligence
-
-The platform provides predictive shelf-life monitoring for food items.
-
-Shelf-life analysis considers multiple factors, including:
-
-- Food freshness
-- AI prediction
-- Visual condition
-- Storage compliance
-- Manufacturing date
-- Expiry date
-- Product age
-- Storage duration
-- Available food information
-
-The system can provide:
-
-- Remaining shelf life
-- Shelf-life confidence
-- Shelf-life risk
-- Expiry-related status
-- Spoilage-related risk
-
-This allows users to make better decisions about food consumption, storage, and inventory rotation.
-
----
-
-# 📅 Product Age Analysis
-
-The platform analyzes the age of food products using available date information such as:
-
-- Manufacturing date
-- Expiry date
-- Storage duration
-- Product baseline life
-
-Product age becomes an additional factor in determining food quality, shelf-life, and overall food health.
-
----
-
-# ❤️ Overall Food Health Score
-
-The platform generates an overall food health score by combining multiple food-quality intelligence components.
-
-The overall assessment can consider:
-
-- 👁️ Visual Condition
-- 🌡️ Storage Compliance
-- ⏳ Shelf-Life Condition
-- 📅 Product Age
-
-This provides a broader food-quality view instead of depending only on the AI freshness classification.
-
----
-
-# 💡 Recommendation Engine
-
-Based on freshness, visual condition, storage conditions, shelf life, product age, and risk information, the platform generates intelligent food-management recommendations.
-
-Recommendations can include:
-
-- Improve storage conditions
-- Consume food soon
-- Prioritize food for consumption
-- Follow FEFO (First Expire, First Out)
-- Improve packaging
-- Improve air circulation
-- Reduce light exposure
-- Review temperature conditions
-- Review humidity conditions
-- Reduce avoidable food waste
-
-The recommendation engine helps users convert food-quality analysis into practical actions.
-
----
-
-# ⚠️ Alerts & Risk Identification
-
-The platform identifies food items that may require attention.
-
-Possible alert conditions include:
-
-- Expired food
-- Rotten food
-- Near-expiry food
-- Near-spoilage food
-- High shelf-life risk
-- Critical food-quality risk
-- Poor storage compliance
-- Low overall food health
-
-These alerts help users prioritize food items that need immediate action.
-
----
-
-# 📋 Food-Wise Report Generation
-
-The platform provides detailed food-wise reporting for individual food items and inventory records.
-
-Food-wise reports can include:
-
-- Food name
-- Food category
-- Freshness status
-- AI freshness score
-- AI prediction confidence
-- Visual condition
-- Storage condition
-- Storage compliance score
-- Temperature
-- Humidity
-- Packaging
-- Storage duration
-- Air circulation
-- Light exposure
-- Manufacturing date
-- Expiry date
-- Product age
-- Remaining shelf life
-- Shelf-life confidence
-- Shelf-life risk
-- Overall food health score
-- Quality condition
-- Recommendations
-- Risk information
-
-This allows users to understand the complete quality condition of each food item.
-
----
-
-# 📊 Inventory & Food Quality Reports
-
-The platform can generate inventory-level reports to provide a consolidated view of all food items.
-
-Inventory reports can include:
-
-| Field | Description |
+| Area | What you get |
 |---|---|
-| Food | Food item name |
-| Category | Food category |
-| AI Score | AI freshness score |
-| Health | Overall food health score |
-| Quality | Current quality condition |
-| Remaining | Remaining shelf life |
-| Risk | Shelf-life / quality risk |
-| Confidence | Prediction confidence |
-| Expiry | Expiry information |
-| Storage | Storage condition |
-| Temperature | Storage temperature |
-| Humidity | Storage humidity |
-| Packaging | Packaging information |
-| Duration | Storage duration |
-| Air | Air circulation |
-| Light | Light exposure |
-| Storage Score | Storage compliance score |
+| Landing page | Platform introduction, food-waste context, Login / Register buttons |
+| Registration | Full name, email, password + confirm, role selection - validated client- and server-side |
+| Authentication | JWT login with bcrypt-hashed passwords, invalid-login errors, session-scoped token storage |
+| Dashboard | Welcome header with name + role, summary cards (total batches, total available quantity, fresh / expiring soon / expired), recent-batches table and an expiry-alerts section |
+| Add Food Item | Full batch form (category, quantity, unit, dates, storage, packaging, notes) with validation and loading/success/error states |
+| Inventory | Dynamic table with search (name or batch ID), category filter, status filter, edit modal, available-quantity updates and delete-with-confirmation |
+| Automatic batch IDs | `<FOOD3>-<YYYYMMDD>-<seq>` e.g. `APP-20260821-001`, unique in PostgreSQL |
+| Expiry management | Computed live: **Fresh** (> 3 days left), **Expiring Soon** (within 3 days), **Expired** - green / orange / red badges |
+| Role-based access | Enforced server-side on every endpoint (matrix below) and mirrored in the UI |
 
-This report provides a complete overview of food quality and inventory health.
+## 1b. Features (Milestone 2)
 
----
+| Area | What you get |
+|---|---|
+| Real dataset | AgriFreshNET 14,160 images (FRESH / SEMI_FRESH / ROTTEN), validated, deduplicated, stratified 70/15/15 train/val/test splits |
+| Real CNN | MobileNetV2 transfer learning trained on 9,912 images; best checkpoint + real metrics saved |
+| Real metrics | accuracy, weighted/macro precision-recall-F1 and confusion matrix measured on the held-out test split (`ml/evaluate_model.py`) |
+| OpenCV analysis | color degradation, texture change, mold, bruising and physical damage detection per image |
+| Scoring engine | CNN + OpenCV fused into a visual freshness score (0-100) → **Fresh / Good / Acceptable / Near Spoilage / Spoiled** |
+| Analysis API | `POST /analysis/analyze` persists every assessment to PostgreSQL; history + stats endpoints |
+| Reports | `POST /reports/generate` builds a printable HTML freshness report per image/batch |
+| Frontend | Freshness Analysis page (upload → AI result card) and Freshness Reports dashboard |
 
-# 👤 Role-Wise Reports
+## 2. Technology Stack
 
-The platform supports role-based reporting so that different users can access information relevant to their responsibilities.
+| Layer | Technology |
+|---|---|
+| Frontend | React.js (JavaScript) + Vite, React Router, Axios, custom responsive CSS |
+| Backend | Python FastAPI + Uvicorn, Swagger UI docs at `/docs` |
+| Database | PostgreSQL with SQLAlchemy ORM (models + auto-created schema) |
+| Auth | JWT (`python-jose`), bcrypt password hashing (`passlib`) |
+| ML | PyTorch + torchvision (MobileNetV2), OpenCV, scikit-learn metrics |
+| Config | Environment variables via `pydantic-settings` (`.env` files) |
 
-## 👤 Consumer Reports
+## 3. Project Structure
 
-Consumers can monitor their personal food inventory and receive information about:
+```
+food-freshness-monitoring-platform/
+├── backend/
+│   ├── app/
+│   │   ├── config.py            # env-driven settings (DB URL, JWT secret, CORS)
+│   │   ├── database.py          # SQLAlchemy engine/session + get_db dependency
+│   │   ├── models.py            # User, FoodBatch, ImageAnalysis, FreshnessReport
+│   │   ├── schemas.py           # Pydantic request/response schemas
+│   │   ├── security.py          # bcrypt hashing + JWT create/decode
+│   │   ├── deps.py              # get_current_user + require_roles RBAC dependencies
+│   │   ├── constants.py         # roles, categories, units, expiry window
+│   │   ├── ml/
+│   │   │   ├── config.py        # CNNs: class keys, image size, scoring pillars
+│   │   │   ├── preprocessing.py # ImageNet-normalised 224x224 pipeline (train=inference)
+│   │   │   ├── image_analyzer.py# OpenCV color/texture/mold/bruise/damage analysis
+│   │   │   ├── freshness_scorer.py # CNN+CV fusion → 5-tier freshness score
+│   │   │   ├── spoilage_detector.py # spoilage indicators + risk level
+│   │   │   ├── report_generator.py  # HTML report builder dataclasses
+│   │   │   └── models/cnn_model.py  # MobileNetV2 build/load/predict
+│   │   ├── utils/
+│   │   │   ├── batch_ids.py     # automatic unique batch-ID generator
+│   │   │   └── freshness.py     # expiry status + get_freshness_category(score)
+│   │   └── routers/
+│   │       ├── auth.py          # register / login / me / users
+│   │       ├── batches.py       # CRUD + search/filter/expiring endpoints
+│   │       ├── dashboard.py     # summary statistics endpoint
+│   │       ├── analysis.py      # image freshness + spoilage endpoints
+│   │       └── reports.py       # freshness report generation/download
+│   ├── ml/
+│   │   ├── download_dataset.py  # download AgriFreshNET zip
+│   │   ├── prepare_dataset.py   # validate/dedup/stratified splits (14,160 images)
+│   │   ├── train_model.py       # REAL CNN training + test metrics
+│   │   ├── evaluate_model.py    # standalone held-out evaluation
+│   │   ├── config.py            # training hyper-parameters + artifact paths
+│   │   └── models/              # food_freshness_model.pt + real metrics JSON/PNG
+│   ├── tests/                   # pytest: scoring engine + real CNN inference
+│   ├── seed.py                  # sample users + batches for testing
+│   ├── requirements.txt
+│   └── .env.example             # copy to .env and fill real values
+├── frontend/
+│   ├── src/
+│   │   ├── components/          # Layout(sidebar), RouteGuards, BatchForm, FreshnessResult…
+│   │   ├── context/AuthContext.jsx
+│   │   ├── pages/               # Home, Login, Register, Dashboard,
+│   │   │                        # AddFoodItem, Inventory, Profile, Users,
+│   │   │                        # FreshnessAnalysis, FreshnessReports
+│   │   ├── services/api.js      # axios client (JWT interceptor)
+│   │   ├── utils/               # constants + formatting/freshness helpers
+│   │   └── styles.css           # full design system
+│   ├── package.json
+│   └── .env.example             # VITE_API_URL
+├── database/
+│   └── schema.sql               # reference PostgreSQL DDL (tables/indexes/trigger)
+├── datasets/
+│   ├── README.md                # dataset guide (AgriFreshNET, splits)
+│   ├── raw/  processed/  train/  val/  test/
+├── docs/
+│   ├── milestone1-deliverables.md
+│   └── MILESTONE_2.md           # dataset/model/scoring/API documentation + real metrics
+└── README.md
+```
 
-- Food freshness
-- Freshness score
-- Food health
-- Remaining shelf life
-- Expiry risk
-- Storage condition
-- Recommendations
-- Food quality
-- Consumption priority
+## 4. Prerequisites
 
-The objective is to help consumers manage household food efficiently and reduce food wastage.
+- **Python 3.10+**
+- **Node.js 18+** (with npm)
+- **PostgreSQL 13+** running locally
 
----
+## 5. Step-by-step Setup
 
-## 🏪 Retail Manager Reports
+### Step A - PostgreSQL
 
-Retail Managers can use reports for retail inventory and food-quality monitoring.
+1. Install PostgreSQL from <https://www.postgresql.org/download/> (remember the `postgres` password).
+2. Create the database:
 
-Reports can provide information about:
+```sql
+-- psql or pgAdmin:
+CREATE DATABASE food_freshness_db;
+```
 
-- Product freshness
-- Inventory quality
-- Food health
-- Shelf-life status
-- Near-expiry products
-- High-risk products
-- Storage compliance
-- Product quality trends
-- Waste-reduction opportunities
+> Tables are created automatically by the FastAPI app on first start.
+> To create them manually instead: `psql -U postgres -d food_freshness_db -f database/schema.sql`
 
-These reports help retail managers improve inventory rotation and reduce potential food loss.
+### Step B - Backend
 
----
+```bash
+cd backend
 
-## 🏭 Warehouse Operator Reports
+# 1. Virtual environment
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
 
-Warehouse Operators can use storage-focused reports to monitor warehouse food conditions.
+# 2. Dependencies
+pip install -r requirements.txt
 
-Reports can include:
+# 3. Environment file: copy the template then edit values
+copy .env.example .env        # (macOS/Linux: cp .env.example .env)
+```
 
-- Storage compliance
-- Temperature
-- Humidity
-- Packaging
-- Air circulation
-- Light exposure
-- Storage duration
-- Batch freshness
-- Remaining shelf life
-- Food health
-- Storage risk
+Edit `backend/.env`:
 
-This helps warehouse teams identify storage problems that may negatively affect food quality.
+```ini
+DATABASE_URL=postgresql+psycopg2://postgres:YOUR_PASSWORD@localhost:5432/food_freshness_db
+SECRET_KEY=paste_output_of_python_-c_"import secrets; print(secrets.token_hex(32))"
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+```
 
----
+Run the API (from `backend/`):
 
-## 🔍 Food Quality Inspector Reports
+```bash
+uvicorn app.main:app --reload
+```
 
-Food Quality Inspectors can access detailed food-quality information generated by the AI and analysis pipeline.
+- API root: <http://localhost:8000>
+- Swagger docs: <http://localhost:8000/docs>
 
-Reports can include:
+### Step C - Seed sample data (optional but recommended)
 
-- AI freshness prediction
-- Freshness score
-- Prediction confidence
-- Visual condition
-- Color degradation
-- Texture condition
-- Surface condition
-- Mold indicators
-- Bruising
-- Physical damage
-- Storage compliance
-- Shelf-life condition
-- Product age
-- Overall food health
-- Risk level
-- Recommendations
+With the virtualenv active, from `backend/`:
 
-The AI analysis is intended to support inspection and decision-making and does not replace professional food-safety judgment.
+```bash
+python seed.py
+```
 
----
+This creates one demo account per role plus 14 batches whose expiry dates are
+relative to *today*, so all three statuses are visible immediately.
 
-## 🛠️ Administrator Reports
+| Role | Email | Password |
+|---|---|---|
+| Administrator | admin@freshtrack.com | Admin@1234 |
+| Retail Manager | manager@freshtrack.com | Manager@1234 |
+| Warehouse Operator | warehouse@freshtrack.com | Warehouse@1234 |
+| Food Quality Inspector | inspector@freshtrack.com | Inspector@1234 |
+| Consumer | consumer@freshtrack.com | Consumer@1234 |
 
-Administrators can access platform-level information and administrative reporting.
+*(Demo passwords only - change/remove them before any real deployment.)*
 
-Administrator-level information can include:
+### Step D - Frontend
 
-- User information
-- User roles
-- Platform usage
-- Inventory information
-- Food-quality information
-- Role-based activity
-- System-level analytics
-- Reports and monitoring information
+Open a second terminal:
 
----
+```bash
+cd frontend
+npm install
+copy .env.example .env      # optional: defaults to http://localhost:8000
+npm run dev
+```
 
-# 📄 PDF Reports
+Open <http://localhost:5173>.
 
-The platform supports report generation through a print-ready reporting workflow.
+## 5b. Run with Docker (frontend + backend + PostgreSQL)
 
-Users can generate a professional report containing relevant food and inventory information and save or print it as PDF using the browser's print functionality.
+Everything runs in containers - no local Python/Node/PostgreSQL setup needed.
 
-PDF reports can contain:
+```bash
+# 1. (first run) create your environment file
+copy .env.example .env        # macOS/Linux: cp .env.example .env
+#    then set POSTGRES_PASSWORD and SECRET_KEY in .env
 
-- Food information
-- Freshness analysis
-- AI score
-- Visual condition
-- Storage information
-- Shelf-life information
-- Risk information
-- Overall health
-- Recommendations
-- Inventory information
+# 2. Build the images
+docker compose build
 
----
+# 3. Run
+docker compose up
 
-# 📊 Excel-Compatible Reports
+# 4. Run in the background (detached)
+docker compose up -d
 
-The platform also supports Excel-compatible tabular reporting.
+# 5. Stop (add -v to also delete the database volume)
+docker compose down
+```
 
-The exported report can contain structured information such as:
+| Service  | URL / port                | Notes                                             |
+| -------- | ------------------------- | ------------------------------------------------- |
+| frontend | <http://localhost:3000>   | React build served by Nginx, proxies `/api` → backend |
+| backend  | <http://localhost:8000>   | FastAPI docs at `/docs`, health check at `/health`  |
+| database | `localhost:5432`          | PostgreSQL 15, data persisted in the `postgres_data` volume |
 
-- Food
-- Category
-- Freshness score
-- Health score
-- Quality
-- Shelf life
-- Risk
-- Prediction confidence
-- Expiry
-- Storage condition
-- Temperature
-- Humidity
-- Packaging
-- Storage duration
-- Air circulation
-- Light exposure
-- Storage compliance score
+Notes:
 
-This makes the platform suitable for further inventory analysis and record keeping.
+- Containers talk over Docker service names (`frontend` → `backend` → `database`);
+  the frontend is built with `VITE_API_URL=/api`, so no `localhost` is required
+  inside the containers.
+- On first start the backend creates the tables and seeds the five demo accounts
+  (see *Step C* for the e-mails/passwords), so login works immediately.
+- Health checks: `database` (`pg_isready`), `backend` (`GET /health`),
+  `frontend` (Nginx).
 
----
+## 6. API Routes
 
-# 🧠 Complete Food Intelligence Pipeline
+Base URL: `http://localhost:8000` · Interactive docs: `/docs`
 
-The complete food analysis workflow can be represented as:
+| Method | Route | Description | Access |
+|---|---|---|---|
+| POST | `/auth/register` | Create account (bcrypt-hashed password) | Public |
+| POST | `/auth/login` | JSON login -> JWT + user | Public |
+| POST | `/auth/token` | OAuth2 form login (for Swagger "Authorize") | Public |
+| GET | `/auth/me` | Current user profile from JWT | Any authenticated user |
+| GET | `/auth/users` | List all users | Administrator |
+| DELETE | `/auth/users/{user_id}` | Delete a user | Administrator |
+| POST | `/batches` | Register a batch (auto batch ID) | All except Inspector |
+| GET | `/batches` | List batches (`q`, `category`, `status`, `limit`) | Scoped by role |
+| GET | `/batches/{batch_id}` | Single batch details | Owner or staff roles |
+| PUT | `/batches/{batch_id}` | Edit details / update available quantity | Per matrix below |
+| DELETE | `/batches/{batch_id}` | Delete a batch | Per matrix below |
+| GET | `/batches/expiring` | Items expiring within N days (`days`, `include_expired`) | Scoped by role |
+| GET | `/dashboard/summary` | Card totals + recent batches + alerts | Scoped by role |
+| POST | `/analysis/analyze` | Upload food image → AI freshness analysis (persisted) | Any authenticated user |
+| POST | `/analysis/spoilage` | Upload food image → spoilage indicator detection | Any authenticated user |
+| GET | `/analysis/history` | User's analysis history (`classification`, `limit`) | Any authenticated user |
+| GET | `/analysis/{id}` | Single analysis result | Owner |
+| GET | `/analysis/batch/{batch_id}` | Freshness trend history for a batch | Owner/staff |
+| GET | `/analysis/stats` | Aggregated analysis statistics | Any authenticated user |
+| POST | `/reports/generate` | Generate + save a freshness report from an image | Any authenticated user |
+| GET | `/reports` | List reports (`classification`, `risk_level`) | Owner |
+| GET | `/reports/summary` | Report statistics | Any authenticated user |
+| GET | `/reports/{report_id}` | Get a report | Owner |
+| GET | `/reports/{report_id}/download` | Printable HTML report | Owner |
 
-```text
-User
-  ↓
-Add Food
-  ↓
-Food Information
-  ↓
-Upload Food Image
-  ↓
-Image Validation
-  ↓
-Image Preprocessing
-  ↓
-AI Freshness Prediction
-  ↓
-Fresh / Less Fresh / Rotten
-  ↓
-Freshness Score
-  ↓
-Computer Vision Analysis
-  ↓
-Visual Condition
-  ↓
-Storage Intelligence
-  ↓
-Temperature + Humidity + Packaging
-+ Duration + Air + Light
-  ↓
-Storage Compliance Score
-  ↓
-Shelf-Life Intelligence
-  ↓
-Product Age Analysis
-  ↓
-Overall Food Health Score
-  ↓
-Risk Identification
-  ↓
-Recommendation Engine
-  ↓
-Alerts
-  ↓
-Food-Wise Reports
-  ↓
-Inventory Reports
-  ↓
-Role-Wise Reports
-  ↓
-PDF / Excel-Compatible Reports
-  ↓
-Better Food Management
-  ↓
-Reduced Food Waste
+## 7. Role-Based Access Matrix
+
+| Action | Consumer | Retail Manager | Warehouse Operator | Quality Inspector | Administrator |
+|---|:-:|:-:|:-:|:-:|:-:|
+| View batches | Own only | All | All | All | All |
+| Create batch | ✔ (own) | ✔ | ✔ | ✖ read-only | ✔ |
+| Update / delete batch | Own only | All | All | ✖ | All |
+| View all users | ✖ | ✖ | ✖ | ✖ | ✔ |
+
+## 8. Business Rules
+
+**Batch ID** - generated automatically on the server:
+`APP-20260821-001` → three letters of the food name + received date + per-day
+sequence. Second Apple batch the same day becomes `-002`; uniqueness is enforced
+by a UNIQUE constraint with race-safe retries.
+
+**Freshness status** - computed dynamically at request time (never stored stale):
+
+| Status | Rule | Colour |
+|---|---|---|
+| Fresh | more than 3 days to expiry | Green |
+| Expiring Soon | within the next 3 days (incl. today) | Orange |
+| Expired | expiry date before today | Red |
+
+## 9. Manual Test Workflow
+
+1. `python seed.py` → open the app → log in as each demo account and observe the different navigation and permissions.
+2. Register a brand-new consumer account → confirm you land on Login → log in.
+3. As Retail Manager: Add Food Item ("Apple") twice with today's date → IDs `APP-YYYYMMDD-001` / `-002`.
+4. Dashboard shows correct card totals; alerts list items expiring within 3 days.
+5. Inventory: search "app", filter category *Fruits*, filter status *Expiring Soon*.
+6. Edit a batch's available quantity → verify dashboard totals change.
+7. Delete a batch → confirmation dialog → row disappears.
+8. Log in as Inspector → no "Add Food Item" nav, no edit/delete buttons; direct API calls return `403`.
+9. Try `POST /batches` in Swagger without a token → `401`.
+
+## 10. Future Milestones (planned, not in this repo yet)
+
+1. **Milestone 3** – full score pillars: storage conditions (25%), shelf-life prediction (20%), product age (15%).
+2. **Notifications** – email/in-app alerts before expiry.
+3. **Recommendations** – discount/donate/consume suggestions to reduce waste.
+4. **Analytics dashboards** – waste trends by category, location and time.
+5. **Deployment** – Dockerised images, CI pipeline, cloud hosting.
+
+## 10b. Milestone 2 - Reproducing AI features
+
+```bash
+cd backend
+
+python ml/download_dataset.py       # optional: fetch the AgriFreshNET zip
+python ml/prepare_dataset.py        # optional: rebuild train/val/test splits
+python ml/train_model.py            # train CNN + real test metrics (CPU: ~30-60 min)
+python ml/evaluate_model.py         # standalone held-out evaluation
+python -m pytest tests/             # scoring-engine + real CNN inference tests
+```
+
+Full documentation, dataset card, model card and the real metrics tables live in
+[`docs/MILESTONE_2.md`](docs/MILESTONE_2.md).
+
+## 11. Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `Can't connect to server` banner in the UI | Backend not running on port 8000, or `VITE_API_URL` mismatched |
+| `password authentication failed` on startup | Wrong PostgreSQL password in `DATABASE_URL` |
+| CORS errors in browser console | Add the frontend origin to `CORS_ORIGINS` in `backend/.env` and restart uvicorn |
+| `relation "users" does not exist` | Start the API once (`uvicorn ... --reload`) so tables auto-create, or run `database/schema.sql` |
+| Port already in use | Change port: `uvicorn app.main:app --port 8001` and update `VITE_API_URL` |

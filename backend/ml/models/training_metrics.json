@@ -1,0 +1,53 @@
+{
+  "model_version": "food-freshness-mobilenetv2-v1",
+  "trained_at": "2026-09-11T18:37:10.983930",
+  "device": "cpu",
+  "num_classes": 3,
+  "classes": [
+    "fresh",
+    "semi_fresh",
+    "rotten"
+  ],
+  "dataset": {
+    "train": 9912,
+    "val": 2124,
+    "test": 2124
+  },
+  "training": {
+    "epochs_planned": 12,
+    "epochs_run": 8,
+    "final_lr": 0.001,
+    "best_val_accuracy": 0.7853107344632768,
+    "final_train_accuracy": 0.717,
+    "final_val_accuracy": 0.7759,
+    "early_stopping_patience": 3
+  },
+  "test_evaluation": {
+    "accuracy": 0.7839,
+    "precision_weighted": 0.7825,
+    "recall_weighted": 0.7839,
+    "f1_weighted": 0.7829,
+    "precision_macro": 0.7824,
+    "recall_macro": 0.7838,
+    "f1_macro": 0.7828,
+    "confusion_matrix": [
+      [
+        556,
+        123,
+        30
+      ],
+      [
+        149,
+        485,
+        72
+      ],
+      [
+        24,
+        61,
+        624
+      ]
+    ],
+    "test_samples": 2124
+  },
+  "model_path": "C:\\Users\\saite\\OneDrive\\Desktop\\foodquality\\food-freshness-monitoring-platform\\backend\\ml\\models\\food_freshness_model.pt"
+}

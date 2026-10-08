@@ -1,609 +1,81 @@
-import { useState } from "react";
-import "./App.css";
-
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-
-import Dashboard from "./pages/Dashboard";
-
-import RetailDashboard from "./pages/RetailDashboard";
-import WarehouseDashboard from "./pages/WarehouseDashboard";
-import InspectorDashboard from "./pages/InspectorDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-
-import AddFood from "./pages/AddFood";
-import FoodInventory from "./pages/FoodInventory";
-import Profile from "./pages/Profile";
-import FoodReport from "./pages/FoodReport";
-import Reports from "./pages/Reports";
-import AdministratorReports from "./pages/AdministratorReports";
-
-
-function App() {
-
-  // ==========================================================
-  // PAGE STATE
-  // ==========================================================
-
-  const [page, setPage] = useState(() => {
-
-    const token =
-      localStorage.getItem(
-        "access_token"
-      );
-
-    return token
-      ? "dashboard"
-      : "home";
-
-  });
-
-
-  // ==========================================================
-  // SELECTED FOOD
-  // ==========================================================
-
-  const [selectedFood, setSelectedFood] =
-    useState(null);
-
-
-  // ==========================================================
-  // HOME
-  // ==========================================================
-
-  if (page === "home") {
-
-    return (
-
-      <Home
-
-        onLogin={() =>
-          setPage(
-            "login"
-          )
-        }
-
-        onRegister={() =>
-          setPage(
-            "register"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // LOGIN SUCCESS
-  // ==========================================================
-
-  const handleLoginSuccess = (
-    role
-  ) => {
-
-    const userRole =
-      role ||
-      localStorage.getItem(
-        "user_role"
-      ) ||
-      "consumer";
-
-
-    localStorage.setItem(
-      "user_role",
-      userRole
-    );
-
-
-    setPage(
-      "dashboard"
-    );
-
-  };
-
-
-  // ==========================================================
-  // LOGOUT
-  // ==========================================================
-
-  const handleLogout = () => {
-
-    localStorage.removeItem(
-      "access_token"
-    );
-
-    localStorage.removeItem(
-      "current_user"
-    );
-
-    localStorage.removeItem(
-      "user_role"
-    );
-
-    setSelectedFood(null);
-
-    setPage("home");
-
-  };
-
-
-  // ==========================================================
-  // FOOD REPORT
-  // ==========================================================
-
-  const handleViewReport = (
-    food
-  ) => {
-
-    setSelectedFood(food);
-
-    setPage(
-      "food-report"
-    );
-
-  };
-
-
-  // ==========================================================
-  // LOGIN
-  // ==========================================================
-
-  if (page === "login") {
-
-    return (
-
-      <Login
-
-        onLoginSuccess={
-          handleLoginSuccess
-        }
-
-        onRegisterPage={() =>
-          setPage(
-            "register"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // REGISTER
-  // ==========================================================
-
-  if (page === "register") {
-
-    return (
-
-      <Register
-
-        onLoginPage={() =>
-          setPage(
-            "login"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // CURRENT ROLE
-  // ==========================================================
-
-  const role =
-    (
-      localStorage.getItem(
-        "user_role"
-      ) || "consumer"
-    )
-      .toLowerCase();
-
-
-  // ==========================================================
-  // CONSUMER DASHBOARD
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role === "consumer"
-  ) {
-
-    return (
-
-      <Dashboard
-
-        onLogout={
-          handleLogout
-        }
-
-        onAddFood={() =>
-          setPage(
-            "add-food"
-          )
-        }
-
-        onInventory={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // RETAIL MANAGER DASHBOARD
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role === "retail_manager"
-  ) {
-
-    return (
-
-      <RetailDashboard
-
-        onLogout={
-          handleLogout
-        }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onInventory={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // WAREHOUSE OPERATOR DASHBOARD
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role === "warehouse_operator"
-  ) {
-
-    return (
-
-      <WarehouseDashboard
-
-        onLogout={
-          handleLogout
-        }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onInventory={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // FOOD QUALITY INSPECTOR
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role ===
-      "food_quality_inspector"
-  ) {
-
-    return (
-
-      <InspectorDashboard
-
-        onLogout={
-          handleLogout
-        }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onInventory={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // ADMINISTRATOR
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role === "administrator"
-  ) {
-
-    return (
-
-      <AdminDashboard
-
-        onLogout={
-          handleLogout
-        }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // ADD FOOD
-  // ==========================================================
-
-  if (
-    page === "add-food"
-  ) {
-
-    return (
-
-      <AddFood
-
-        onBack={() =>
-          setPage(
-            "dashboard"
-          )
-        }
-
-        onSuccess={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // INVENTORY
-  // ==========================================================
-
-  if (
-    page === "inventory"
-  ) {
-
-    return (
-
-      <FoodInventory
-
-        onBack={() =>
-          setPage(
-            "dashboard"
-          )
-        }
-
-        onAddFood={() =>
-          setPage(
-            "add-food"
-          )
-        }
-
-        onViewReport={
-          handleViewReport
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // FOOD REPORT
-  // ==========================================================
-
-  if (
-    page === "food-report"
-  ) {
-
-    return (
-
-      <FoodReport
-
-        food={
-          selectedFood
-        }
-
-        onBack={() => {
-
-          setSelectedFood(
-            null
-          );
-
-          setPage(
-            "inventory"
-          );
-
-        }}
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // REPORTS
-  // ==========================================================
-
-  if (
-    page === "reports"
-  ) {
-
-    if (
-      role === "administrator"
-    ) {
-
-      return (
-
-        <AdministratorReports
-
-          onBack={() =>
-            setPage(
-              "dashboard"
-            )
-          }
-
-        />
-
-      );
-
-    }
-
-
-    return (
-
-      <Reports
-
-        onBack={() =>
-          setPage(
-            "dashboard"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // PROFILE
-  // ==========================================================
-
-  if (
-    page === "profile"
-  ) {
-
-    return (
-
-      <Profile
-
-        onBack={() =>
-          setPage(
-            "dashboard"
-          )
-        }
-
-        onLogout={
-          handleLogout
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // FALLBACK
-  // ==========================================================
-
-  return null;
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+
+import Layout from './components/Layout'
+import { ProtectedRoute, PublicOnlyRoute, RoleRoute } from './components/RouteGuards'
+import { AuthProvider } from './context/AuthContext'
+import AddFoodItem from './pages/AddFoodItem'
+import Alerts from './pages/Alerts'
+import Analytics from './pages/Analytics'
+import Dashboard from './pages/Dashboard'
+import FreshnessAnalysis from './pages/FreshnessAnalysis'
+import Reports from './pages/Reports'
+import Home from './pages/Home'
+import Insights from './pages/Insights'
+import Inventory from './pages/Inventory'
+import Login from './pages/Login'
+import Profile from './pages/Profile'
+import Recommendations from './pages/Recommendations'
+import Register from './pages/Register'
+import Scoring from './pages/Scoring'
+import ShelfLife from './pages/ShelfLife'
+import StorageMonitoring from './pages/StorageMonitoring'
+import Users from './pages/Users'
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route element={<PublicOnlyRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
+
+          {/* Authenticated app shell (sidebar layout) */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+
+              {/* Role-restricted routes: everyone else is bounced to their own /dashboard */}
+              <Route element={<RoleRoute roles={['consumer', 'retail_manager', 'warehouse_operator', 'administrator']} />}>
+                <Route path="/add-food-item" element={<AddFoodItem />} />
+              </Route>
+
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/freshness-analysis" element={<FreshnessAnalysis />} />
+              <Route path="/freshness-analysis/:batchId" element={<FreshnessAnalysis />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/freshness-reports" element={<Navigate to="/reports" replace />} />
+              <Route path="/shelf-life" element={<ShelfLife />} />
+              <Route path="/shelf-life/:batchId" element={<ShelfLife />} />
+              <Route path="/storage" element={<StorageMonitoring />} />
+              <Route path="/storage/:batchId" element={<StorageMonitoring />} />
+              <Route path="/scoring" element={<Scoring />} />
+              <Route path="/recommendations" element={<Recommendations />} />
+
+              <Route element={<RoleRoute roles={['retail_manager', 'warehouse_operator', 'administrator']} />}>
+                <Route path="/insights" element={<Insights />} />
+              </Route>
+
+              <Route element={<RoleRoute roles={['retail_manager', 'warehouse_operator', 'quality_inspector', 'administrator']} />}>
+                <Route path="/analytics" element={<Analytics />} />
+              </Route>
+
+              <Route path="/alerts" element={<Alerts />} />
+
+              <Route element={<RoleRoute roles={['administrator']} />}>
+                <Route path="/users" element={<Users />} />
+              </Route>
+
+              <Route path="/profile" element={<Profile />} />
+            </Route>
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
 }
-
-
-export default App;

@@ -1,0 +1,114 @@
+# ===========================================================================
+# Food Freshness Monitoring Platform - Docker Compose (production-style run)
+#
+#   Build : docker compose build
+#   Run   : docker compose up
+#   Stop  : docker compose down
+#
+# Services
+#   frontend  React build served by Nginx  -> http://localhost:3000
+#   backend   FastAPI / uvicorn            -> http://localhost:8000
+#   database  PostgreSQL 15                -> localhost:5432 (volume-persisted)
+#
+# All service-to-service traffic uses Docker service names
+# (frontend -> backend, backend -> database) - never localhost.
+# ===========================================================================
+
+services:
+  # -------------------------------------------------------------------------
+  # PostgreSQL - the project's existing database (no migration performed).
+  # Data is persisted in a named volume; database/schema.sql is applied once
+  # on first start, and the backend creates any remaining tables itself.
+  # -------------------------------------------------------------------------
+  database:
+    image: postgres:15-alpine
+    container_name: food_freshness_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-food_freshness_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-food_freshness_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - freshtrack_network
+
+  # -------------------------------------------------------------------------
+  # FastAPI backend. Waits for the database, creates tables, seeds the demo
+  # users (idempotent), then starts uvicorn with the existing entry point.
+  # -------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: food_freshness_backend
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      # Docker service name "database" replaces localhost inside the network.
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-food_freshness_db}
+      # JWT signing secret - read from .env, never hardcoded.
+      SECRET_KEY: ${SECRET_KEY:-${JWT_SECRET:-change_me_before_deploying}}
+      JWT_SECRET: ${JWT_SECRET:-}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/ml/models:/app/ml/models
+      - ./backend/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - freshtrack_network
+
+  # -------------------------------------------------------------------------
+  # React production build served by Nginx. The build uses VITE_API_URL=/api
+  # and Nginx proxies /api/* to http://backend:8000/* (service name), so the
+  # browser never needs a hardcoded localhost API URL.
+  # -------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: food_freshness_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - freshtrack_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  freshtrack_network:
+    driver: bridge
