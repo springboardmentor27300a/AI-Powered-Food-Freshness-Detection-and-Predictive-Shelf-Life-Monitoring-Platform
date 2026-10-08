@@ -1,0 +1,2 @@
+# Dataset note
+The project brief recommends Fruits Freshness Dataset, Vegetable Freshness Dataset, Kaggle Food Freshness Dataset, and Food-101. This submission does **not** claim to have trained a CNN on those external datasets. To keep the demo self-contained, `demo_freshness_reference.csv` is a small synthetic reference dataset used for development/testing only. The live score combines image-derived visual heuristics (when an image is uploaded), storage conditions, shelf-life and product age using the 40/25/20/15 weighting stated in the project brief.

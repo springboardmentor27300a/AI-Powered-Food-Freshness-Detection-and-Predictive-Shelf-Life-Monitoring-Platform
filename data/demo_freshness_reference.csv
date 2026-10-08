@@ -1,0 +1,9 @@
+product,visual_score,storage_score,shelf_score,age_score,label
+Apple,92,96,90,88,Fresh
+Apple,78,84,65,72,Good
+Tomato,70,62,54,58,Acceptable
+Milk,48,55,30,40,Near Spoilage
+Chicken,30,35,15,22,Spoiled
+Spinach,88,90,82,80,Fresh
+Bread,76,80,68,70,Good
+Fish,42,50,25,35,Near Spoilage
