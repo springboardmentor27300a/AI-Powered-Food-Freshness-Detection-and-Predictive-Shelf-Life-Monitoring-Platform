@@ -148,61 +148,73 @@ Freshness Score =
 
 This model combines multiple quality factors instead of relying only on expiry information or image appearance.
 
-###💡 Recommendations
+### 💡 Recommendations
 
 The platform provides recommendations related to:
 
-Storage
-Consumption
-Inventory rotation
-Food-quality improvement
-Waste reduction
+- Storage
+- Consumption
+- Inventory rotation
+- Food-quality improvement
+- Waste reduction
 
 These recommendations help users take appropriate action based on available food-quality information.
 
-🔔 Notifications & Alerts
+---
+
+## 🔔 Notifications & Alerts
 
 FoodCare provides notifications for:
 
-Freshness alerts
-Shelf-life warnings
-Spoilage risks
-Storage-condition alerts
-Inventory alerts
-Platform notifications
+- Freshness alerts
+- Shelf-life warnings
+- Spoilage risks
+- Storage-condition alerts
+- Inventory alerts
+- Platform notifications
 
 Users can view unread notifications and mark notifications as read.
 
-📈 Dashboard & Analytics
+---
+
+## 📈 Dashboard & Analytics
 
 The dashboard provides an overview of important platform information, including:
 
-Inventory summary
-Food categories
-Expiry and stock information
-Freshness distribution
-Average freshness score
-Storage compliance
-Average temperature
-Average humidity
-Expiry and waste risk
-Platform-level information for administrators
-📑 Reports & Data Export
+- Inventory summary
+- Food categories
+- Expiry and stock information
+- Freshness distribution
+- Average freshness score
+- Storage compliance
+- Average temperature
+- Average humidity
+- Expiry and waste risk
+- Platform-level information for administrators
+
+---
+
+## 📑 Reports & Data Export
 
 FoodCare provides reports for:
 
-Freshness
-Shelf life
-Inventory quality
-Waste reduction
-Storage compliance
+- Freshness
+- Shelf life
+- Inventory quality
+- Waste reduction
+- Storage compliance
 
 Reports can be exported in:
 
-PDF
-CSV
-Excel
-🏗️ System Architecture
+- PDF
+- CSV
+- Excel
+
+---
+
+## 🏗️ System Architecture
+
+```text
                          ┌─────────────────────┐
                          │    Users / Roles    │
                          └──────────┬──────────┘
@@ -212,22 +224,25 @@ Excel
                          │   React Frontend    │
                          │       Vite          │
                          └──────────┬──────────┘
-                                    │ REST API
+                                    │
+                                 REST API
+                                    │
                                     ▼
                          ┌─────────────────────┐
                          │   FastAPI Backend   │
                          │    JWT + RBAC       │
                          └──────────┬──────────┘
                                     │
-             ┌──────────────────────┼──────────────────────┐
-             │                      │                      │
-             ▼                      ▼                      ▼
-    ┌────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-    │ Image Analysis │    │ Shelf-Life &    │    │ Analytics &     │
-    │ OpenCV / CNN   │    │ Freshness       │    │ Reporting       │
-    └────────────────┘    └─────────────────┘    └─────────────────┘
-             │                      │                      │
-             └──────────────────────┼──────────────────────┘
+              ┌─────────────────────┼─────────────────────┐
+              │                     │                     │
+              ▼                     ▼                     ▼
+     ┌────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+     │ Image Analysis │   │ Shelf-Life &    │   │ Analytics &     │
+     │ OpenCV / CNN   │   │ Freshness       │   │ Reporting       │
+     └────────────────┘   └─────────────────┘   └─────────────────┘
+              │                     │                     │
+              └─────────────────────┼─────────────────────┘
+                                    │
                                     ▼
                          ┌─────────────────────┐
                          │    PostgreSQL DB    │
@@ -238,7 +253,10 @@ Excel
                          │ Docker / Render     │
                          │ Cloud Deployment    │
                          └─────────────────────┘
-🔄 Main Workflow
+
+## 🔄 Main Workflow
+
+```text
 User Login
     ↓
 Food Item Registration
@@ -264,49 +282,75 @@ Recommendations & Alerts
 Dashboard & Analytics
     ↓
 Reports & Export
-🧮 Freshness Scoring Formula
+
+## 🧮 Freshness Scoring Formula
+
+```text
 Freshness Score =
     Visual Condition × 40%
   + Storage Condition × 25%
   + Shelf-Life × 20%
   + Product Age × 15%
-🛠️ Technology Stack
-Frontend
-React
-Vite
-JavaScript
-HTML
-CSS
-Backend
-Python
-FastAPI
-SQLAlchemy
-Pydantic
-JWT Authentication
-Database
-PostgreSQL
-AI & Computer Vision
-Python
-OpenCV
-CNN-based analysis pipeline
-NumPy
-Pandas
-Scikit-learn
-Reporting
-ReportLab
-OpenPyXL
-CSV
-Testing
-Pytest
-HTTPX
-Deployment
-Docker
-Docker Compose
-Render
-Version Control
-Git
-GitHub
-🗂️ Project Structure
+
+
+## 🛠️ Technology Stack
+
+### Frontend
+
+- React
+- Vite
+- JavaScript
+- HTML
+- CSS
+
+### Backend
+
+- Python
+- FastAPI
+- SQLAlchemy
+- Pydantic
+- JWT Authentication
+
+### Database
+
+- PostgreSQL
+
+### AI & Computer Vision
+
+- Python
+- OpenCV
+- CNN-based analysis pipeline
+- NumPy
+- Pandas
+- Scikit-learn
+
+### Reporting
+
+- ReportLab
+- OpenPyXL
+- CSV
+
+### Testing
+
+- Pytest
+- HTTPX
+
+### Deployment
+
+- Docker
+- Docker Compose
+- Render
+
+### Version Control
+
+- Git
+- GitHub
+
+---
+
+## 🗂️ Project Structure
+
+```text
 FoodCare-AI-Freshness-Monitoring/
 │
 ├── backend/
@@ -337,12 +381,13 @@ FoodCare-AI-Freshness-Monitoring/
 ├── docker-compose.yml
 ├── .gitignore
 └── README.md
+
+
 🗄️ Database
 
 FoodCare uses PostgreSQL for persistent application data.
 
-Major entities include:
-
+Major Entities
 Users
 Food Items
 Batches
@@ -400,8 +445,7 @@ Additional API and end-to-end workflow validation was performed during developme
 
 FoodCare includes Docker configuration for the frontend and backend.
 
-Main Docker files:
-
+Main Docker Files
 docker-compose.yml
 backend/Dockerfile
 frontend/Dockerfile
@@ -431,7 +475,6 @@ Live Application
 Backend
 
 🔗 https://foodcare-backend-9q9r.onrender.com
-
 
 The free cloud service may take some time to respond when waking from inactivity.
 
@@ -493,4 +536,5 @@ This project was developed as part of the Infosys Springboard Internship and fol
 
 📄 License
 
-This project was developed for academic and internship purposes.]
+This project was developed for academic and internship purposes.
+
