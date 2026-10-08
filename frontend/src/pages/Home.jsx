@@ -10,6 +10,114 @@ function Home({ onLogin, onRegister }) {
 
   /*
    * ============================================================
+   * ANIMATED BACKGROUND FOOD DATA
+   * ============================================================
+   */
+
+  const backgroundFoods = useMemo(
+    () => [
+      {
+        icon: "🍎",
+        className: "food-float food-apple",
+      },
+      {
+        icon: "🍊",
+        className: "food-float food-orange",
+      },
+      {
+        icon: "🥕",
+        className: "food-float food-carrot",
+      },
+      {
+        icon: "🍓",
+        className: "food-float food-strawberry",
+      },
+      {
+        icon: "🥑",
+        className: "food-float food-avocado",
+      },
+      {
+        icon: "🍋",
+        className: "food-float food-lemon",
+      },
+      {
+        icon: "🫐",
+        className: "food-float food-blueberry",
+      },
+      {
+        icon: "🍅",
+        className: "food-float food-tomato",
+      },
+      {
+        icon: "🥦",
+        className: "food-float food-broccoli",
+      },
+      {
+        icon: "🍌",
+        className: "food-float food-banana",
+      },
+      {
+        icon: "🍉",
+        className: "food-float food-watermelon",
+      },
+      {
+        icon: "🍇",
+        className: "food-float food-grapes",
+      },
+      {
+        icon: "🍄",
+        className: "food-float food-mushroom",
+      },
+      {
+        icon: "🥒",
+        className: "food-float food-cucumber",
+      },
+      {
+        icon: "🫑",
+        className: "food-float food-pepper",
+      },
+      {
+        icon: "🥬",
+        className: "food-float food-lettuce",
+      },
+      {
+        icon: "🍐",
+        className: "food-float food-pear",
+      },
+      {
+        icon: "🥝",
+        className: "food-float food-kiwi",
+      },
+      {
+        icon: "🍑",
+        className: "food-float food-peach",
+      },
+      {
+        icon: "🌽",
+        className: "food-float food-corn",
+      },
+      {
+        icon: "🍍",
+        className: "food-float food-pineapple",
+      },
+      {
+        icon: "🥕",
+        className: "food-float food-carrot-two",
+      },
+      {
+        icon: "🍅",
+        className: "food-float food-tomato-two",
+      },
+      {
+        icon: "🍓",
+        className: "food-float food-strawberry-two",
+      },
+    ],
+    []
+  );
+
+  /*
+   * ============================================================
    * HERO PRESENTATION SCENES
    * ============================================================
    */
@@ -751,12 +859,1012 @@ function Home({ onLogin, onRegister }) {
 
   /*
    * ============================================================
+   * ANIMATED FOOD BACKGROUND
+   * ============================================================
+   */
+
+  const AnimatedFoodBackground = () => {
+    return (
+      <div className="animated-food-background" aria-hidden="true">
+        <div className="food-background-glow food-glow-a" />
+        <div className="food-background-glow food-glow-b" />
+        <div className="food-background-glow food-glow-c" />
+
+        <div className="food-orbit-background orbit-background-one" />
+        <div className="food-orbit-background orbit-background-two" />
+
+        {backgroundFoods.map((food, index) => (
+          <div
+            key={`${food.className}-${index}`}
+            className={food.className}
+            style={{
+              "--food-index": index,
+              "--food-delay": `${(index % 9) * -1.4}s`,
+            }}
+          >
+            <span>{food.icon}</span>
+          </div>
+        ))}
+
+        <div className="background-leaf leaf-one">🍃</div>
+        <div className="background-leaf leaf-two">🍃</div>
+        <div className="background-leaf leaf-three">🍃</div>
+        <div className="background-leaf leaf-four">🍃</div>
+        <div className="background-leaf leaf-five">🍃</div>
+        <div className="background-leaf leaf-six">🍃</div>
+
+        <div className="background-spark spark-one" />
+        <div className="background-spark spark-two" />
+        <div className="background-spark spark-three" />
+        <div className="background-spark spark-four" />
+        <div className="background-spark spark-five" />
+        <div className="background-spark spark-six" />
+        <div className="background-spark spark-seven" />
+        <div className="background-spark spark-eight" />
+      </div>
+    );
+  };
+
+  /*
+   * ============================================================
    * RETURN
    * ============================================================
    */
 
   return (
     <main className={`home-page ${isVisible ? "home-page-visible" : ""}`}>
+      {/* ========================================================
+          INLINE BACKGROUND ANIMATION
+      ======================================================== */}
+
+      <style>{`
+        /* ======================================================
+           FRESHGUARD GLOBAL FOOD BACKGROUND
+        ====================================================== */
+
+        .home-page {
+          position: relative;
+          overflow-x: hidden;
+          background:
+            radial-gradient(
+              circle at 12% 18%,
+              rgba(199, 255, 132, 0.38),
+              transparent 28%
+            ),
+            radial-gradient(
+              circle at 86% 26%,
+              rgba(224, 255, 128, 0.42),
+              transparent 30%
+            ),
+            radial-gradient(
+              circle at 50% 75%,
+              rgba(172, 242, 104, 0.22),
+              transparent 32%
+            ),
+            linear-gradient(
+              135deg,
+              #f8fff0 0%,
+              #efffd9 30%,
+              #f9ffe9 62%,
+              #eaffd1 100%
+            );
+        }
+
+        .home-page::before {
+          content: "";
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          background:
+            linear-gradient(
+              115deg,
+              transparent 0%,
+              rgba(255, 255, 255, 0.28) 40%,
+              transparent 70%
+            );
+          opacity: 0.8;
+        }
+
+        .animated-food-background {
+          position: fixed;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          overflow: hidden;
+          isolation: isolate;
+        }
+
+        .animated-food-background::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(
+              circle at 50% 50%,
+              rgba(255, 255, 255, 0.22),
+              transparent 55%
+            );
+          pointer-events: none;
+        }
+
+        .food-background-glow {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(45px);
+          opacity: 0.28;
+          animation: foodGlowMove 12s ease-in-out infinite alternate;
+        }
+
+        .food-glow-a {
+          width: 360px;
+          height: 360px;
+          left: -100px;
+          top: 16%;
+          background: rgba(139, 224, 65, 0.55);
+        }
+
+        .food-glow-b {
+          width: 420px;
+          height: 420px;
+          right: -120px;
+          top: 40%;
+          background: rgba(238, 222, 69, 0.42);
+          animation-delay: -4s;
+        }
+
+        .food-glow-c {
+          width: 320px;
+          height: 320px;
+          left: 38%;
+          bottom: -100px;
+          background: rgba(90, 205, 91, 0.28);
+          animation-delay: -7s;
+        }
+
+        .food-orbit-background {
+          position: absolute;
+          border: 1px solid rgba(63, 177, 78, 0.15);
+          border-radius: 50%;
+          animation: backgroundOrbitRotate 30s linear infinite;
+        }
+
+        .orbit-background-one {
+          width: 800px;
+          height: 800px;
+          left: -190px;
+          top: 5%;
+        }
+
+        .orbit-background-two {
+          width: 1000px;
+          height: 1000px;
+          right: -330px;
+          top: 25%;
+          animation-duration: 38s;
+          animation-direction: reverse;
+        }
+
+        .food-float {
+          position: absolute;
+          z-index: 3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 70px;
+          height: 70px;
+          opacity: 0.86;
+          filter:
+            drop-shadow(0 12px 18px rgba(56, 113, 37, 0.16))
+            saturate(1.1);
+          animation:
+            foodFloat 8s ease-in-out infinite,
+            foodRotate 14s ease-in-out infinite;
+          animation-delay: var(--food-delay);
+          will-change: transform;
+        }
+
+        .food-float span {
+          display: block;
+          font-size: 58px;
+          line-height: 1;
+          transform-origin: center;
+          animation: foodInnerPulse 4s ease-in-out infinite;
+          animation-delay: var(--food-delay);
+        }
+
+        .food-float::after {
+          content: "";
+          position: absolute;
+          width: 42px;
+          height: 14px;
+          bottom: 2px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(52, 126, 51, 0.12);
+          border-radius: 50%;
+          filter: blur(6px);
+        }
+
+        /* Different positions */
+
+        .food-apple {
+          left: 3%;
+          top: 17%;
+          animation-duration: 9s, 17s;
+        }
+
+        .food-orange {
+          left: 21%;
+          top: 11%;
+          animation-duration: 7s, 15s;
+        }
+
+        .food-carrot {
+          left: 38%;
+          top: 8%;
+          animation-duration: 8.5s, 18s;
+        }
+
+        .food-strawberry {
+          left: 56%;
+          top: 13%;
+          animation-duration: 7.5s, 14s;
+        }
+
+        .food-avocado {
+          left: 69%;
+          top: 17%;
+          animation-duration: 9s, 19s;
+        }
+
+        .food-lemon {
+          left: 83%;
+          top: 10%;
+          animation-duration: 8s, 16s;
+        }
+
+        .food-blueberry {
+          left: 76%;
+          top: 25%;
+          animation-duration: 6.5s, 13s;
+        }
+
+        .food-tomato {
+          right: 4%;
+          top: 32%;
+          animation-duration: 9s, 20s;
+        }
+
+        .food-broccoli {
+          left: 14%;
+          top: 28%;
+          animation-duration: 8s, 16s;
+        }
+
+        .food-banana {
+          left: 2%;
+          top: 43%;
+          animation-duration: 7s, 18s;
+        }
+
+        .food-watermelon {
+          left: -1%;
+          top: 61%;
+          animation-duration: 9s, 17s;
+        }
+
+        .food-grapes {
+          right: 1%;
+          top: 57%;
+          animation-duration: 8s, 16s;
+        }
+
+        .food-mushroom {
+          left: 32%;
+          top: 51%;
+          animation-duration: 10s, 19s;
+        }
+
+        .food-cucumber {
+          right: 30%;
+          top: 62%;
+          animation-duration: 7s, 15s;
+        }
+
+        .food-pepper {
+          left: 6%;
+          top: 75%;
+          animation-duration: 8s, 18s;
+        }
+
+        .food-lettuce {
+          right: 8%;
+          top: 74%;
+          animation-duration: 9s, 20s;
+        }
+
+        .food-pear {
+          left: 23%;
+          top: 79%;
+          animation-duration: 7.5s, 16s;
+        }
+
+        .food-kiwi {
+          left: 47%;
+          top: 72%;
+          animation-duration: 8.5s, 18s;
+        }
+
+        .food-peach {
+          right: 22%;
+          top: 82%;
+          animation-duration: 9s, 17s;
+        }
+
+        .food-corn {
+          right: 4%;
+          top: 85%;
+          animation-duration: 7s, 14s;
+        }
+
+        .food-pineapple {
+          left: 9%;
+          top: 91%;
+          animation-duration: 10s, 21s;
+        }
+
+        .food-carrot-two {
+          left: 62%;
+          top: 91%;
+          animation-duration: 8s, 16s;
+        }
+
+        .food-tomato-two {
+          left: 88%;
+          top: 91%;
+          animation-duration: 9s, 18s;
+        }
+
+        .food-strawberry-two {
+          left: 40%;
+          top: 90%;
+          animation-duration: 7.5s, 15s;
+        }
+
+        /* Leaves */
+
+        .background-leaf {
+          position: absolute;
+          z-index: 2;
+          font-size: 28px;
+          opacity: 0.46;
+          filter: blur(0.2px);
+          animation: leafDrift 11s ease-in-out infinite;
+        }
+
+        .leaf-one {
+          left: 8%;
+          top: 35%;
+        }
+
+        .leaf-two {
+          left: 28%;
+          top: 19%;
+          animation-delay: -2s;
+        }
+
+        .leaf-three {
+          left: 48%;
+          top: 35%;
+          animation-delay: -4s;
+        }
+
+        .leaf-four {
+          right: 25%;
+          top: 13%;
+          animation-delay: -6s;
+        }
+
+        .leaf-five {
+          right: 9%;
+          top: 44%;
+          animation-delay: -3s;
+        }
+
+        .leaf-six {
+          left: 17%;
+          bottom: 7%;
+          animation-delay: -7s;
+        }
+
+        /* Tiny glowing particles */
+
+        .background-spark {
+          position: absolute;
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: rgba(77, 185, 87, 0.6);
+          box-shadow:
+            0 0 12px rgba(77, 185, 87, 0.5),
+            0 0 24px rgba(77, 185, 87, 0.25);
+          animation: sparkFloat 5s ease-in-out infinite;
+        }
+
+        .spark-one {
+          left: 12%;
+          top: 20%;
+        }
+
+        .spark-two {
+          left: 34%;
+          top: 31%;
+          animation-delay: -1s;
+        }
+
+        .spark-three {
+          left: 52%;
+          top: 18%;
+          animation-delay: -2s;
+        }
+
+        .spark-four {
+          right: 18%;
+          top: 29%;
+          animation-delay: -3s;
+        }
+
+        .spark-five {
+          right: 31%;
+          top: 56%;
+          animation-delay: -1.5s;
+        }
+
+        .spark-six {
+          left: 16%;
+          top: 68%;
+          animation-delay: -2.5s;
+        }
+
+        .spark-seven {
+          left: 45%;
+          top: 82%;
+          animation-delay: -4s;
+        }
+
+        .spark-eight {
+          right: 11%;
+          top: 77%;
+          animation-delay: -3.5s;
+        }
+
+        /* ======================================================
+           MAKE PAGE CONTENT SIT ABOVE FOOD BACKGROUND
+        ====================================================== */
+
+        .home-navbar,
+        .home-hero-presentation,
+        .home-section,
+        .home-footer {
+          position: relative;
+          z-index: 5;
+        }
+
+        /* ======================================================
+           TRANSPARENT / FRESH GREEN SECTION BACKGROUNDS
+        ====================================================== */
+
+        .home-hero-presentation,
+        .platform-section,
+        .features-section,
+        .how-it-works-section,
+        .roles-section,
+        .ai-showcase-section,
+        .final-cta-section {
+          background:
+            linear-gradient(
+              135deg,
+              rgba(247, 255, 237, 0.68),
+              rgba(236, 255, 216, 0.58),
+              rgba(250, 255, 238, 0.72)
+            );
+          backdrop-filter: blur(1px);
+        }
+
+        .home-hero-presentation {
+          min-height: 900px;
+        }
+
+        .platform-section,
+        .features-section,
+        .how-it-works-section,
+        .roles-section,
+        .ai-showcase-section,
+        .final-cta-section {
+          background:
+            linear-gradient(
+              135deg,
+              rgba(247, 255, 237, 0.78),
+              rgba(232, 255, 213, 0.68)
+            );
+        }
+
+        /* ======================================================
+           NAVBAR
+        ====================================================== */
+
+        .home-navbar {
+          background: rgba(255, 255, 255, 0.88) !important;
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
+          border-bottom: 1px solid rgba(38, 130, 63, 0.08);
+          box-shadow: 0 10px 35px rgba(53, 104, 47, 0.06);
+        }
+
+        .home-navbar-inner {
+          max-width: 1450px;
+          margin: 0 auto;
+        }
+
+        /* ======================================================
+           PRESENTATION GLASS CARD
+        ====================================================== */
+
+        .presentation-glass-card {
+          background:
+            linear-gradient(
+              135deg,
+              rgba(255, 255, 255, 0.82),
+              rgba(249, 255, 240, 0.72)
+            ) !important;
+          border: 1px solid rgba(71, 168, 84, 0.15) !important;
+          box-shadow:
+            0 30px 80px rgba(59, 118, 53, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+        }
+
+        .presentation-card-content {
+          background: transparent !important;
+        }
+
+        /* ======================================================
+           EXTRA GREEN LIGHT AROUND ROBOT
+        ====================================================== */
+
+        .hero-background-glow {
+          opacity: 0.22 !important;
+        }
+
+        /* ======================================================
+           ANIMATIONS
+        ====================================================== */
+
+        @keyframes foodFloat {
+          0% {
+            transform: translate3d(0, 0, 0) rotate(-4deg);
+          }
+
+          25% {
+            transform: translate3d(
+              calc(8px + (var(--food-index) * 1px)),
+              -24px,
+              0
+            ) rotate(5deg);
+          }
+
+          50% {
+            transform: translate3d(
+              -12px,
+              -42px,
+              0
+            ) rotate(-6deg);
+          }
+
+          75% {
+            transform: translate3d(
+              15px,
+              -20px,
+              0
+            ) rotate(7deg);
+          }
+
+          100% {
+            transform: translate3d(0, 0, 0) rotate(-4deg);
+          }
+        }
+
+        @keyframes foodRotate {
+          0% {
+            rotate: -3deg;
+          }
+
+          50% {
+            rotate: 8deg;
+          }
+
+          100% {
+            rotate: -3deg;
+          }
+        }
+
+        @keyframes foodInnerPulse {
+          0%,
+          100% {
+            scale: 1;
+          }
+
+          50% {
+            scale: 1.08;
+          }
+        }
+
+        @keyframes leafDrift {
+          0% {
+            transform: translate3d(0, 0, 0) rotate(0deg);
+          }
+
+          25% {
+            transform: translate3d(25px, -18px, 0) rotate(25deg);
+          }
+
+          50% {
+            transform: translate3d(-15px, -35px, 0) rotate(-20deg);
+          }
+
+          75% {
+            transform: translate3d(30px, -15px, 0) rotate(30deg);
+          }
+
+          100% {
+            transform: translate3d(0, 0, 0) rotate(0deg);
+          }
+        }
+
+        @keyframes sparkFloat {
+          0%,
+          100% {
+            transform: translate3d(0, 0, 0) scale(0.8);
+            opacity: 0.25;
+          }
+
+          50% {
+            transform: translate3d(0, -28px, 0) scale(1.25);
+            opacity: 0.9;
+          }
+        }
+
+        @keyframes foodGlowMove {
+          0% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+
+          50% {
+            transform: translate3d(50px, -25px, 0) scale(1.12);
+          }
+
+          100% {
+            transform: translate3d(-30px, 30px, 0) scale(0.94);
+          }
+        }
+
+        @keyframes backgroundOrbitRotate {
+          from {
+            transform: rotate(0deg);
+          }
+
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        /* ======================================================
+           MOBILE / TABLET RESPONSIVE FOOD BACKGROUND
+        ====================================================== */
+
+        @media (max-width: 1100px) {
+          .food-float {
+            width: 58px;
+            height: 58px;
+          }
+
+          .food-float span {
+            font-size: 46px;
+          }
+
+          .food-orbit-background {
+            opacity: 0.65;
+          }
+
+          .orbit-background-one {
+            width: 650px;
+            height: 650px;
+          }
+
+          .orbit-background-two {
+            width: 760px;
+            height: 760px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .animated-food-background {
+            opacity: 0.78;
+          }
+
+          .food-float {
+            width: 48px;
+            height: 48px;
+            opacity: 0.66;
+          }
+
+          .food-float span {
+            font-size: 38px;
+          }
+
+          .food-float::after {
+            width: 28px;
+            height: 9px;
+          }
+
+          .food-apple {
+            left: 2%;
+            top: 16%;
+          }
+
+          .food-orange {
+            left: 23%;
+            top: 8%;
+          }
+
+          .food-carrot {
+            left: 61%;
+            top: 7%;
+          }
+
+          .food-strawberry {
+            right: 4%;
+            left: auto;
+            top: 14%;
+          }
+
+          .food-avocado {
+            left: 7%;
+            top: 39%;
+          }
+
+          .food-lemon {
+            right: 7%;
+            left: auto;
+            top: 32%;
+          }
+
+          .food-blueberry {
+            left: 42%;
+            top: 27%;
+          }
+
+          .food-tomato {
+            right: 2%;
+            top: 51%;
+          }
+
+          .food-broccoli {
+            left: 15%;
+            top: 56%;
+          }
+
+          .food-banana {
+            left: 1%;
+            top: 72%;
+          }
+
+          .food-watermelon {
+            left: 22%;
+            top: 82%;
+          }
+
+          .food-grapes {
+            right: 1%;
+            top: 70%;
+          }
+
+          .food-mushroom {
+            left: 49%;
+            top: 64%;
+          }
+
+          .food-cucumber {
+            right: 25%;
+            top: 78%;
+          }
+
+          .food-pepper {
+            left: 5%;
+            top: 91%;
+          }
+
+          .food-lettuce {
+            right: 10%;
+            top: 91%;
+          }
+
+          .food-pear,
+          .food-kiwi,
+          .food-peach,
+          .food-corn,
+          .food-pineapple,
+          .food-carrot-two,
+          .food-tomato-two,
+          .food-strawberry-two {
+            display: none;
+          }
+
+          .background-leaf {
+            font-size: 20px;
+          }
+
+          .food-background-glow {
+            filter: blur(30px);
+          }
+
+          .orbit-background-one {
+            width: 480px;
+            height: 480px;
+            left: -200px;
+          }
+
+          .orbit-background-two {
+            width: 560px;
+            height: 560px;
+            right: -260px;
+          }
+
+          .home-hero-presentation,
+          .platform-section,
+          .features-section,
+          .how-it-works-section,
+          .roles-section,
+          .ai-showcase-section,
+          .final-cta-section {
+            background:
+              linear-gradient(
+                135deg,
+                rgba(247, 255, 237, 0.86),
+                rgba(232, 255, 213, 0.78)
+              );
+          }
+        }
+
+        @media (max-width: 480px) {
+          .animated-food-background {
+            opacity: 0.58;
+          }
+
+          .food-float {
+            width: 40px;
+            height: 40px;
+          }
+
+          .food-float span {
+            font-size: 31px;
+          }
+
+          .food-apple {
+            left: 1%;
+            top: 18%;
+          }
+
+          .food-orange {
+            left: 30%;
+            top: 10%;
+          }
+
+          .food-carrot {
+            left: 69%;
+            top: 8%;
+          }
+
+          .food-strawberry {
+            right: 1%;
+            top: 20%;
+          }
+
+          .food-avocado {
+            left: 2%;
+            top: 48%;
+          }
+
+          .food-lemon {
+            right: 2%;
+            top: 39%;
+          }
+
+          .food-blueberry {
+            left: 48%;
+            top: 34%;
+          }
+
+          .food-tomato {
+            right: 0;
+            top: 60%;
+          }
+
+          .food-broccoli {
+            left: 9%;
+            top: 65%;
+          }
+
+          .food-banana {
+            left: 0;
+            top: 76%;
+          }
+
+          .food-watermelon {
+            left: 26%;
+            top: 88%;
+          }
+
+          .food-grapes {
+            right: 0;
+            top: 78%;
+          }
+
+          .food-mushroom {
+            left: 54%;
+            top: 70%;
+          }
+
+          .food-cucumber {
+            right: 24%;
+            top: 84%;
+          }
+
+          .food-pepper,
+          .food-lettuce {
+            display: none;
+          }
+
+          .background-leaf {
+            font-size: 17px;
+            opacity: 0.35;
+          }
+
+          .background-spark {
+            width: 5px;
+            height: 5px;
+          }
+
+          .orbit-background-one,
+          .orbit-background-two {
+            opacity: 0.45;
+          }
+        }
+
+        /* ======================================================
+           ACCESSIBILITY
+        ====================================================== */
+
+        @media (prefers-reduced-motion: reduce) {
+          .food-float,
+          .food-float span,
+          .background-leaf,
+          .background-spark,
+          .food-background-glow,
+          .food-orbit-background {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
+      {/* ========================================================
+          GLOBAL ANIMATED FOOD BACKGROUND
+      ======================================================== */}
+
+      <AnimatedFoodBackground />
+
       {/* ========================================================
           NAVBAR
       ======================================================== */}
@@ -873,7 +1981,9 @@ function Home({ onLogin, onRegister }) {
                     <span>
                       {String(activeScene + 1).padStart(2, "0")}
                     </span>
+
                     <span className="counter-divider">/</span>
+
                     <span>
                       {String(presentationScenes.length).padStart(2, "0")}
                     </span>
@@ -988,6 +2098,7 @@ function Home({ onLogin, onRegister }) {
 
                 <div>
                   <h3>Reduce Food Waste</h3>
+
                   <p>
                     Food ki condition aur shelf-life ko samajhkar
                     better decisions lene mein platform help karta hai.
@@ -1000,6 +2111,7 @@ function Home({ onLogin, onRegister }) {
 
                 <div>
                   <h3>Improve Food Management</h3>
+
                   <p>
                     Food inventory, freshness aur storage information
                     ko ek intelligent platform par manage kijiye.
@@ -1012,6 +2124,7 @@ function Home({ onLogin, onRegister }) {
 
                 <div>
                   <h3>Make Better Decisions</h3>
+
                   <p>
                     AI-powered insights food handling aur management
                     decisions ko smarter banane mein support karte hain.
@@ -1024,6 +2137,7 @@ function Home({ onLogin, onRegister }) {
 
                 <div>
                   <h3>One Platform for Every Role</h3>
+
                   <p>
                     Consumer, Retail, Warehouse, Inspector aur
                     Administrator ke liye dedicated experiences.
@@ -1129,6 +2243,7 @@ function Home({ onLogin, onRegister }) {
               <div className="workflow-step-content">
                 <span>INPUT</span>
                 <h3>Add Food</h3>
+
                 <p>
                   Food item aur required information platform mein add
                   kijiye.
@@ -1146,6 +2261,7 @@ function Home({ onLogin, onRegister }) {
               <div className="workflow-step-content">
                 <span>ANALYSIS</span>
                 <h3>AI Analysis</h3>
+
                 <p>
                   AI aur Computer Vision food ki condition ko analyze
                   karte hain.
@@ -1163,6 +2279,7 @@ function Home({ onLogin, onRegister }) {
               <div className="workflow-step-content">
                 <span>INTELLIGENCE</span>
                 <h3>Freshness Report</h3>
+
                 <p>
                   Food freshness aur condition ki useful information
                   report mein dekhiye.
@@ -1180,6 +2297,7 @@ function Home({ onLogin, onRegister }) {
               <div className="workflow-step-content">
                 <span>ACTION</span>
                 <h3>Smart Recommendation</h3>
+
                 <p>
                   Food management aur storage ke liye better action
                   decisions lijiye.
