@@ -1,269 +1,498 @@
-# Food Freshness Monitoring Platform — Milestone 1
+[# FoodCare – AI-Powered Food Freshness Monitoring Platform
 
-## 1. Project Overview
+🌐 **Live Website:** [https://foodcare-frontend-2p8v.onrender.com/](https://foodcare-frontend.onrender.com)
 
-An AI-powered platform for monitoring food freshness across the supply
-chain — from warehouse to retail to consumer. The full project (across
-all milestones) will cover image-based freshness assessment, shelf-life
-prediction, storage monitoring, scoring, recommendations, dashboards,
-notifications, and reporting.
+🔗 **Backend API:** [https://foodcare-backend-9q9r.onrender.com/](https://foodcare-backend-9q9r.onrender.com)
 
-**This repository currently implements Milestone 1 only.**
+📘 **API Documentation:** [https://foodcare-backend-9q9r.onrender.com/docs](https://foodcare-backend-9q9r.onrender.com)
 
-## 2. Milestone 1 Scope
+---
 
-Milestone 1 ("Project Initialization, Design Process & Core Setup")
-delivers:
+## 📌 Project Overview
 
-- ✅ Project structure (backend + frontend + datasets, cleanly separated)
-- ✅ JWT-based authentication (register, login, current-user, logout)
-- ✅ Role-based access control for 5 roles
-- ✅ Food inventory management (food items + batches, full CRUD)
-- ✅ Expiry/stock status calculation (available / low stock / near expiry / expired / out of stock)
-- ✅ Basic (non-AI) dashboard summary
-- ✅ PostgreSQL relational schema, ready to extend in later milestones
-- ✅ Dataset directory structure + documentation (no ML yet)
-- ✅ Docker support for local development
-- ✅ README + `.env.example` for both backend and frontend
+FoodCare is an AI-powered food freshness monitoring platform developed to support food quality management, shelf-life estimation, storage monitoring, inventory management, and food waste reduction.
 
-**Explicitly NOT included in Milestone 1** (see section 16):
-CNN/YOLO/OpenCV freshness detection, spoilage prediction, freshness
-scoring engine, shelf-life prediction, recommendation engine,
-notifications, PDF/Excel reporting, advanced analytics, cloud deployment.
+The platform combines food image analysis, storage monitoring, freshness scoring, shelf-life estimation, recommendations, notifications, analytics, and reporting into a unified web application.
 
-## 3. Architecture
+FoodCare provides an integrated workflow from food registration and batch management to freshness assessment, decision support, reporting, and cloud deployment.
 
-```
-React (Vite) SPA  ──REST/JSON + JWT──►  FastAPI  ──SQLAlchemy──►  PostgreSQL
-                                            │
-                                       Routers → Services → Models
-                                    (auth/food/batches/inventory/admin)
-```
+---
 
-Backend layering: **routers** handle HTTP + permission checks →
-**services** hold business logic (status computation, field-level role
-rules) → **models** are plain SQLAlchemy ORM classes. Pydantic
-**schemas** are kept separate from ORM models so the API contract can
-evolve independently of the DB schema.
+## 🎯 Objectives
 
-## 4. Technology Stack
+- Develop a centralized platform for food item and batch management.
+- Provide image-based food freshness and quality assessment.
+- Monitor storage conditions such as temperature and humidity.
+- Estimate remaining shelf life and identify quality risks.
+- Calculate an overall freshness score using multiple factors.
+- Support FIFO-based inventory management.
+- Provide recommendations for food handling, consumption, and waste reduction.
+- Generate freshness, shelf-life, inventory, waste, and storage reports.
+- Provide notifications and alerts for important food-quality events.
+- Deploy the application using Docker and cloud infrastructure.
 
-| Layer | Technology |
-|---|---|
-| Backend | Python 3.11, FastAPI |
-| Frontend | React 18 (Vite), Tailwind CSS |
-| Database | PostgreSQL 16 |
-| Auth | JWT (python-jose), OAuth2 password flow, bcrypt (passlib) |
-| Migrations | Alembic (scaffolded; `create_all` used for M1 dev convenience) |
-| Dev tools | VS Code, Git/GitHub, Postman/Swagger UI |
+---
 
-## 5. Database Structure
+## ✨ Key Features
 
-Tables: `users`, `food_items`, `batches` (see `backend/app/models/`).
+### 🔐 Authentication & Role-Based Access Control
 
-- `users.role` is an enum: `consumer | retail_manager | warehouse_operator | quality_inspector | administrator`
-- `food_items.category` is an enum matching the 8 project categories
-- `batches.status` is an enum computed server-side from `expiry_date` and
-  `quantity` (never trust a client-supplied status)
-- `batches.food_item_id` → `food_items.id` (foreign key)
-- `created_by` / `inspected_by` on relevant tables → `users.id`
-- Full ER-style diagram: see the Milestone 1 planning document from Step 1 of this project.
+FoodCare provides secure authentication and role-based access control for different users.
 
-## 6. User Roles
+Supported roles:
 
-| Role | Summary |
-|---|---|
-| Consumer | Read-only browsing of food items/batches, manage own profile |
-| Retail Manager | Add/update food items and batches, manage retail inventory |
-| Warehouse Operator | Add/update food items and batches, manage warehouse inventory |
-| Food Quality Inspector | View inventory, write inspection notes on batches only |
-| Administrator | Full access, including delete and user/role management |
+- Administrator
+- Retail Manager
+- Warehouse Operator
+- Food Quality Inspector
+- Consumer
 
-Full permission matrix: see `backend/app/dependencies/roles.py` and each
-router's `require_role(...)` usage.
+Each role has access to features according to its responsibilities.
 
-## 7. Authentication Flow
+### 📦 Food & Batch Management
 
-```
-POST /api/auth/register  → create user (always role=consumer)
-POST /api/auth/login     → OAuth2 form (username, password) → JWT access token
-GET  /api/auth/me        → current user profile (requires Bearer token)
-POST /api/auth/logout    → stateless; client discards token
-```
+Users can:
 
-Protected endpoints depend on `get_current_user` (401 if token missing/invalid)
-and, where relevant, `require_role(...)` (403 if role not permitted).
+- Register food items
+- Create and manage batches
+- Store product and category information
+- Track quantity and availability
+- Record expiry information
+- Monitor batch status
 
-## 8. API Endpoints
+Batch information is used across inventory, freshness, shelf-life, and reporting workflows.
 
-```
-AUTH
-POST   /api/auth/register
-POST   /api/auth/login
-GET    /api/auth/me
-POST   /api/auth/logout
+### 🔄 FIFO Inventory Management
 
-USERS
-GET    /api/users/me
-PUT    /api/users/me
+FoodCare supports **First-In, First-Out (FIFO)** inventory management.
 
-FOOD
-POST   /api/food
-GET    /api/food?category=&search=&page=&page_size=
-GET    /api/food/{id}
-PUT    /api/food/{id}
-DELETE /api/food/{id}
+The system helps prioritize older batches before newer batches and provides inventory monitoring for:
 
-BATCHES
-POST   /api/batches
-GET    /api/batches?status=&food_item_id=&page=&page_size=
-GET    /api/batches/{id}
-PUT    /api/batches/{id}
-DELETE /api/batches/{id}
+- Stock levels
+- Batch tracking
+- Expiry information
+- Low-stock conditions
+- Inventory quality
 
-INVENTORY
-GET    /api/inventory
-GET    /api/inventory/summary
+### 🖼️ Food Image Analysis
 
-ADMIN
-GET    /api/admin/users
-PUT    /api/admin/users/{id}/role
-GET    /api/admin/stats
-```
+Users can upload food images for visual quality analysis.
 
-Interactive docs (Swagger UI) are auto-generated by FastAPI at
-`http://localhost:8000/docs` once the backend is running.
+The image-analysis pipeline considers visible characteristics such as:
 
-## 9. How to Install
+- Color condition
+- Texture
+- Surface appearance
+- Visible spoilage indicators
+- Physical damage
+- Bruising and degradation
 
-Prerequisites: Python 3.11+, Node.js 20+, PostgreSQL 16 (or Docker Desktop).
+The platform integrates computer-vision processing using **OpenCV** together with a CNN-based analysis pipeline.
 
-```bash
-git clone <your-repo-url>
-cd food-freshness-platform
-```
+> A validated final CNN accuracy is not reported because a final trained model artifact and benchmark result were not available for this implementation.
 
-## 10. How to Configure PostgreSQL
+### 🥬 Freshness Assessment
 
-**Option A — Docker (recommended, no local Postgres install needed):**
-Skip to section 12 (Docker) — `docker-compose.yml` provisions Postgres for you.
+Food quality is classified into the following categories:
 
-**Option B — Local PostgreSQL on Windows:**
-1. Install PostgreSQL 16 from https://www.postgresql.org/download/windows/
-2. Open `psql` (or pgAdmin) and run:
-   ```sql
-   CREATE USER freshness_user WITH PASSWORD 'freshness_pass';
-   CREATE DATABASE freshness_db OWNER freshness_user;
-   ```
-3. Copy `backend/.env.example` to `backend/.env` and set:
-   ```
-   DATABASE_URL=postgresql://freshness_user:freshness_pass@localhost:5432/freshness_db
-   ```
+- **Fresh**
+- **Good**
+- **Acceptable**
+- **Near Spoilage**
+- **Spoiled**
 
-## 11. How to Run the Backend (without Docker, on Windows/VS Code)
+Freshness assessment combines available visual, storage, shelf-life, and product-age information.
 
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate          # Windows
-# source venv/bin/activate     # macOS/Linux
-pip install -r requirements.txt
+### ⏳ Shelf-Life Estimation
 
-copy .env.example .env         # Windows: copy; macOS/Linux: cp
-# Edit .env and set SECRET_KEY to a random string, and DATABASE_URL if needed
+FoodCare provides remaining shelf-life estimation for food batches.
 
-uvicorn app.main:app --reload
-```
+The system provides:
 
-The API is now running at `http://localhost:8000`. On first startup it
-auto-creates all tables (`Base.metadata.create_all`).
+- Estimated remaining shelf life
+- Expiry-related information
+- Risk indication
+- Shelf-life reports
+- PDF, CSV, and Excel exports
 
-Seed development test users and sample data:
-```bash
-python seed.py
-```
+### 🌡️ Storage Monitoring
 
-## 12. How to Run with Docker (backend + frontend + Postgres)
+The platform records environmental storage information including:
 
-```bash
-docker compose up --build
-```
+- Temperature
+- Humidity
+- Storage location
+- Compliance status
+- Recorded time
 
-- Backend: `http://localhost:8000`
-- Frontend: `http://localhost:5173`
-- Postgres: `localhost:5432` (user `freshness_user`, db `freshness_db`)
+Storage information can be used together with freshness and shelf-life information for quality assessment and decision support.
 
-To seed data inside the running backend container:
-```bash
-docker compose exec backend python seed.py
-```
+### 📊 Freshness Scoring Model
 
-## 13. How to Run the Frontend (without Docker)
+FoodCare uses a weighted freshness scoring model:
 
-```bash
-cd frontend
-npm install
-copy .env.example .env         # Windows: copy; macOS/Linux: cp
-npm run dev
-```
+| Factor | Weight |
+|---|---:|
+| Visual Condition | 40% |
+| Storage Condition | 25% |
+| Shelf-Life | 20% |
+| Product Age | 15% |
 
-Frontend runs at `http://localhost:5173` and expects the backend at
-`http://localhost:8000/api` (configurable via `VITE_API_BASE_URL`).
+text
+Freshness Score =
+    Visual Condition × 40%
+  + Storage Condition × 25%
+  + Shelf-Life × 20%
+  + Product Age × 15%
 
-## 14. How to Test the APIs
+This model combines multiple quality factors instead of relying only on expiry information or image appearance.
 
-- **Swagger UI**: open `http://localhost:8000/docs`, click "Authorize",
-  log in with a seeded user's credentials, then try any endpoint directly.
-- **Postman**: import the OpenAPI schema from `http://localhost:8000/openapi.json`
-  (Postman → Import → Link), or call endpoints manually — remember `/auth/login`
-  expects `application/x-www-form-urlencoded` form fields (`username`, `password`),
-  not JSON, per the OAuth2 password flow spec.
-- **Automated**: none included yet in Milestone 1; a `tests/` directory
-  with pytest is a reasonable Milestone 2 addition.
+###💡 Recommendations
 
-## 15. Sample (Development) Login Users
+The platform provides recommendations related to:
 
-Created by running `python seed.py` from `backend/`:
+Storage
+Consumption
+Inventory rotation
+Food-quality improvement
+Waste reduction
 
-| Username | Password | Role |
-|---|---|---|
-| `admin` | `Admin@123` | Administrator |
-| `retail_manager` | `Retail@123` | Retail Manager |
-| `warehouse_operator` | `Warehouse@123` | Warehouse Operator |
-| `quality_inspector` | `Inspector@123` | Food Quality Inspector |
-| `consumer` | `Consumer@123` | Consumer |
+These recommendations help users take appropriate action based on available food-quality information.
 
-⚠️ **These are development-only credentials. Change or remove them before
-any real/production deployment.**
+🔔 Notifications & Alerts
 
-## 16. What Is Completed (Milestone 1)
+FoodCare provides notifications for:
 
-- Project structure, git-ready
-- JWT auth: register, login, `/me`, logout
-- Role-based access control across all endpoints
-- Food item CRUD with search/filter/pagination
-- Batch CRUD with automatic status computation and role-restricted fields
-  (e.g. only inspectors/admins can write `inspection_notes`)
-- Basic dashboard summary endpoint + UI
-- PostgreSQL schema with proper keys, indexes, and timestamps
-- Dataset folder structure + documentation (no ML)
-- Docker Compose for local dev; also runnable without Docker
-- This README + `.env.example` files
+Freshness alerts
+Shelf-life warnings
+Spoilage risks
+Storage-condition alerts
+Inventory alerts
+Platform notifications
 
-## 17. What Is Intentionally Postponed to Milestones 2–4
+Users can view unread notifications and mark notifications as read.
 
-- Food image upload and CNN-based freshness classification
-- YOLO / OpenCV-based visual inspection
-- Spoilage detection and shelf-life prediction models
-- Freshness scoring engine
-- Recommendation engine
-- Storage-condition monitoring (sensors/IoT integration)
-- Advanced analytics dashboards
-- Notifications/alerts system
-- PDF/Excel report generation and export
-- Cloud/production deployment
+📈 Dashboard & Analytics
 
-These are deliberately out of scope so Milestone 1 stays focused,
-reviewable, and demonstrable on its own — and so that Milestone 2 can be
-layered on top of this codebase (particularly the `food_items`/`batches`
-tables and the `datasets/` structure) without breaking anything here.
+The dashboard provides an overview of important platform information, including:
+
+Inventory summary
+Food categories
+Expiry and stock information
+Freshness distribution
+Average freshness score
+Storage compliance
+Average temperature
+Average humidity
+Expiry and waste risk
+Platform-level information for administrators
+📑 Reports & Data Export
+
+FoodCare provides reports for:
+
+Freshness
+Shelf life
+Inventory quality
+Waste reduction
+Storage compliance
+
+Reports can be exported in:
+
+PDF
+CSV
+Excel
+🏗️ System Architecture
+                         ┌─────────────────────┐
+                         │    Users / Roles    │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │   React Frontend    │
+                         │       Vite          │
+                         └──────────┬──────────┘
+                                    │ REST API
+                                    ▼
+                         ┌─────────────────────┐
+                         │   FastAPI Backend   │
+                         │    JWT + RBAC       │
+                         └──────────┬──────────┘
+                                    │
+             ┌──────────────────────┼──────────────────────┐
+             │                      │                      │
+             ▼                      ▼                      ▼
+    ┌────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+    │ Image Analysis │    │ Shelf-Life &    │    │ Analytics &     │
+    │ OpenCV / CNN   │    │ Freshness       │    │ Reporting       │
+    └────────────────┘    └─────────────────┘    └─────────────────┘
+             │                      │                      │
+             └──────────────────────┼──────────────────────┘
+                                    ▼
+                         ┌─────────────────────┐
+                         │    PostgreSQL DB    │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │ Docker / Render     │
+                         │ Cloud Deployment    │
+                         └─────────────────────┘
+🔄 Main Workflow
+User Login
+    ↓
+Food Item Registration
+    ↓
+Batch Creation
+    ↓
+Inventory / FIFO Tracking
+    ↓
+Storage Monitoring
+    ↓
+Food Image Upload
+    ↓
+Visual Food Analysis
+    ↓
+Freshness Assessment
+    ↓
+Shelf-Life Estimation
+    ↓
+Freshness Score
+    ↓
+Recommendations & Alerts
+    ↓
+Dashboard & Analytics
+    ↓
+Reports & Export
+🧮 Freshness Scoring Formula
+Freshness Score =
+    Visual Condition × 40%
+  + Storage Condition × 25%
+  + Shelf-Life × 20%
+  + Product Age × 15%
+🛠️ Technology Stack
+Frontend
+React
+Vite
+JavaScript
+HTML
+CSS
+Backend
+Python
+FastAPI
+SQLAlchemy
+Pydantic
+JWT Authentication
+Database
+PostgreSQL
+AI & Computer Vision
+Python
+OpenCV
+CNN-based analysis pipeline
+NumPy
+Pandas
+Scikit-learn
+Reporting
+ReportLab
+OpenPyXL
+CSV
+Testing
+Pytest
+HTTPX
+Deployment
+Docker
+Docker Compose
+Render
+Version Control
+Git
+GitHub
+🗂️ Project Structure
+FoodCare-AI-Freshness-Monitoring/
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   ├── main.py
+│   │   └── database.py
+│   │
+│   ├── tests/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── alembic.ini
+│
+├── frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   └── App.jsx
+│   │
+│   ├── public/
+│   ├── Dockerfile
+│   └── package.json
+│
+├── docker-compose.yml
+├── .gitignore
+└── README.md
+🗄️ Database
+
+FoodCare uses PostgreSQL for persistent application data.
+
+Major entities include:
+
+Users
+Food Items
+Batches
+Food Images
+Visual Analysis Results
+CNN Predictions
+Freshness Analyses
+Freshness Reports
+Shelf-Life Predictions
+Storage Readings
+Recommendations
+Notifications
+
+SQLAlchemy is used for database interaction and Alembic is used for database migrations.
+
+🔌 Backend API
+
+The backend is implemented using FastAPI and provides REST APIs for:
+
+Authentication
+Users and roles
+Food items
+Batches
+Inventory
+Image analysis
+Freshness
+Shelf life
+Storage monitoring
+Recommendations
+Notifications
+Analytics
+Reports
+Waste reduction
+API Documentation
+
+https://foodcare-backend-9q9r.onrender.com/docs
+
+🧪 Testing & Validation
+
+Automated backend tests were implemented using Pytest.
+
+The test suite covers:
+
+Health check
+Authentication
+Food item operations
+Batch operations
+Test Result
+
+11 tests passed successfully.
+
+Additional API and end-to-end workflow validation was performed during development.
+
+🐳 Docker
+
+FoodCare includes Docker configuration for the frontend and backend.
+
+Main Docker files:
+
+docker-compose.yml
+backend/Dockerfile
+frontend/Dockerfile
+
+Docker Compose provides a convenient way to run the application components together.
+
+☁️ Cloud Deployment
+
+FoodCare is deployed using Render.
+
+Frontend
+
+React/Vite application deployed as a Render Static Site.
+
+Backend
+
+FastAPI application deployed as a Render Web Service.
+
+Database
+
+PostgreSQL database hosted through Render.
+
+Live Application
+
+🌐 https://foodcare-frontend-2p8v.onrender.com/
+
+Backend
+
+🔗 https://foodcare-backend-9q9r.onrender.com/
+
+Swagger API Documentation
+
+🔗 https://foodcare-backend-9q9r.onrender.com/docs
+
+The free cloud service may take some time to respond when waking from inactivity.
+
+🔒 Security
+
+The platform includes:
+
+JWT-based authentication
+Password hashing
+Role-based access control
+Protected API endpoints
+Environment-based configuration
+CORS configuration
+Secrets excluded from source control
+
+Sensitive credentials and environment variables are not stored directly in the repository.
+
+📊 Project Outcomes
+
+FoodCare provides an integrated workflow for:
+
+Food inventory management
+FIFO stock rotation
+Food image analysis
+Freshness assessment
+Shelf-life estimation
+Storage monitoring
+Freshness scoring
+Recommendations
+Notifications
+Analytics
+Reporting
+PDF/CSV/Excel export
+Docker-based deployment
+Cloud-hosted access
+
+The project demonstrates the integration of computer vision, backend APIs, database systems, analytics, reporting, and cloud deployment for a practical food-quality monitoring application.
+
+🚀 Future Enhancements
+Train and benchmark a dedicated food-freshness CNN using a larger validated dataset.
+Improve image-based spoilage detection.
+Add real-time IoT sensor integration.
+Improve shelf-life prediction using larger historical datasets.
+Add advanced predictive analytics.
+Integrate automated sensor alerts.
+Add multilingual support.
+Improve mobile responsiveness.
+Develop dedicated mobile application support.
+Enhance AI-based recommendations.
+👩‍💻 Developer
+
+Afiya Babarchi
+
+Internship: Infosys Springboard
+
+📚 Project Context
+
+This project was developed as part of the Infosys Springboard Internship and follows the requirements of the AI-Powered Food Freshness Monitoring Platform project.
+
+📄 License
+
+This project was developed for academic and internship purposes.]
