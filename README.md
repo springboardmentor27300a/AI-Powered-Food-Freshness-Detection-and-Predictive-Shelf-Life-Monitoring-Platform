@@ -1,10 +1,10 @@
 FoodCare – AI-Powered Food Freshness Monitoring Platform
 
-🌐 **Live Website:** [https://foodcare-frontend-2p8v.onrender.com/](https://foodcare-frontend.onrender.com)
+🌐 **Live Website:** https://foodcare-frontend.onrender.com
 
-🔗 **Backend API:** [https://foodcare-backend-9q9r.onrender.com/](https://foodcare-backend-9q9r.onrender.com)
+🔗 **Backend API:** https://foodcare-backend-9q9r.onrender.com
 
-📘 **API Documentation:** [https://foodcare-backend-9q9r.onrender.com/docs](https://foodcare-backend-9q9r.onrender.com)
+📘 **API Documentation:** https://foodcare-backend-9q9r.onrender.com/docs
 
 ---
 
