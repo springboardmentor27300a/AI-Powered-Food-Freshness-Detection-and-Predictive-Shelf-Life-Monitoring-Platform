@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.env
+uploads/
+test_*.py
+verify_math.py
+test_images/
+Dockerfile
+.dockerignore

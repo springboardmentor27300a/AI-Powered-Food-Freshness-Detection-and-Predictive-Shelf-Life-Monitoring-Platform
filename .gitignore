@@ -1,0 +1,28 @@
+# Secrets
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+backend/venv/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Logs and temporary files
+*.log
+.freebuff/
+*.tar
+*.tar.gz
+
+# IDE
+.vscode/
+.idea/backend/uploads/*
