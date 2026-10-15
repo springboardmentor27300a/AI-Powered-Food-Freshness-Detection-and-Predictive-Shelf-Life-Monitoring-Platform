@@ -1,5 +1,7 @@
+
 import { useEffect, useMemo, useState } from "react";
 import "./Home.css";
+import FreshGuardChatbot from "../components/FreshGuardChatbot";
 
 function Home({ onLogin, onRegister }) {
   const [activeScene, setActiveScene] = useState(0);
@@ -2687,6 +2689,14 @@ function Home({ onLogin, onRegister }) {
           <span>Built for smarter food management.</span>
         </div>
       </footer>
+
+
+      <FreshGuardChatbot
+             onLogin={onLogin}
+           onRegister={onRegister}
+      />
+
+
     </main>
   );
 }
