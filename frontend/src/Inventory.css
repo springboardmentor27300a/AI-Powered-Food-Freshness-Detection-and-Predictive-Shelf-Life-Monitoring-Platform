@@ -1,0 +1,1077 @@
+/* ============================================================
+   FOOD INVENTORY
+============================================================ */
+
+.inventory-page {
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      180deg,
+      #f4faf7 0%,
+      #f8faf9 45%,
+      #ffffff 100%
+    );
+  color: #16352a;
+}
+
+
+/* ============================================================
+   TOP BAR
+============================================================ */
+
+.inventory-topbar {
+  padding: 34px 6%;
+  background: #ffffff;
+  border-bottom: 1px solid #e5eee9;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  gap: 30px;
+}
+
+
+.inventory-topbar > div:first-child {
+  max-width: 850px;
+}
+
+
+.inventory-back-button {
+  border: none;
+  background: transparent;
+  color: #28795c;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+
+.inventory-back-button:hover {
+  color: #18563f;
+}
+
+
+.inventory-eyebrow {
+  display: block;
+
+  color: #398265;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+  margin-bottom: 8px;
+}
+
+
+.inventory-topbar h1 {
+  margin: 0;
+
+  font-size: 42px;
+  line-height: 1.1;
+
+  color: #123e30;
+}
+
+
+.inventory-topbar p {
+  margin: 12px 0 0;
+
+  max-width: 700px;
+
+  color: #64776f;
+
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+
+.inventory-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+.inventory-role-badge {
+  padding: 9px 14px;
+
+  border-radius: 999px;
+
+  background: #e7f5ee;
+  color: #28795c;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+.inventory-refresh-button {
+  border: 1px solid #d8e7df;
+
+  background: #ffffff;
+
+  color: #24694f;
+
+  border-radius: 10px;
+
+  padding: 10px 15px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.inventory-refresh-button:hover {
+  background: #f0f8f4;
+}
+
+
+.inventory-refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* ============================================================
+   CONTAINER
+============================================================ */
+
+.inventory-container {
+  width: min(
+    1400px,
+    88%
+  );
+
+  margin: 0 auto;
+
+  padding: 32px 0 60px;
+}
+
+
+/* ============================================================
+   KPI
+============================================================ */
+
+.inventory-kpi-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 18px;
+
+  margin-bottom: 24px;
+}
+
+
+.inventory-kpi-card {
+  background: #ffffff;
+
+  border: 1px solid #e7efeb;
+
+  border-radius: 18px;
+
+  padding: 22px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+
+  box-shadow:
+    0 8px 25px
+    rgba(22, 53, 42, 0.06);
+}
+
+
+.inventory-kpi-icon {
+  width: 52px;
+  height: 52px;
+
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #eaf7f0;
+
+  font-size: 24px;
+}
+
+
+.inventory-kpi-card span {
+  display: block;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+
+  color: #799087;
+
+  margin-bottom: 5px;
+}
+
+
+.inventory-kpi-card strong {
+  display: block;
+
+  font-size: 30px;
+
+  line-height: 1;
+
+  color: #173d30;
+}
+
+
+.inventory-kpi-card small {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #82918c;
+
+  font-size: 12px;
+}
+
+
+.inventory-kpi-warning .inventory-kpi-icon {
+  background: #fff6dc;
+}
+
+
+.inventory-kpi-warning strong {
+  color: #a36b00;
+}
+
+
+.inventory-kpi-danger .inventory-kpi-icon {
+  background: #fff0ef;
+}
+
+
+.inventory-kpi-danger strong {
+  color: #b23a32;
+}
+
+
+/* ============================================================
+   ADD FOOD
+============================================================ */
+
+.inventory-add-card {
+  background: #ffffff;
+
+  border: 1px solid #e3eee8;
+
+  border-radius: 20px;
+
+  padding: 25px;
+
+  margin-bottom: 24px;
+
+  box-shadow:
+    0 8px 28px
+    rgba(22, 53, 42, 0.06);
+}
+
+
+.inventory-section-heading {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  margin-bottom: 22px;
+}
+
+
+.inventory-heading-icon {
+  width: 46px;
+  height: 46px;
+
+  border-radius: 13px;
+
+  background: #e7f5ee;
+
+  color: #28795c;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 25px;
+  font-weight: 700;
+}
+
+
+.inventory-section-heading span,
+.inventory-section-title span {
+  display: block;
+
+  color: #398265;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+
+.inventory-section-heading h2 {
+  margin: 4px 0;
+
+  color: #173d30;
+
+  font-size: 21px;
+}
+
+
+.inventory-section-heading p {
+  margin: 0;
+
+  color: #7a8b84;
+
+  font-size: 13px;
+}
+
+
+.inventory-add-form {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr
+    1.5fr
+    auto;
+
+  gap: 15px;
+
+  align-items: end;
+}
+
+
+.inventory-field {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+
+.inventory-field label {
+  color: #50645c;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.inventory-field input,
+.inventory-filter-card input,
+.inventory-filter-card select {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border: 1px solid #dbe8e2;
+
+  background: #fbfdfc;
+
+  border-radius: 10px;
+
+  padding: 12px 13px;
+
+  outline: none;
+
+  color: #173d30;
+
+  font-size: 14px;
+}
+
+
+.inventory-field input:focus,
+.inventory-filter-card input:focus,
+.inventory-filter-card select:focus {
+  border-color: #4a9b7a;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(74, 155, 122, 0.12);
+}
+
+
+.inventory-add-button {
+  border: none;
+
+  border-radius: 10px;
+
+  background: #28795c;
+
+  color: white;
+
+  padding: 12px 18px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+
+.inventory-add-button:hover {
+  background: #1d624a;
+}
+
+
+.inventory-add-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+.inventory-message {
+  margin: 16px 0 0;
+
+  padding: 11px 14px;
+
+  border-radius: 10px;
+
+  background: #edf8f2;
+
+  color: #276b50;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   FILTERS
+============================================================ */
+
+.inventory-filter-card {
+  background: #ffffff;
+
+  border: 1px solid #e6eeea;
+
+  border-radius: 16px;
+
+  padding: 15px;
+
+  margin-bottom: 30px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    190px
+    190px;
+
+  gap: 12px;
+
+  box-shadow:
+    0 6px 20px
+    rgba(22, 53, 42, 0.04);
+}
+
+
+.inventory-search {
+  position: relative;
+}
+
+
+.inventory-search > span {
+  position: absolute;
+
+  left: 13px;
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  font-size: 15px;
+}
+
+
+.inventory-search input {
+  padding-left: 40px;
+}
+
+
+/* ============================================================
+   SECTIONS
+============================================================ */
+
+.inventory-section {
+  margin-bottom: 30px;
+}
+
+
+.inventory-section-title {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-end;
+
+  gap: 20px;
+
+  margin-bottom: 15px;
+}
+
+
+.inventory-section-title h2 {
+  margin: 5px 0 0;
+
+  color: #173d30;
+
+  font-size: 24px;
+}
+
+
+.inventory-count {
+  padding: 7px 12px;
+
+  border-radius: 999px;
+
+  background: #edf7f2;
+
+  color: #317b5d;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   FOOD GRID
+============================================================ */
+
+.inventory-food-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+
+.inventory-food-card {
+  display: flex;
+
+  gap: 16px;
+
+  padding: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #e6eeea;
+
+  border-radius: 17px;
+
+  box-shadow:
+    0 7px 22px
+    rgba(22, 53, 42, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.inventory-food-card:hover {
+  transform:
+    translateY(-3px);
+
+  box-shadow:
+    0 12px 28px
+    rgba(22, 53, 42, 0.09);
+}
+
+
+.inventory-food-icon {
+  width: 52px;
+  height: 52px;
+
+  min-width: 52px;
+
+  border-radius: 15px;
+
+  background: #eef8f3;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 27px;
+}
+
+
+.inventory-food-content {
+  min-width: 0;
+  flex: 1;
+}
+
+
+.inventory-category {
+  color: #4b9073;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.7px;
+}
+
+
+.inventory-food-content h3 {
+  margin: 4px 0 6px;
+
+  color: #173d30;
+
+  font-size: 18px;
+}
+
+
+.inventory-food-content p {
+  margin: 0;
+
+  color: #7b8b85;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+
+.inventory-food-footer {
+  margin-top: 15px;
+
+  padding-top: 12px;
+
+  border-top: 1px solid #edf1ef;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  font-size: 11px;
+
+  color: #84928d;
+}
+
+
+.inventory-food-footer span:last-child {
+  color: #31805e;
+
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   BATCH
+============================================================ */
+
+.inventory-batch-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+.inventory-batch-card {
+  background: #ffffff;
+
+  border: 1px solid #e6eeea;
+
+  border-radius: 17px;
+
+  padding: 18px;
+
+  display: grid;
+
+  grid-template-columns:
+    1.3fr
+    2fr
+    auto;
+
+  align-items: center;
+
+  gap: 20px;
+
+  box-shadow:
+    0 6px 20px
+    rgba(22, 53, 42, 0.04);
+}
+
+
+.inventory-batch-main {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.inventory-batch-icon {
+  width: 50px;
+  height: 50px;
+
+  min-width: 50px;
+
+  border-radius: 14px;
+
+  background: #eef8f3;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 25px;
+}
+
+
+.inventory-batch-main h3 {
+  margin: 4px 0;
+
+  color: #173d30;
+
+  font-size: 17px;
+}
+
+
+.inventory-batch-main p {
+  margin: 5px 0 0;
+
+  color: #76877f;
+
+  font-size: 12px;
+}
+
+
+.inventory-batch-details {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+
+.inventory-batch-details div {
+  padding: 10px;
+
+  background: #f7faf8;
+
+  border-radius: 10px;
+}
+
+
+.inventory-batch-details span {
+  display: block;
+
+  color: #8a9993;
+
+  font-size: 10px;
+
+  text-transform: uppercase;
+
+  font-weight: 700;
+
+  letter-spacing: 0.4px;
+
+  margin-bottom: 4px;
+}
+
+
+.inventory-batch-details strong {
+  display: block;
+
+  color: #36564a;
+
+  font-size: 12px;
+
+  word-break: break-word;
+}
+
+
+.inventory-batch-status {
+  display: inline-flex;
+
+  justify-content: center;
+  align-items: center;
+
+  padding: 8px 12px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+
+.inventory-status-good {
+  background: #e2f6e9;
+
+  color: #267446;
+}
+
+
+.inventory-status-warning {
+  background: #fff3cf;
+
+  color: #956500;
+}
+
+
+.inventory-status-danger {
+  background: #ffe4e1;
+
+  color: #a53d35;
+}
+
+
+.inventory-status-neutral {
+  background: #eef1f0;
+
+  color: #5d6c66;
+}
+
+
+/* ============================================================
+   EMPTY / LOADING
+============================================================ */
+
+.inventory-empty {
+  background: #ffffff;
+
+  border: 1px dashed #d6e4dd;
+
+  border-radius: 17px;
+
+  padding: 45px 20px;
+
+  text-align: center;
+}
+
+
+.inventory-empty > div {
+  font-size: 40px;
+
+  margin-bottom: 10px;
+}
+
+
+.inventory-empty h3 {
+  margin: 0 0 6px;
+
+  color: #315246;
+
+  font-size: 18px;
+}
+
+
+.inventory-empty p {
+  margin: 0;
+
+  color: #81908a;
+
+  font-size: 13px;
+}
+
+
+.inventory-loading {
+  padding: 35px;
+
+  text-align: center;
+
+  background: white;
+
+  border-radius: 16px;
+
+  color: #557268;
+
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   BOTTOM
+============================================================ */
+
+.inventory-bottom-actions {
+  display: flex;
+
+  justify-content: center;
+
+  padding: 15px 0 10px;
+}
+
+
+.inventory-bottom-actions button {
+  border: none;
+
+  background: transparent;
+
+  color: #28795c;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  padding: 10px 15px;
+}
+
+
+.inventory-bottom-actions button:hover {
+  text-decoration: underline;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 1150px) {
+
+  .inventory-kpi-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+
+  .inventory-food-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+
+  .inventory-batch-card {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .inventory-batch-details {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 850px) {
+
+  .inventory-topbar {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+
+  .inventory-topbar-actions {
+    width: 100%;
+  }
+
+
+  .inventory-add-form {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .inventory-field-wide {
+    grid-column:
+      span 2;
+  }
+
+
+  .inventory-add-button {
+    width: 100%;
+  }
+
+
+  .inventory-filter-card {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .inventory-container {
+    width: calc(100% - 28px);
+  }
+
+
+  .inventory-topbar {
+    padding:
+      25px 20px;
+  }
+
+
+  .inventory-topbar h1 {
+    font-size: 32px;
+  }
+
+
+  .inventory-kpi-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .inventory-food-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .inventory-add-form {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .inventory-field-wide {
+    grid-column:
+      auto;
+  }
+
+
+  .inventory-batch-details {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .inventory-role-badge {
+    display: none;
+  }
+
+}

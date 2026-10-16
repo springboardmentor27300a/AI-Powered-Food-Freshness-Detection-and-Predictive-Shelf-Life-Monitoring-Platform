@@ -1,0 +1,609 @@
+/* =========================================================
+   FOODFRESH ROLE DASHBOARDS
+   Fresh Green + Teal Theme
+   ========================================================= */
+
+.rd {
+  min-height: 100vh;
+  background: #f6f9f7;
+  color: #16302a;
+}
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.rd nav {
+  height: 72px;
+  background: #ffffff;
+  border-bottom: 1px solid #dcebe5;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 36px;
+
+  position: sticky;
+  top: 0;
+  z-index: 20;
+
+  box-shadow: 0 2px 10px rgba(15, 92, 66, 0.04);
+}
+
+.rd-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.rd-brand > span {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  background: #eaf7f1;
+  border-radius: 12px;
+
+  font-size: 22px;
+}
+
+.rd-brand strong {
+  display: block;
+  color: #0f5c42;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.rd-brand small {
+  display: block;
+  margin-top: 2px;
+
+  color: #789087;
+  font-size: 10px;
+}
+
+.rd-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rd-user-info {
+  text-align: right;
+}
+
+.rd-user-info span {
+  display: block;
+
+  color: #16302a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.rd-user-info small {
+  display: block;
+
+  color: #789087;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.rd-user button {
+  border: 1px solid #cfe1d9;
+  background: #ffffff;
+  color: #0f5c42;
+
+  padding: 9px 15px;
+
+  border-radius: 9px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.rd-user button:hover {
+  background: #eaf7f1;
+  border-color: #16835b;
+}
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+.rd main {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+
+  padding: 38px 0 70px;
+}
+
+.rd header {
+  margin-bottom: 28px;
+}
+
+.rd header p {
+  margin: 0 0 7px;
+
+  color: #16835b;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+}
+
+.rd header h1 {
+  margin: 0;
+
+  color: #123f31;
+
+  font-size: 32px;
+  line-height: 1.15;
+
+  font-weight: 800;
+}
+
+.rd header > span {
+  display: block;
+
+  max-width: 760px;
+
+  margin-top: 9px;
+
+  color: #6f827a;
+
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.rd-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #ffffff;
+
+  border: 1px solid #dcebe5;
+  border-radius: 12px;
+
+  padding: 13px 16px;
+
+  margin-bottom: 20px;
+
+  box-shadow: 0 3px 12px rgba(15, 92, 66, 0.04);
+}
+
+.rd-toolbar span {
+  color: #62776e;
+  font-size: 13px;
+}
+
+.rd-toolbar button {
+  border: 1px solid #cfe1d9;
+  background: #ffffff;
+  color: #0f5c42;
+
+  padding: 8px 13px;
+
+  border-radius: 8px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.rd-toolbar button:hover {
+  background: #eaf7f1;
+}
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.ok {
+  color: #16835b;
+}
+
+.bad {
+  color: #dc2626;
+}
+
+/* =========================================================
+   STAT CARDS
+   ========================================================= */
+
+.rd-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 16px;
+
+  margin-bottom: 34px;
+}
+
+.rd-stat {
+  min-height: 125px;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+
+  background: #ffffff;
+
+  border: 1px solid #dcebe5;
+  border-radius: 15px;
+
+  padding: 19px;
+
+  box-shadow: 0 4px 15px rgba(15, 92, 66, 0.045);
+
+  transition: 0.2s ease;
+}
+
+.rd-stat:hover {
+  transform: translateY(-2px);
+
+  border-color: #b9dacd;
+
+  box-shadow: 0 8px 22px rgba(15, 92, 66, 0.08);
+}
+
+.rd-stat-icon {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  background: #eaf7f1;
+
+  border-radius: 12px;
+
+  font-size: 21px;
+}
+
+.rd-stat span {
+  display: block;
+
+  color: #74877f;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rd-stat strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #123f31;
+
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.rd-stat small {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #93a39d;
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   SECTION
+   ========================================================= */
+
+.rd section {
+  margin-bottom: 30px;
+}
+
+.rd-label {
+  margin: 0 0 5px;
+
+  color: #16835b;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.rd section > h2 {
+  margin: 0;
+
+  color: #183f34;
+
+  font-size: 21px;
+}
+
+/* =========================================================
+   ACTION CARDS
+   ========================================================= */
+
+.rd-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 16px;
+
+  margin-top: 17px;
+}
+
+.rd-action {
+  min-height: 155px;
+
+  position: relative;
+
+  display: block;
+
+  text-align: left;
+
+  background: #ffffff;
+
+  border: 1px solid #dcebe5;
+  border-radius: 15px;
+
+  padding: 20px;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 15px rgba(15, 92, 66, 0.04);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.rd-action:hover {
+  transform: translateY(-3px);
+
+  border-color: #8dc5af;
+
+  box-shadow: 0 10px 25px rgba(15, 92, 66, 0.09);
+}
+
+.rd-action i {
+  width: 43px;
+  height: 43px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 15px;
+
+  background: #eaf7f1;
+
+  border-radius: 11px;
+
+  font-style: normal;
+  font-size: 21px;
+}
+
+.rd-action strong {
+  display: block;
+
+  padding-right: 22px;
+
+  color: #173e33;
+
+  font-size: 15px;
+}
+
+.rd-action span {
+  display: block;
+
+  margin-top: 6px;
+
+  padding-right: 20px;
+
+  color: #71847c;
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.rd-action b {
+  position: absolute;
+
+  right: 17px;
+  bottom: 17px;
+
+  color: #16835b;
+
+  font-size: 18px;
+}
+
+/* =========================================================
+   PRIMARY ACTION
+   ========================================================= */
+
+.rd-action.rd-dark {
+  background: #16835b;
+  border-color: #16835b;
+}
+
+.rd-action.rd-dark:hover {
+  background: #0f6f4d;
+  border-color: #0f6f4d;
+}
+
+.rd-action.rd-dark i {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.rd-action.rd-dark strong {
+  color: #ffffff;
+}
+
+.rd-action.rd-dark span {
+  color: #dff4ea;
+}
+
+.rd-action.rd-dark b {
+  color: #ffffff;
+}
+
+/* =========================================================
+   TWO COLUMN PANELS
+   ========================================================= */
+
+.rd-two {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 18px;
+}
+
+.rd-panel {
+  background: #ffffff;
+
+  border: 1px solid #dcebe5;
+  border-radius: 15px;
+
+  padding: 21px;
+
+  box-shadow: 0 4px 15px rgba(15, 92, 66, 0.04);
+}
+
+.rd-panel > p {
+  margin: 0;
+
+  color: #16835b;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+}
+
+.rd-panel h3 {
+  margin: 6px 0 14px;
+
+  color: #173e33;
+
+  font-size: 18px;
+}
+
+.rd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 12px 0;
+
+  border-top: 1px solid #edf3f0;
+
+  color: #64766f;
+
+  font-size: 13px;
+}
+
+.rd-row b {
+  color: #173e33;
+}
+
+/* =========================================================
+   EMPTY / INFO
+   ========================================================= */
+
+.rd-empty {
+  padding: 30px;
+
+  background: #ffffff;
+
+  border: 1px dashed #b9d8cb;
+  border-radius: 14px;
+
+  text-align: center;
+
+  color: #73867e;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1050px) {
+
+  .rd-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rd-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+
+  .rd nav {
+    height: auto;
+
+    padding: 13px 17px;
+
+    gap: 12px;
+  }
+
+  .rd-brand small {
+    display: none;
+  }
+
+  .rd-user-info {
+    display: none;
+  }
+
+  .rd main {
+    width: min(100% - 30px, 1280px);
+
+    padding: 27px 0 50px;
+  }
+
+  .rd header h1 {
+    font-size: 27px;
+  }
+
+  .rd-stats,
+  .rd-actions,
+  .rd-two {
+    grid-template-columns: 1fr;
+  }
+
+  .rd-toolbar {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 10px;
+  }
+}
+
+@media (max-width: 450px) {
+
+  .rd-user button {
+    padding: 8px 10px;
+  }
+
+  .rd-brand strong {
+    font-size: 17px;
+  }
+
+  .rd-stat {
+    min-height: auto;
+  }
+}

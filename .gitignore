@@ -1,0 +1,90 @@
+
+# ==============================
+# Datasets and test images
+# ==============================
+/Datasets/
+/test_images/
+
+# ==============================
+# Python virtual environments
+# ==============================
+/ml-venv/
+venv/
+.venv/
+backend-Infosys-FF/venv/
+
+# ==============================
+# Node.js dependencies
+# ==============================
+node_modules/
+frontend/node_modules/
+
+# ==============================
+# Build files
+# ==============================
+frontend/dist/
+dist/
+dist-ssr/
+
+# ==============================
+# Python cache files
+# ==============================
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ==============================
+# Environment variables and secrets
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# Logs
+# ==============================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==============================
+# IDE and operating system files
+# ==============================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+
+
+# Ignore backend virtual environment
+backend-Infosys-FF/venv/
+
+# Ignore frontend build output
+frontend/dist/
+
+
+# Backend environment and secrets
+backend-Infosys-FF/.env
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Backend virtual environment
+backend-Infosys-FF/venv/
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+
+# Datasets and test images
+/Datasets/
+/test_images/
+
+/ml-venv/
+# Local database backups
+backend-Infosys-FF/backups/
