@@ -1,17 +1,14 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
 
 # Virtual environments
 venv/
 .venv/
-
 # Environment variables
 .env
-
 # IDE
 .vscode/
-
 # Logs
 *.log
 # Uploaded food images
@@ -19,3 +16,27 @@ backend/uploads/
 # Database backups / migration archive
 *.dump
 migration_images.zip
+# Environment variables and secrets
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+.pytest_cache/
+.coverage
+# Frontend dependencies and build output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+# Local databases and generated logs
+*.db
+*.sqlite
+*.sqlite3
+# Private keys and certificates
+*.pem
+*.key
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+# Runtime food image uploads
+backend/media/uploads/

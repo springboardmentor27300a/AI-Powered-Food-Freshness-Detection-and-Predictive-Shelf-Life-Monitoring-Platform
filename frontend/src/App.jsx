@@ -1,609 +1,98 @@
-import { useState } from "react";
-import "./App.css";
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Unauthorized from "./pages/Unauthorized.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import FreshnessAnalysis from "./pages/FreshnessAnalysis.jsx";
 
-import Dashboard from "./pages/Dashboard";
+import ConsumerDashboard from "./pages/dashboards/ConsumerDashboard.jsx";
+import RetailDashboard from "./pages/dashboards/RetailDashboard.jsx";
+import WarehouseDashboard from "./pages/dashboards/WarehouseDashboard.jsx";
+import InspectorDashboard from "./pages/dashboards/InspectorDashboard.jsx";
+import AdminDashboard from "./pages/dashboards/AdminDashboard.jsx";
 
-import RetailDashboard from "./pages/RetailDashboard";
-import WarehouseDashboard from "./pages/WarehouseDashboard";
-import InspectorDashboard from "./pages/InspectorDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
-import AddFood from "./pages/AddFood";
-import FoodInventory from "./pages/FoodInventory";
-import Profile from "./pages/Profile";
-import FoodReport from "./pages/FoodReport";
-import Reports from "./pages/Reports";
-import AdministratorReports from "./pages/AdministratorReports";
+export default function App() {
+  return (
+    <Routes>
+      {/* Default route */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
+      {/* Public routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
 
-function App() {
+      {/* Role-protected dashboards */}
 
-  // ==========================================================
-  // PAGE STATE
-  // ==========================================================
-
-  const [page, setPage] = useState(() => {
-
-    const token =
-      localStorage.getItem(
-        "access_token"
-      );
-
-    return token
-      ? "dashboard"
-      : "home";
-
-  });
-
-
-  // ==========================================================
-  // SELECTED FOOD
-  // ==========================================================
-
-  const [selectedFood, setSelectedFood] =
-    useState(null);
-
-
-  // ==========================================================
-  // HOME
-  // ==========================================================
-
-  if (page === "home") {
-
-    return (
-
-      <Home
-
-        onLogin={() =>
-          setPage(
-            "login"
-          )
+      <Route
+        path="/consumer/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["consumer"]}>
+            <ConsumerDashboard />
+          </ProtectedRoute>
         }
-
-        onRegister={() =>
-          setPage(
-            "register"
-          )
-        }
-
       />
 
-    );
-
-  }
-
-
-  // ==========================================================
-  // LOGIN SUCCESS
-  // ==========================================================
-
-  const handleLoginSuccess = (
-    role
-  ) => {
-
-    const userRole =
-      role ||
-      localStorage.getItem(
-        "user_role"
-      ) ||
-      "consumer";
-
-
-    localStorage.setItem(
-      "user_role",
-      userRole
-    );
-
-
-    setPage(
-      "dashboard"
-    );
-
-  };
-
-
-  // ==========================================================
-  // LOGOUT
-  // ==========================================================
-
-  const handleLogout = () => {
-
-    localStorage.removeItem(
-      "access_token"
-    );
-
-    localStorage.removeItem(
-      "current_user"
-    );
-
-    localStorage.removeItem(
-      "user_role"
-    );
-
-    setSelectedFood(null);
-
-    setPage("home");
-
-  };
-
-
-  // ==========================================================
-  // FOOD REPORT
-  // ==========================================================
-
-  const handleViewReport = (
-    food
-  ) => {
-
-    setSelectedFood(food);
-
-    setPage(
-      "food-report"
-    );
-
-  };
-
-
-  // ==========================================================
-  // LOGIN
-  // ==========================================================
-
-  if (page === "login") {
-
-    return (
-
-      <Login
-
-        onLoginSuccess={
-          handleLoginSuccess
+      <Route
+        path="/retail/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["retail_manager"]}>
+            <RetailDashboard />
+          </ProtectedRoute>
         }
-
-        onRegisterPage={() =>
-          setPage(
-            "register"
-          )
-        }
-
       />
 
-    );
-
-  }
-
-
-  // ==========================================================
-  // REGISTER
-  // ==========================================================
-
-  if (page === "register") {
-
-    return (
-
-      <Register
-
-        onLoginPage={() =>
-          setPage(
-            "login"
-          )
+      <Route
+        path="/warehouse/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["warehouse_operator"]}>
+            <WarehouseDashboard />
+          </ProtectedRoute>
         }
-
       />
 
-    );
-
-  }
-
-
-  // ==========================================================
-  // CURRENT ROLE
-  // ==========================================================
-
-  const role =
-    (
-      localStorage.getItem(
-        "user_role"
-      ) || "consumer"
-    )
-      .toLowerCase();
-
-
-  // ==========================================================
-  // CONSUMER DASHBOARD
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role === "consumer"
-  ) {
-
-    return (
-
-      <Dashboard
-
-        onLogout={
-          handleLogout
+      <Route
+        path="/inspector/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["food_quality_inspector"]}>
+            <InspectorDashboard />
+          </ProtectedRoute>
         }
-
-        onAddFood={() =>
-          setPage(
-            "add-food"
-          )
-        }
-
-        onInventory={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
       />
 
-    );
-
-  }
-
-
-  // ==========================================================
-  // RETAIL MANAGER DASHBOARD
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role === "retail_manager"
-  ) {
-
-    return (
-
-      <RetailDashboard
-
-        onLogout={
-          handleLogout
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["administrator"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
         }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onInventory={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
       />
 
-    );
-
-  }
-
-
-  // ==========================================================
-  // WAREHOUSE OPERATOR DASHBOARD
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role === "warehouse_operator"
-  ) {
-
-    return (
-
-      <WarehouseDashboard
-
-        onLogout={
-          handleLogout
+      {/* Freshness Analysis */}
+      <Route
+        path="/freshness-analysis"
+        element={
+          <ProtectedRoute
+            allowedRoles={[
+              "consumer",
+              "retail_manager",
+              "warehouse_operator",
+              "food_quality_inspector",
+              "administrator",
+            ]}
+          >
+            <FreshnessAnalysis />
+          </ProtectedRoute>
         }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onInventory={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
       />
 
-    );
-
-  }
-
-
-  // ==========================================================
-  // FOOD QUALITY INSPECTOR
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role ===
-      "food_quality_inspector"
-  ) {
-
-    return (
-
-      <InspectorDashboard
-
-        onLogout={
-          handleLogout
-        }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onInventory={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // ADMINISTRATOR
-  // ==========================================================
-
-  if (
-    page === "dashboard" &&
-    role === "administrator"
-  ) {
-
-    return (
-
-      <AdminDashboard
-
-        onLogout={
-          handleLogout
-        }
-
-        onProfile={() =>
-          setPage(
-            "profile"
-          )
-        }
-
-        onReports={() =>
-          setPage(
-            "reports"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // ADD FOOD
-  // ==========================================================
-
-  if (
-    page === "add-food"
-  ) {
-
-    return (
-
-      <AddFood
-
-        onBack={() =>
-          setPage(
-            "dashboard"
-          )
-        }
-
-        onSuccess={() =>
-          setPage(
-            "inventory"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // INVENTORY
-  // ==========================================================
-
-  if (
-    page === "inventory"
-  ) {
-
-    return (
-
-      <FoodInventory
-
-        onBack={() =>
-          setPage(
-            "dashboard"
-          )
-        }
-
-        onAddFood={() =>
-          setPage(
-            "add-food"
-          )
-        }
-
-        onViewReport={
-          handleViewReport
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // FOOD REPORT
-  // ==========================================================
-
-  if (
-    page === "food-report"
-  ) {
-
-    return (
-
-      <FoodReport
-
-        food={
-          selectedFood
-        }
-
-        onBack={() => {
-
-          setSelectedFood(
-            null
-          );
-
-          setPage(
-            "inventory"
-          );
-
-        }}
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // REPORTS
-  // ==========================================================
-
-  if (
-    page === "reports"
-  ) {
-
-    if (
-      role === "administrator"
-    ) {
-
-      return (
-
-        <AdministratorReports
-
-          onBack={() =>
-            setPage(
-              "dashboard"
-            )
-          }
-
-        />
-
-      );
-
-    }
-
-
-    return (
-
-      <Reports
-
-        onBack={() =>
-          setPage(
-            "dashboard"
-          )
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // PROFILE
-  // ==========================================================
-
-  if (
-    page === "profile"
-  ) {
-
-    return (
-
-      <Profile
-
-        onBack={() =>
-          setPage(
-            "dashboard"
-          )
-        }
-
-        onLogout={
-          handleLogout
-        }
-
-      />
-
-    );
-
-  }
-
-
-  // ==========================================================
-  // FALLBACK
-  // ==========================================================
-
-  return null;
+      {/* 404 route */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
-
-
-export default App;

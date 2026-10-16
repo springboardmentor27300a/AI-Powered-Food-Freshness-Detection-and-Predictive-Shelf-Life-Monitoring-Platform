@@ -1,98 +1,54 @@
-from pathlib import Path
-
+"""
+FastAPI application entrypoint — Food Freshness Monitoring Platform
+Milestone 1: Authentication & Registration module.
+"""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
-from app.core.database import Base, engine
-from app.models.user import User
-from app.models.food import Food
+from app.api import auth, users, inventory, freshness, storage, analysis, alerts, admin, reports
+from app.config import settings
+from app.database import Base, engine
+from app.models.inventory import FoodInventory
+from app.models.freshness_assessment import FreshnessAssessment
+from app.models.storage_condition import StorageCondition
 
-from app.routers.auth import router as auth_router
-from app.routers.food import router as food_router
-from app.routers.prediction import router as prediction_router
-from app.routers.upload import router as upload_router
-from app.routers.admin import router as admin_router
-
-
-# ============================================================
-# DATABASE TABLE INITIALIZATION
-# ============================================================
-
+# Create tables on startup if they don't exist (in addition to Alembic migrations).
 Base.metadata.create_all(bind=engine)
 
-
-# ============================================================
-# FASTAPI APPLICATION
-# ============================================================
-
 app = FastAPI(
-    title="Food Freshness Monitoring Platform",
+    title=settings.PROJECT_NAME,
+    description="Authentication & Role-Based Access Control module for the "
+    "Food Freshness Monitoring Platform.",
     version="1.0.0",
 )
-
-
-# ============================================================
-# CORS
-# ============================================================
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        # Local development
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-
-        # Render deployed frontend
-        "https://food-freshness-monitoring-platform-1.onrender.com",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# ============================================================
-# STATIC UPLOAD FILES
-# ============================================================
-# Food images are stored in backend/uploads.
-# The frontend needs /uploads/... to be publicly readable so that
-# uploaded and OpenCV-annotated images can be displayed in reports.
-
-BACKEND_DIR = Path(__file__).resolve().parents[1]
-UPLOADS_DIR = BACKEND_DIR / "uploads"
-
-UPLOADS_DIR.mkdir(
-    parents=True,
-    exist_ok=True,
-)
-
-app.mount(
-    "/uploads",
-    StaticFiles(directory=str(UPLOADS_DIR)),
-    name="uploads",
-)
+app.include_router(auth.router)
+app.include_router(users.router)
+app.include_router(inventory.router)
+app.include_router(freshness.router)
+app.include_router(storage.router)
+app.include_router(analysis.router)
+app.include_router(alerts.router)
+app.include_router(admin.router)
+app.include_router(reports.router)
 
 
-# ============================================================
-# ROUTERS
-# ============================================================
-
-app.include_router(auth_router)
-app.include_router(food_router)
-app.include_router(prediction_router)
-app.include_router(upload_router)
-app.include_router(admin_router)
-
-
-# ============================================================
-# ROOT HEALTH CHECK
-# ============================================================
-
-@app.get("/")
+@app.get("/", tags=["Health"])
 def root():
-    return {
-        "message": "Food Freshness Monitoring Platform API is running"
-    }
+    return {"status": "ok", "service": settings.PROJECT_NAME}
+
+
+@app.get("/health", tags=["Health"])
+def health_check():
+    return {"status": "healthy"}

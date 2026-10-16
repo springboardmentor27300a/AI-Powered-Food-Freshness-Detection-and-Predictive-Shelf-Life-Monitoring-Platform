@@ -1,769 +1,223 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import FormInput from "../components/FormInput.jsx";
 
-import {
-  registerUser,
-} from "../api";
+const ROLES = [
+  { value: "consumer", label: "Consumer" },
+  { value: "retail_manager", label: "Retail Manager" },
+  { value: "warehouse_operator", label: "Warehouse Operator" },
+  { value: "food_quality_inspector", label: "Food Quality Inspector" },
+  { value: "administrator", label: "Administrator" },
+];
 
+const initialForm = {
+  full_name: "",
+  email: "",
+  phone: "",
+  password: "",
+  confirm_password: "",
+  role: "consumer",
+};
 
-function Register({
-  onLoginPage,
-}) {
+export default function Register() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
-  const [name, setName] =
-    useState("");
+  const [form, setForm] = useState(initialForm);
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [email, setEmail] =
-    useState("");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
 
-  const [password, setPassword] =
-    useState("");
+  const validate = () => {
+    const next = {};
 
-  const [role, setRole] =
-    useState("consumer");
+    if (!form.full_name.trim() || form.full_name.trim().length < 2) {
+      next.full_name = "Please enter your full name";
+    }
 
-  const [loading, setLoading] =
-    useState(false);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      next.email = "Enter a valid email address";
+    }
 
-  const [error, setError] =
-    useState("");
+    const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
+    if (!phoneRegex.test(form.phone)) {
+      next.phone = "Enter a valid phone number";
+    }
 
-  const [success, setSuccess] =
-    useState("");
+    if (form.password.length < 8) {
+      next.password = "Password must be at least 8 characters";
+    } else if (!/[A-Za-z]/.test(form.password) || !/[0-9]/.test(form.password)) {
+      next.password = "Password must contain letters and numbers";
+    }
 
+    if (form.confirm_password !== form.password) {
+      next.confirm_password = "Passwords do not match";
+    }
 
-  // ==========================================================
-  // REGISTER
-  // ==========================================================
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
+    setApiError("");
+    setSuccessMsg("");
 
-    setError("");
-    setSuccess("");
-    setLoading(true);
+    if (!validate()) return;
 
-
+    setSubmitting(true);
     try {
-
-      await registerUser({
-        name,
-        email,
-        password,
-        role,
-      });
-
-
-      setSuccess(
-        "Account created successfully! You can login now."
-      );
-
-
-      setName("");
-      setEmail("");
-      setPassword("");
-      setRole("consumer");
-
+      await register(form);
+      setSuccessMsg("Account created successfully! Redirecting to login...");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
-
-      setError(
-        err?.message ||
-          "Registration failed. Please try again."
-      );
-
+      const detail = err?.response?.data?.detail;
+      if (typeof detail === "string") {
+        setApiError(detail);
+      } else if (Array.isArray(detail)) {
+        // FastAPI/Pydantic validation error array
+        setApiError(detail.map((d) => d.msg).join(", "));
+      } else {
+        setApiError("Something went wrong while creating your account. Please try again.");
+      }
     } finally {
-
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-
   return (
-
-    <div
-      className="auth-page register-page"
-      style={{
-        minHeight: "100vh",
-        width: "100%",
-        boxSizing: "border-box",
-        overflowX: "hidden",
-      }}
-    >
-
-      {/* ======================================================
-          RESPONSIVE REGISTER STYLES
-      ====================================================== */}
-
-      <style>
-        {`
-
-          .register-page {
-            position: relative;
-            width: 100%;
-            min-height: 100vh;
-            box-sizing: border-box;
-          }
-
-
-          .register-page .register-container {
-            box-sizing: border-box;
-            width: min(100% - 32px, 520px);
-            max-width: 520px;
-          }
-
-
-          .register-page .auth-heading {
-            min-width: 0;
-          }
-
-
-          .register-page .auth-heading h1 {
-            overflow-wrap: anywhere;
-            word-break: break-word;
-          }
-
-
-          .register-page .auth-heading p {
-            overflow-wrap: anywhere;
-            word-break: break-word;
-          }
-
-
-          .register-page .error-box,
-          .register-page .success-box {
-            width: 100%;
-            box-sizing: border-box;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-          }
-
-
-          .register-page .auth-form {
-            width: 100%;
-            min-width: 0;
-          }
-
-
-          .register-page .form-group {
-            width: 100%;
-            min-width: 0;
-          }
-
-
-          .register-page .form-group input,
-          .register-page .form-group select {
-            width: 100%;
-            max-width: 100%;
-            min-width: 0;
-            box-sizing: border-box;
-          }
-
-
-          .register-page .primary-button {
-            width: 100%;
-            min-height: 52px;
-            box-sizing: border-box;
-            touch-action: manipulation;
-          }
-
-
-          .register-page .auth-link {
-            width: 100%;
-            box-sizing: border-box;
-            overflow-wrap: anywhere;
-          }
-
-
-          .register-page .auth-link button {
-            touch-action: manipulation;
-          }
-
-
-          @media (max-width: 700px) {
-
-            .register-page {
-              padding:
-                24px 16px !important;
-            }
-
-
-            .register-page .register-container {
-              width: 100%;
-              max-width: 500px;
-            }
-
-          }
-
-
-          @media (max-width: 520px) {
-
-            .register-page {
-              padding:
-                20px 13px !important;
-            }
-
-
-            .register-page .register-container {
-              width: 100%;
-              max-width: none;
-            }
-
-
-            .register-page .auth-logo {
-              width: 66px !important;
-              height: 66px !important;
-              min-width: 66px !important;
-              font-size: 31px !important;
-              margin-bottom: 17px !important;
-            }
-
-
-            .register-page .auth-heading {
-              margin-bottom: 21px !important;
-            }
-
-
-            .register-page .auth-heading h1 {
-              font-size: 29px !important;
-              line-height: 1.15 !important;
-            }
-
-
-            .register-page .auth-heading p {
-              font-size: 12px !important;
-              line-height: 1.55 !important;
-            }
-
-
-            .register-page .mini-label {
-              font-size: 9px !important;
-              letter-spacing: 1.1px !important;
-            }
-
-
-            .register-page .form-group {
-              margin-bottom: 14px !important;
-            }
-
-
-            .register-page .form-group label {
-              font-size: 12px !important;
-            }
-
-
-            .register-page .form-group input,
-            .register-page .form-group select {
-              min-height: 48px !important;
-              height: 48px !important;
-              padding:
-                0 13px !important;
-              border-radius:
-                12px !important;
-              font-size: 13px !important;
-            }
-
-
-            .register-page .primary-button {
-              min-height: 51px !important;
-              height: 51px !important;
-              border-radius:
-                13px !important;
-              font-size: 13px !important;
-            }
-
-
-            .register-page .auth-link {
-              font-size: 12px !important;
-              line-height: 1.6 !important;
-            }
-
-
-            .register-page .auth-link button {
-              font-size: 12px !important;
-            }
-
-          }
-
-
-          @media (max-width: 390px) {
-
-            .register-page {
-              padding:
-                15px 10px !important;
-            }
-
-
-            .register-page .register-container {
-              width: 100%;
-              border-radius:
-                18px !important;
-            }
-
-
-            .register-page .auth-logo {
-              width: 58px !important;
-              height: 58px !important;
-              min-width: 58px !important;
-              font-size: 27px !important;
-              margin-bottom: 14px !important;
-            }
-
-
-            .register-page .auth-heading {
-              margin-bottom: 18px !important;
-            }
-
-
-            .register-page .auth-heading h1 {
-              font-size: 25px !important;
-            }
-
-
-            .register-page .auth-heading p {
-              font-size: 11px !important;
-            }
-
-
-            .register-page .form-group {
-              margin-bottom: 12px !important;
-            }
-
-
-            .register-page .form-group label {
-              font-size: 11px !important;
-            }
-
-
-            .register-page .form-group input,
-            .register-page .form-group select {
-              height: 46px !important;
-              min-height: 46px !important;
-              padding:
-                0 11px !important;
-              border-radius:
-                11px !important;
-              font-size: 12px !important;
-            }
-
-
-            .register-page .primary-button {
-              height: 49px !important;
-              min-height: 49px !important;
-              font-size: 12px !important;
-            }
-
-
-            .register-page .auth-link {
-              font-size: 11px !important;
-            }
-
-
-            .register-page .auth-link button {
-              font-size: 11px !important;
-            }
-
-          }
-
-
-          @media (max-width: 340px) {
-
-            .register-page {
-              padding:
-                10px 7px !important;
-            }
-
-
-            .register-page .auth-heading h1 {
-              font-size: 23px !important;
-            }
-
-
-            .register-page .form-group input,
-            .register-page .form-group select {
-              font-size: 11px !important;
-            }
-
-          }
-
-
-          @media (max-height: 700px) and (min-width: 391px) {
-
-            .register-page {
-              padding-top: 15px !important;
-              padding-bottom: 15px !important;
-            }
-
-
-            .register-page .auth-logo {
-              margin-bottom: 10px !important;
-            }
-
-
-            .register-page .auth-heading {
-              margin-bottom: 13px !important;
-            }
-
-
-            .register-page .form-group {
-              margin-bottom: 10px !important;
-            }
-
-          }
-
-
-          @media (orientation: landscape)
-            and (max-height: 600px) {
-
-            .register-page {
-              align-items: flex-start !important;
-              padding-top: 15px !important;
-              padding-bottom: 15px !important;
-            }
-
-
-            .register-page .register-container {
-              margin-top: 5px !important;
-              margin-bottom: 5px !important;
-            }
-
-
-            .register-page .auth-logo {
-              width: 50px !important;
-              height: 50px !important;
-              min-width: 50px !important;
-              font-size: 24px !important;
-              margin-bottom: 8px !important;
-            }
-
-
-            .register-page .auth-heading {
-              margin-bottom: 10px !important;
-            }
-
-
-            .register-page .auth-heading h1 {
-              font-size: 22px !important;
-            }
-
-
-            .register-page .auth-heading p {
-              display: none !important;
-            }
-
-
-            .register-page .form-group {
-              margin-bottom: 8px !important;
-            }
-
-
-            .register-page .form-group input,
-            .register-page .form-group select {
-              height: 42px !important;
-              min-height: 42px !important;
-            }
-
-
-            .register-page .primary-button {
-              height: 45px !important;
-              min-height: 45px !important;
-            }
-
-          }
-
-
-          @media (prefers-reduced-motion: reduce) {
-
-            .register-page *,
-            .register-page *::before,
-            .register-page *::after {
-              animation-duration:
-                0.01ms !important;
-
-              animation-iteration-count:
-                1 !important;
-
-              transition-duration:
-                0.01ms !important;
-
-              scroll-behavior:
-                auto !important;
-            }
-
-          }
-
-        `}
-      </style>
-
-
-      {/* ======================================================
-          FLOATING FOOD
-      ====================================================== */}
-
-      <div className="floating-food food-one">
-        🍓
-      </div>
-
-
-      <div className="floating-food food-two">
-        🥬
-      </div>
-
-
-      <div className="floating-food food-three">
-        🍊
-      </div>
-
-
-      <div className="floating-food food-four">
-        🥑
-      </div>
-
-
-      <div className="floating-food food-five">
-        🍅
-      </div>
-
-
-      {/* ======================================================
-          REGISTER CONTAINER
-      ====================================================== */}
-
-      <div className="auth-container register-container">
-
-        {/* ====================================================
-            LOGO
-        ==================================================== */}
-
-        <div className="auth-logo">
-          🥬
-        </div>
-
-
-        {/* ====================================================
-            HEADING
-        ==================================================== */}
-
-        <div className="auth-heading">
-
-          <span className="mini-label">
-            GET STARTED
-          </span>
-
-
-          <h1>
-            Create Account
-          </h1>
-
-
-          <p>
-            Start monitoring your food inventory
-            with freshness intelligence.
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 via-white to-brand-100 px-4 py-10">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8">
+        <div className="text-center mb-6">
+          <div className="mx-auto mb-3 h-12 w-12 rounded-xl bg-brand-500 flex items-center justify-center text-white text-2xl">
+            🥦
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Join the Food Freshness Monitoring Platform
           </p>
-
         </div>
 
-
-        {/* ====================================================
-            ERROR
-        ==================================================== */}
-
-        {error && (
-
-          <div className="error-box">
-            ⚠️ {error}
+        {apiError && (
+          <div className="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">
+            {apiError}
           </div>
-
+        )}
+        {successMsg && (
+          <div className="mb-4 rounded-lg bg-brand-50 border border-brand-200 text-brand-700 text-sm px-4 py-3">
+            {successMsg}
+          </div>
         )}
 
+        <form onSubmit={handleSubmit} noValidate>
+          <FormInput
+            label="Full Name"
+            name="full_name"
+            value={form.full_name}
+            onChange={handleChange}
+            error={errors.full_name}
+            placeholder="Jane Doe"
+            autoComplete="name"
+          />
 
-        {/* ====================================================
-            SUCCESS
-        ==================================================== */}
+          <FormInput
+            label="Email"
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            error={errors.email}
+            placeholder="jane@example.com"
+            autoComplete="email"
+          />
 
-        {success && (
+          <FormInput
+            label="Phone Number"
+            type="tel"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            error={errors.phone}
+            placeholder="+1 202 555 0176"
+            autoComplete="tel"
+          />
 
-          <div className="success-box">
-            ✓ {success}
-          </div>
+          <FormInput
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            error={errors.password}
+            placeholder="At least 8 characters"
+            autoComplete="new-password"
+            rightElement={
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                className="text-xs font-medium text-brand-600 hover:text-brand-700"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            }
+          />
 
-        )}
+          <FormInput
+            label="Confirm Password"
+            type={showPassword ? "text" : "password"}
+            name="confirm_password"
+            value={form.confirm_password}
+            onChange={handleChange}
+            error={errors.confirm_password}
+            placeholder="Re-enter your password"
+            autoComplete="new-password"
+          />
 
-
-        {/* ====================================================
-            REGISTER FORM
-        ==================================================== */}
-
-        <form
-          className="auth-form"
-          onSubmit={handleSubmit}
-        >
-
-          {/* ==================================================
-              NAME
-          ================================================== */}
-
-          <div className="form-group">
-
-            <label>
-              Full Name
+          <div className="mb-6">
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              Role
             </label>
-
-
-            <input
-              type="text"
-              placeholder="Your name"
-              value={name}
-              onChange={(e) =>
-                setName(e.target.value)
-              }
-              required
-              disabled={loading}
-              autoComplete="name"
-            />
-
-          </div>
-
-
-          {/* ==================================================
-              EMAIL
-          ================================================== */}
-
-          <div className="form-group">
-
-            <label>
-              Email Address
-            </label>
-
-
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              required
-              disabled={loading}
-              autoComplete="email"
-            />
-
-          </div>
-
-
-          {/* ==================================================
-              PASSWORD
-          ================================================== */}
-
-          <div className="form-group">
-
-            <label>
-              Password
-            </label>
-
-
-            <input
-              type="password"
-              placeholder="Create a strong password"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              minLength={6}
-              required
-              disabled={loading}
-              autoComplete="new-password"
-            />
-
-          </div>
-
-
-          {/* ==================================================
-              ROLE
-          ================================================== */}
-
-          <div className="form-group">
-
-            <label>
-              Account Role
-            </label>
-
-
             <select
-              value={role}
-              onChange={(e) =>
-                setRole(e.target.value)
-              }
-              disabled={loading}
-              required
+              id="role"
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent bg-white"
             >
-
-              <option value="consumer">
-                Consumer
-              </option>
-
-
-              <option value="retail_manager">
-                Retail Manager
-              </option>
-
-
-              <option value="warehouse_operator">
-                Warehouse Operator
-              </option>
-
-
-              <option value="food_quality_inspector">
-                Food Quality Inspector
-              </option>
-
+              {ROLES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
             </select>
-
           </div>
-
-
-          {/* ==================================================
-              CREATE ACCOUNT
-          ================================================== */}
 
           <button
-            className="primary-button"
-            disabled={loading}
             type="submit"
+            disabled={submitting}
+            className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition shadow-sm"
           >
-
-            {loading
-              ? "Creating Account..."
-              : "Create Account →"}
-
+            {submitting ? "Creating account..." : "Register"}
           </button>
-
         </form>
 
-
-        {/* ====================================================
-            LOGIN LINK
-        ==================================================== */}
-
-        <div className="auth-link">
-
-          Already have an account?
-
-
-          <button
-            onClick={onLoginPage}
-            disabled={loading}
-            type="button"
-          >
-            Sign In
-          </button>
-
-        </div>
-
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Already have an account?{" "}
+          <Link to="/login" className="text-brand-600 font-medium hover:underline">
+            Log in
+          </Link>
+        </p>
       </div>
-
     </div>
   );
 }
-
-
-export default Register;

@@ -1,718 +1,140 @@
-import { useState } from "react";
-import { loginUser } from "../api";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth, ROLE_DASHBOARD_ROUTES } from "../context/AuthContext.jsx";
+import FormInput from "../components/FormInput.jsx";
 
+export default function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-function Login({
-  onLoginSuccess,
-  onRegisterPage,
-}) {
+  const [form, setForm] = useState({ email: "", password: "", rememberMe: false });
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [email, setEmail] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
-
-
-  // ==========================================================
-  // LOGIN
-  // ==========================================================
-
-  const handleSubmit = async (e) => {
-
-    e.preventDefault();
-
-    setError("");
-
-    setLoading(true);
-
-
-    try {
-
-      const data =
-        await loginUser(
-          email,
-          password
-        );
-
-
-      // ======================================================
-      // ROLE
-      // ======================================================
-
-      const role =
-        data?.role ||
-        localStorage.getItem(
-          "user_role"
-        );
-
-
-      console.log(
-        "Logged in user role:",
-        role
-      );
-
-
-      // ======================================================
-      // LOGIN SUCCESS
-      // ======================================================
-
-      onLoginSuccess(
-        role
-      );
-
-    } catch (err) {
-
-      setError(
-        err?.message ||
-          "Login failed. Please check your credentials."
-      );
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
+  const validate = () => {
+    const next = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) next.email = "Enter a valid email address";
+    if (!form.password) next.password = "Password is required";
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setApiError("");
+    if (!validate()) return;
+
+    setSubmitting(true);
+    try {
+      const user = await login({
+        email: form.email,
+        password: form.password,
+        rememberMe: form.rememberMe,
+      });
+      const destination = ROLE_DASHBOARD_ROUTES[user.role] || "/";
+      navigate(destination, { replace: true });
+    } catch (err) {
+      const detail = err?.response?.data?.detail;
+      setApiError(typeof detail === "string" ? detail : "Invalid email or password.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-
-    <div
-      className="auth-page login-page"
-      style={{
-        minHeight: "100vh",
-        width: "100%",
-        boxSizing: "border-box",
-        overflowX: "hidden",
-      }}
-    >
-
-      {/* ======================================================
-          RESPONSIVE LOGIN STYLES
-      ====================================================== */}
-
-      <style>
-        {`
-
-          .login-page {
-            position: relative;
-            width: 100%;
-            min-height: 100vh;
-            box-sizing: border-box;
-          }
-
-
-          .login-page .auth-container {
-            box-sizing: border-box;
-            width: min(100% - 32px, 500px);
-            max-width: 500px;
-          }
-
-
-          .login-page .auth-heading {
-            min-width: 0;
-          }
-
-
-          .login-page .auth-heading h1 {
-            overflow-wrap: anywhere;
-            word-break: break-word;
-          }
-
-
-          .login-page .auth-heading p {
-            overflow-wrap: anywhere;
-            word-break: break-word;
-          }
-
-
-          .login-page .error-box {
-            width: 100%;
-            box-sizing: border-box;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-          }
-
-
-          .login-page .auth-form {
-            width: 100%;
-            min-width: 0;
-          }
-
-
-          .login-page .form-group {
-            width: 100%;
-            min-width: 0;
-          }
-
-
-          .login-page .form-group input {
-            width: 100%;
-            max-width: 100%;
-            min-width: 0;
-            box-sizing: border-box;
-          }
-
-
-          .login-page .primary-button {
-            width: 100%;
-            min-height: 52px;
-            box-sizing: border-box;
-            touch-action: manipulation;
-          }
-
-
-          .login-page .auth-link {
-            width: 100%;
-            box-sizing: border-box;
-            overflow-wrap: anywhere;
-          }
-
-
-          .login-page .auth-link button {
-            touch-action: manipulation;
-          }
-
-
-          /* ==================================================
-             TABLET
-          ================================================== */
-
-          @media (max-width: 700px) {
-
-            .login-page {
-              padding:
-                24px 16px !important;
-            }
-
-
-            .login-page .auth-container {
-              width: 100%;
-              max-width: 490px;
-            }
-
-          }
-
-
-          /* ==================================================
-             MOBILE
-          ================================================== */
-
-          @media (max-width: 520px) {
-
-            .login-page {
-              padding:
-                20px 13px !important;
-            }
-
-
-            .login-page .auth-container {
-              width: 100%;
-              max-width: none;
-            }
-
-
-            .login-page .auth-logo {
-              width: 66px !important;
-              height: 66px !important;
-              min-width: 66px !important;
-              font-size: 31px !important;
-              margin-bottom: 17px !important;
-            }
-
-
-            .login-page .auth-heading {
-              margin-bottom: 21px !important;
-            }
-
-
-            .login-page .auth-heading h1 {
-              font-size: 29px !important;
-              line-height: 1.15 !important;
-            }
-
-
-            .login-page .auth-heading p {
-              font-size: 12px !important;
-              line-height: 1.55 !important;
-            }
-
-
-            .login-page .mini-label {
-              font-size: 9px !important;
-              letter-spacing: 1.1px !important;
-            }
-
-
-            .login-page .form-group {
-              margin-bottom: 14px !important;
-            }
-
-
-            .login-page .form-group label {
-              font-size: 12px !important;
-            }
-
-
-            .login-page .form-group input {
-              min-height: 48px !important;
-              height: 48px !important;
-              padding:
-                0 13px !important;
-              border-radius:
-                12px !important;
-              font-size: 13px !important;
-            }
-
-
-            .login-page .primary-button {
-              min-height: 51px !important;
-              height: 51px !important;
-              border-radius:
-                13px !important;
-              font-size: 13px !important;
-            }
-
-
-            .login-page .auth-link {
-              font-size: 12px !important;
-              line-height: 1.6 !important;
-            }
-
-
-            .login-page .auth-link button {
-              font-size: 12px !important;
-            }
-
-          }
-
-
-          /* ==================================================
-             SMALL MOBILE
-          ================================================== */
-
-          @media (max-width: 390px) {
-
-            .login-page {
-              padding:
-                15px 10px !important;
-            }
-
-
-            .login-page .auth-container {
-              width: 100%;
-              border-radius:
-                18px !important;
-            }
-
-
-            .login-page .auth-logo {
-              width: 58px !important;
-              height: 58px !important;
-              min-width: 58px !important;
-              font-size: 27px !important;
-              margin-bottom: 14px !important;
-            }
-
-
-            .login-page .auth-heading {
-              margin-bottom: 18px !important;
-            }
-
-
-            .login-page .auth-heading h1 {
-              font-size: 25px !important;
-            }
-
-
-            .login-page .auth-heading p {
-              font-size: 11px !important;
-            }
-
-
-            .login-page .form-group {
-              margin-bottom: 12px !important;
-            }
-
-
-            .login-page .form-group label {
-              font-size: 11px !important;
-            }
-
-
-            .login-page .form-group input {
-              height: 46px !important;
-              min-height: 46px !important;
-              padding:
-                0 11px !important;
-              border-radius:
-                11px !important;
-              font-size: 12px !important;
-            }
-
-
-            .login-page .primary-button {
-              height: 49px !important;
-              min-height: 49px !important;
-              font-size: 12px !important;
-            }
-
-
-            .login-page .auth-link {
-              font-size: 11px !important;
-            }
-
-
-            .login-page .auth-link button {
-              font-size: 11px !important;
-            }
-
-          }
-
-
-          /* ==================================================
-             VERY SMALL DEVICES
-          ================================================== */
-
-          @media (max-width: 340px) {
-
-            .login-page {
-              padding:
-                10px 7px !important;
-            }
-
-
-            .login-page .auth-heading h1 {
-              font-size: 23px !important;
-            }
-
-
-            .login-page .form-group input {
-              font-size: 11px !important;
-            }
-
-          }
-
-
-          /* ==================================================
-             SHORT SCREENS
-          ================================================== */
-
-          @media (max-height: 650px)
-            and (min-width: 391px) {
-
-            .login-page {
-              padding-top: 15px !important;
-              padding-bottom: 15px !important;
-            }
-
-
-            .login-page .auth-logo {
-              margin-bottom: 10px !important;
-            }
-
-
-            .login-page .auth-heading {
-              margin-bottom: 13px !important;
-            }
-
-
-            .login-page .form-group {
-              margin-bottom: 10px !important;
-            }
-
-          }
-
-
-          /* ==================================================
-             LANDSCAPE MOBILE
-          ================================================== */
-
-          @media (orientation: landscape)
-            and (max-height: 600px) {
-
-            .login-page {
-              align-items: flex-start !important;
-              padding-top: 15px !important;
-              padding-bottom: 15px !important;
-            }
-
-
-            .login-page .auth-container {
-              margin-top: 5px !important;
-              margin-bottom: 5px !important;
-            }
-
-
-            .login-page .auth-logo {
-              width: 50px !important;
-              height: 50px !important;
-              min-width: 50px !important;
-              font-size: 24px !important;
-              margin-bottom: 8px !important;
-            }
-
-
-            .login-page .auth-heading {
-              margin-bottom: 10px !important;
-            }
-
-
-            .login-page .auth-heading h1 {
-              font-size: 22px !important;
-            }
-
-
-            .login-page .auth-heading p {
-              display: none !important;
-            }
-
-
-            .login-page .form-group {
-              margin-bottom: 8px !important;
-            }
-
-
-            .login-page .form-group input {
-              height: 42px !important;
-              min-height: 42px !important;
-            }
-
-
-            .login-page .primary-button {
-              height: 45px !important;
-              min-height: 45px !important;
-            }
-
-          }
-
-
-          /* ==================================================
-             ACCESSIBILITY
-          ================================================== */
-
-          @media (prefers-reduced-motion: reduce) {
-
-            .login-page *,
-            .login-page *::before,
-            .login-page *::after {
-              animation-duration:
-                0.01ms !important;
-
-              animation-iteration-count:
-                1 !important;
-
-              transition-duration:
-                0.01ms !important;
-
-              scroll-behavior:
-                auto !important;
-            }
-
-          }
-
-        `}
-      </style>
-
-
-      {/* ======================================================
-          FLOATING FOOD
-      ====================================================== */}
-
-      <div className="floating-food food-one">
-        🍎
-      </div>
-
-
-      <div className="floating-food food-two">
-        🥕
-      </div>
-
-
-      <div className="floating-food food-three">
-        🥦
-      </div>
-
-
-      <div className="floating-food food-four">
-        🍋
-      </div>
-
-
-      <div className="floating-food food-five">
-        🍅
-      </div>
-
-
-      {/* ======================================================
-          LOGIN CONTAINER
-      ====================================================== */}
-
-      <div className="auth-container">
-
-        {/* ====================================================
-            LOGO
-        ==================================================== */}
-
-        <div className="auth-logo">
-          🍏
-        </div>
-
-
-        {/* ====================================================
-            HEADING
-        ==================================================== */}
-
-        <div className="auth-heading">
-
-          <span className="mini-label">
-            FOOD INTELLIGENCE
-          </span>
-
-
-          <h1>
-            Welcome Back
-          </h1>
-
-
-          <p>
-            Monitor your food freshness and
-            keep your inventory smarter.
-          </p>
-
-        </div>
-
-
-        {/* ====================================================
-            ERROR
-        ==================================================== */}
-
-        {error && (
-
-          <div className="error-box">
-            ⚠️ {error}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 via-white to-brand-100 px-4 py-10">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+        <div className="text-center mb-6">
+          <div className="mx-auto mb-3 h-12 w-12 rounded-xl bg-brand-500 flex items-center justify-center text-white text-2xl">
+            🥦
           </div>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+          <p className="text-sm text-gray-500 mt-1">Log in to your account</p>
+        </div>
 
+        {apiError && (
+          <div className="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">
+            {apiError}
+          </div>
         )}
 
+        <form onSubmit={handleSubmit} noValidate>
+          <FormInput
+            label="Email"
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            error={errors.email}
+            placeholder="jane@example.com"
+            autoComplete="email"
+          />
 
-        {/* ====================================================
-            LOGIN FORM
-        ==================================================== */}
+          <FormInput
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            error={errors.password}
+            placeholder="Enter your password"
+            autoComplete="current-password"
+            rightElement={
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                className="text-xs font-medium text-brand-600 hover:text-brand-700"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            }
+          />
 
-        <form
-          className="auth-form"
-          onSubmit={handleSubmit}
-        >
-
-          {/* ==================================================
-              EMAIL
-          ================================================== */}
-
-          <div className="form-group">
-
-            <label>
-              Email Address
+          <div className="flex items-center justify-between mb-6">
+            <label className="flex items-center text-sm text-gray-600 gap-2">
+              <input
+                type="checkbox"
+                name="rememberMe"
+                checked={form.rememberMe}
+                onChange={handleChange}
+                className="rounded border-gray-300 text-brand-600 focus:ring-brand-300"
+              />
+              Remember me
             </label>
-
-
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) =>
-                setEmail(
-                  e.target.value
-                )
-              }
-              required
-              disabled={loading}
-              autoComplete="email"
-            />
-
+            <button
+              type="button"
+              onClick={() => alert("Password reset flow is coming soon.")}
+              className="text-sm text-brand-600 hover:underline"
+            >
+              Forgot password?
+            </button>
           </div>
-
-
-          {/* ==================================================
-              PASSWORD
-          ================================================== */}
-
-          <div className="form-group">
-
-            <label>
-              Password
-            </label>
-
-
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) =>
-                setPassword(
-                  e.target.value
-                )
-              }
-              required
-              disabled={loading}
-              autoComplete="current-password"
-            />
-
-          </div>
-
-
-          {/* ==================================================
-              LOGIN BUTTON
-          ================================================== */}
 
           <button
-            className="primary-button"
-            disabled={loading}
             type="submit"
+            disabled={submitting}
+            className="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition shadow-sm"
           >
-
-            {loading
-              ? "Signing in..."
-              : "Sign In →"}
-
+            {submitting ? "Logging in..." : "Login"}
           </button>
-
         </form>
 
-
-        {/* ====================================================
-            REGISTER LINK
-        ==================================================== */}
-
-        <div className="auth-link">
-
-          Don't have an account?
-
-
-          <button
-            onClick={onRegisterPage}
-            disabled={loading}
-            type="button"
-          >
-            Create Account
-          </button>
-
-        </div>
-
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className="text-brand-600 font-medium hover:underline">
+            Register
+          </Link>
+        </p>
       </div>
-
     </div>
-
   );
 }
-
-
-export default Login;
