@@ -1,5 +1,3 @@
-// Retail analytics dashboard: business-level inventory quality and waste-risk monitoring.
-// Data comes from GET /api/recommendations/inventory-overview (real inventory records).
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -17,7 +15,6 @@ export default function RetailManagerDashboard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // GET is the canonical contract (POST also supported server-side; see routes/recommendations.py)
     apiGet('/api/recommendations/inventory-overview')
       .then(setData)
       .catch((err) => setError(err.message));
@@ -95,7 +92,6 @@ export default function RetailManagerDashboard() {
         </div>
       ) : (
         <>
-          {/* Shelf-life alerts panel (spec: Retail Manager requires shelf-life alerts) */}
           <AlertsPanel title="Shelf-Life & Inventory Alerts" />
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '40px' }}>
@@ -153,7 +149,6 @@ export default function RetailManagerDashboard() {
             </div>
           </div>
 
-          {/* Product/batch quality table */}
           <div style={card}>
             <h2 style={{ fontSize: '1.5rem', margin: '0 0 20px' }}>Product / Batch Quality</h2>
             <div style={{ overflowX: 'auto' }}>

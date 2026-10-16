@@ -3,7 +3,6 @@ import json
 from ml.image_analysis import analyze_image
 
 def main():
-    # Use a project-local test image (the old external artifact path no longer exists)
     test_image_path = os.path.join(os.path.dirname(__file__), "test_images", "fresh_apple.jpg")
     
     print(f"Testing OpenCV analysis with image: {test_image_path}")
@@ -12,17 +11,14 @@ def main():
         print(f"Error: Could not find image at {test_image_path}")
         return
 
-    # Read image bytes
     with open(test_image_path, "rb") as f:
         image_bytes = f.read()
     
     print("\nExecuting analyze_image()...")
     
     try:
-        # Call the new module directly (no API call needed)
         result = analyze_image(image_bytes)
         
-        # Pretty print the resulting dictionary
         print("\n--- ANALYSIS RESULT ---")
         print(json.dumps(result, indent=4))
         

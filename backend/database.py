@@ -16,7 +16,6 @@ else:
 
 database = client.get_database("food_freshness")
 
-# --- persistent collections (single source of truth for the whole app) ---
 user_collection = database.get_collection("users")
 food_item_collection = database.get_collection("food_items")
 batch_collection = database.get_collection("batches")
@@ -28,7 +27,6 @@ alert_collection = database.get_collection("alerts")
 report_collection = database.get_collection("reports")
 lifecycle_events_collection = database.get_collection("lifecycle_events")
 
-# Helpful indexes (idempotent; invoked from the FastAPI startup event)
 async def ensure_indexes():
     await food_item_collection.create_index("created_by")
     await food_item_collection.create_index("batch_number")

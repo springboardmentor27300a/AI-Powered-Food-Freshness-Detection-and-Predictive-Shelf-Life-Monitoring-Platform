@@ -104,7 +104,7 @@ class SaleRequest(BaseModel):
 
 class DisposeRequest(BaseModel):
     quantity_disposed: int = Field(gt=0)
-    reason: str = Field(min_length=1)  # "damaged", "expired", "spoiled", other free text
+    reason: str = Field(min_length=1)
     disposal_date: Optional[datetime] = None
     notes: Optional[str] = None
 

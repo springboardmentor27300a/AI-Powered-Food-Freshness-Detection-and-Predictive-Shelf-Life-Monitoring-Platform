@@ -1,6 +1,3 @@
-// Reusable alerts panel (Milestone 4): shows the current user's real alerts
-// with severity coloring and click-to-mark-read. Used by Retail, Warehouse
-// and Inspector dashboards.
 import React, { useState, useEffect, useCallback } from 'react';
 import { BellRing, Loader2, RefreshCw } from 'lucide-react';
 import { apiGet, apiPatch, formatDateTime } from '../api';
@@ -28,7 +25,7 @@ export default function AlertsPanel({ limit = 8, title = 'Shelf-Life & Inventory
     try {
       await apiPatch(`/api/alerts/${alert._id}`, { is_read: true });
       await load();
-    } catch { /* ignore */ }
+    } catch {}
   };
 
   return (

@@ -54,7 +54,7 @@ async def create_storage_reading(reading: StorageReadingCreate, user: dict = Dep
         "light_exposure": reading.light_exposure.value if reading.light_exposure else None,
         "recorded_at": reading.recorded_at or now,
         "notes": reading.notes,
-        "source": "manual",  # UI entry; IoT integration does not exist yet
+        "source": "manual",
         "recorded_by": str(user["_id"]),
         "recorded_by_username": user["username"],
         "compliance_status": validation["compliance_status"],
@@ -77,8 +77,6 @@ async def create_storage_reading(reading: StorageReadingCreate, user: dict = Dep
         await generate_alerts(payload, None, validation, user,
                               item_owner_role=owner.get("role") if owner else None)
     else:
-        # Zone-only reading (no linked item): critical breaches still alert the
-        # warehouse team and administrators (Milestone 4 recipient routing).
         zone_payload = {"item_id": None, "batch_id": None, "name": f"Zone '{zone}'", "storage_zone": zone}
         await generate_alerts(zone_payload, None, validation, user, item_owner_role=None)
 

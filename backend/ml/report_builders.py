@@ -195,13 +195,11 @@ async def _build_inventory_quality(filters: dict, user: dict) -> dict:
     sold_units = sum(i.get("sold_quantity") or 0 for i in items)
     disposed_units = sum(i.get("disposed_quantity") or 0 for i in items)
 
-    # Lifecycle status distribution (real counts)
     status_counts = {}
     for i in items:
         st = i.get("status") or "Active"
         status_counts[st] = status_counts.get(st, 0) + 1
 
-    # Risk via the existing shelf-life engine (deterministic, per item)
     risk_counts = {"Low": 0, "Medium": 0, "High": 0, "Critical": 0}
     rows = []
     for i in items[:200]:
@@ -255,7 +253,7 @@ async def _build_waste_reduction(filters: dict, user: dict) -> dict:
     query = await _scope_query(user, "item_id")
     query.update(_range_filter(filters, "created_at"))
     if filters.get("category"):
-        pass  # disposal events do not store category; filter applied after join below
+        pass
     if filters.get("item_id"):
         query["item_id"] = filters["item_id"]
 
@@ -263,7 +261,6 @@ async def _build_waste_reduction(filters: dict, user: dict) -> dict:
               lifecycle_events_collection.find(
                   {**query, "event_type": {"$in": ["disposed", "sold"]}}).sort("created_at", -1).limit(1000)]
 
-    # attach item names/categories (join on item_id)
     item_ids = list({e.get("item_id") for e in events if e.get("item_id")})
     item_meta = {}
     if item_ids:
@@ -283,7 +280,6 @@ async def _build_waste_reduction(filters: dict, user: dict) -> dict:
     sold_units = sum(e.get("quantity_delta") and abs(e["quantity_delta"]) or 0
                      for e in events if e.get("event_type") == "sold")
 
-    # Forward-looking waste risk from the shelf-life engine over currently active stock
     inv_query = {"$or": [{"status": {"$exists": False}}, {"status": "Active"}]}
     if user["role"] == "Consumer":
         inv_query["created_by"] = str(user["_id"])

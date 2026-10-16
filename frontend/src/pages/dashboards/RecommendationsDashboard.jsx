@@ -1,4 +1,3 @@
-// Milestone 3: Recommendation engine dashboard - per-item action plans.
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -82,7 +81,6 @@ export default function RecommendationsDashboard() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 400px) 1fr', gap: '24px', alignItems: 'start' }}>
-        {/* Input panel */}
         <form onSubmit={generate} style={{ ...card, display: 'grid', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Lightbulb size={18} color="#d97706" />
@@ -145,7 +143,6 @@ export default function RecommendationsDashboard() {
           </button>
         </form>
 
-        {/* Results panel */}
         <div style={{ display: 'grid', gap: '24px' }}>
           {!result ? (
             <div style={{ ...card, padding: '48px', textAlign: 'center', color: '#9ca3af' }}>
@@ -154,7 +151,6 @@ export default function RecommendationsDashboard() {
             </div>
           ) : (
             <>
-              {/* Item + shelf-life header */}
               <div style={card}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
@@ -174,7 +170,6 @@ export default function RecommendationsDashboard() {
                 </div>
               </div>
 
-              {/* Recommendations list */}
               <div style={card}>
                 <h3 style={{ fontSize: '1.1rem', marginTop: 0, marginBottom: '16px' }}>Prioritized Action Plan</h3>
                 <div style={{ display: 'grid', gap: '12px' }}>
@@ -198,7 +193,6 @@ export default function RecommendationsDashboard() {
                 </div>
               </div>
 
-              {/* Storage assessment summary */}
               <div style={card}>
                 <h3 style={{ fontSize: '1.1rem', marginTop: 0, marginBottom: '16px' }}>Storage Assessment</h3>
                 <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', marginBottom: '16px' }}>

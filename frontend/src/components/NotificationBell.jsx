@@ -1,5 +1,3 @@
-// Notification bell (Milestone 4): unread count + recent notifications,
-// backed entirely by the persistent alerts API (no fake notifications).
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { BellRing, CheckCheck } from 'lucide-react';
 import { apiGet, apiPatch, formatDateTime } from '../api';
@@ -29,7 +27,6 @@ export default function NotificationBell() {
       setAlerts(Array.isArray(list) ? list : []);
       setUnread(count?.unread ?? 0);
     } catch {
-      /* silent: bell is non-critical chrome */
     }
   }, []);
 
@@ -53,7 +50,6 @@ export default function NotificationBell() {
       await apiPatch(`/api/alerts/${alert._id}`, { is_read: true });
       await load();
     } catch {
-      /* ignore */
     }
   };
 

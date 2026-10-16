@@ -12,7 +12,7 @@ actionable recommendations:
 from ml.shelf_life import predict_shelf_life
 from ml.storage_conditions import validate_storage_conditions
 
-LOW_QUANTITY = 10  # units; below this a batch is considered small/runs out fast
+LOW_QUANTITY = 10
 
 _PRIORITY_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 

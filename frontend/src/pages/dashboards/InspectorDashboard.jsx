@@ -1,4 +1,3 @@
-// Inspector dashboard: DB-backed scan history, item-linked AI analysis, persisted reports.
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -94,7 +93,7 @@ const InspectorDashboard = () => {
       if (selectedItemId) formData.append('item_id', selectedItemId);
       const result = await apiUpload('/api/ml/predict', formData);
       setCurrentAnalysis(result);
-      await loadHistory(); // refresh DB-backed history with the persisted scan
+      await loadHistory();
     } catch (err) {
       setScanError(err.message);
     } finally {
@@ -103,7 +102,7 @@ const InspectorDashboard = () => {
   };
 
   const openReport = async (scan) => {
-    setSelectedReport(scan); // show scan data immediately
+    setSelectedReport(scan);
     setReportLoading(true);
     try {
       if (scan.report_id) {
@@ -111,7 +110,6 @@ const InspectorDashboard = () => {
         setSelectedReport({ ...scan, persistedReport: report });
       }
     } catch {
-      /* fall back to the scan record itself */
     } finally {
       setReportLoading(false);
     }
@@ -119,7 +117,6 @@ const InspectorDashboard = () => {
 
   const closeReport = () => setSelectedReport(null);
 
-  // Summary stats derived ONLY from persisted scans
   const totalScans = scans.length;
   const spoiledCount = scans.filter((s) => s.ml_status === 'Rotten').length;
   const freshCount = scans.filter((s) => s.ml_status === 'Fresh').length;
@@ -144,10 +141,8 @@ const InspectorDashboard = () => {
         </p>
       </div>
 
-      {/* Inspection & spoilage alerts (Milestone 4) */}
       <AlertsPanel title="Inspection & Spoilage Alerts" />
 
-      {/* Summary - derived from persisted scans */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '40px' }}>
         <div style={card}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
@@ -180,7 +175,6 @@ const InspectorDashboard = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-        {/* Upload area */}
         <div style={{ ...card, display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '16px' }}>Upload Image for Scan</h2>
 
@@ -254,7 +248,6 @@ const InspectorDashboard = () => {
           </div>
         </div>
 
-        {/* AI Analysis Result */}
         <div style={{ ...card, backgroundColor: r ? '#fff' : '#f9fafb' }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>AI Analysis Result</h2>
 
@@ -306,7 +299,6 @@ const InspectorDashboard = () => {
                 </div>
               </div>
 
-              {/* Estimated shelf life */}
               {r.shelf_life && (
                 <div style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '16px', marginBottom: '16px' }}>
                   <h3 style={{ fontSize: '1.1rem', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}><Timer size={16} /> Estimated Remaining Shelf Life</h3>
@@ -324,7 +316,6 @@ const InspectorDashboard = () => {
                 </div>
               )}
 
-              {/* Top recommendations */}
               {Array.isArray(r.recommendations) && r.recommendations.length > 0 && (
                 <div style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '16px', marginBottom: '16px' }}>
                   <h3 style={{ fontSize: '1.1rem', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}><Lightbulb size={16} /> Recommendations</h3>
@@ -337,7 +328,6 @@ const InspectorDashboard = () => {
                 </div>
               )}
 
-              {/* Visual analysis */}
               <div style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '16px' }}>
                 <h3 style={{ fontSize: '1.1rem', margin: '0 0 16px 0' }}>Visual Image Analysis</h3>
                 {r.image_analysis ? (
@@ -371,7 +361,6 @@ const InspectorDashboard = () => {
         </div>
       </div>
 
-      {/* Scan History - loaded from the database */}
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Scan History</h2>
@@ -440,7 +429,6 @@ const InspectorDashboard = () => {
         )}
       </div>
 
-      {/* Persisted Report Modal */}
       <AnimatePresence>
         {selectedReport && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }} onClick={closeReport}>

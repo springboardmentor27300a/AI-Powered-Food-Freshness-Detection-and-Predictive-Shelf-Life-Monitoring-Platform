@@ -1,4 +1,3 @@
-// Shared API client and formatting helpers (Milestones 1-4).
 
 // API base URL: configurable via VITE_API_BASE_URL (Vite env variable).
 // Defaults to the local development server.
@@ -22,7 +21,6 @@ async function parseError(response) {
     const body = await response.json();
     detail = body.detail || JSON.stringify(body);
   } catch {
-    /* response had no JSON body */
   }
   const error = new Error(detail);
   error.status = response.status;
@@ -72,8 +70,6 @@ export async function apiUpload(path, formData) {
   return response.json();
 }
 
-// Authenticated file download (PDF / Excel exports). Fetches with the Bearer
-// token and triggers a browser download of the returned blob.
 export async function apiDownload(path, filename) {
   const response = await fetch(`${API_BASE}${path}`, { headers: authHeaders() });
   if (!response.ok) throw await parseError(response);
@@ -88,9 +84,6 @@ export async function apiDownload(path, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
-// ------------------------------------------------------------------
-// Formatting helpers
-// ------------------------------------------------------------------
 
 export const riskColors = {
   Low: '#16a34a',

@@ -1,5 +1,3 @@
-// Milestone 4: Reports hub - generate, filter, view, export (PDF/Excel) and
-// manage reports. All data comes from the reports API backed by MongoDB.
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -136,7 +134,6 @@ export default function ReportsDashboard({ role }) {
         </div>
       )}
 
-      {/* Generator */}
       <div style={{ ...card, marginBottom: '32px' }}>
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: 0 }}><FileBarChart size={18} /> Generate a Report</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
@@ -202,7 +199,6 @@ export default function ReportsDashboard({ role }) {
         </button>
       </div>
 
-      {/* Saved reports */}
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Saved Reports</h2>
@@ -258,7 +254,6 @@ export default function ReportsDashboard({ role }) {
         )}
       </div>
 
-      {/* Report viewer */}
       <AnimatePresence>
         {viewing && (
           <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100, padding: '20px' }} onClick={() => setViewing(null)}>

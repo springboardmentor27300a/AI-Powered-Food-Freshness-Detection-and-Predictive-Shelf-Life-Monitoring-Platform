@@ -31,7 +31,7 @@ def call(method, path, body=None, token=None, form=None):
             try:
                 text = raw.decode()
             except UnicodeDecodeError:
-                return r.status, {'binary': True, 'bytes': len(raw)}  # image/binary response
+                return r.status, {'binary': True, 'bytes': len(raw)}
             return r.status, json.loads(text) if text else {}
     except urllib.error.HTTPError as e:
         raw = e.read().decode()
@@ -46,7 +46,6 @@ def check(name, condition, detail=''):
     print(f"{'PASS' if condition else 'FAIL'}  {name}" + (f"  -> {detail}" if detail else ''))
 
 
-# ---------- setup: unique users per role ----------
 S = str(int(time.time()))
 USERS = {
     'admin': (f'admin_{S}', 'Administrator'),
@@ -63,9 +62,6 @@ for key, (uname, role) in USERS.items():
     TOKENS[key] = r['access_token']
 print(f"Created {len(TOKENS)} users with tokens")
 
-# ==================================================================
-# TEST A - INVENTORY PERSISTENCE
-# ==================================================================
 print("\n=== TEST A: INVENTORY PERSISTENCE ===")
 code, apple = call('POST', '/api/inventory/', {
     'name': 'Apple', 'category': 'Fruits', 'quantity': 20, 'batch_number': 'A-102',
@@ -86,9 +82,6 @@ check('A3: logout/login - Apple survives re-login', code == 200 and any(i['_id']
 code, mine_c = call('GET', '/api/inventory/?scope=mine', token=TOKENS['consumer'])
 check('A4: consumer sees only own inventory (empty)', code == 200 and len(mine_c) == 0, f'{len(mine_c)} items')
 
-# ==================================================================
-# TEST B - M2 PERSISTENCE (scan linked to item, report survives)
-# ==================================================================
 print("\n=== TEST B: M2 SCAN/REPORT PERSISTENCE ===")
 img_path = Path(__file__).parent / 'test_images' / 'fresh_apple.jpg'
 form = urllib.request.data_encode if False else None
@@ -103,7 +96,6 @@ form_body = (
 
 code, scan = call('POST', '/api/ml/predict', token=TOKENS['inspector'],
                   form=form_body, headers_extra=None) if False else (None, None)
-# manual multipart call (urllib needs explicit content-type)
 req = urllib.request.Request(BASE + '/api/ml/predict', method='POST', data=form_body, headers={
     'Content-Type': f'multipart/form-data; boundary={boundary}',
     'Authorization': f"Bearer {TOKENS['inspector']}",
@@ -129,7 +121,6 @@ expected_days = scan['shelf_life']['effective_remaining_days']
 expected_status = scan['status']
 expected_quality = (scan.get('quality_assessment') or {}).get('quality_score', scan.get('freshness_score'))
 
-# simulate refresh: fetch scan + report fresh from DB
 code, scan_db = call('GET', f'/api/ml/scans/{SCAN_ID}', token=TOKENS['inspector'])
 check('B5: scan survives refresh (DB fetch by id)', code == 200 and scan_db['ml_status'] == expected_status
       and scan_db['quality_score'] == expected_quality)
@@ -145,9 +136,6 @@ check('B8: persisted scan image is servable (authenticated)',
 code, hist = call('GET', '/api/ml/scans?limit=50', token=TOKENS['inspector'])
 check('B9: scan appears in DB-backed history', any(s['_id'] == SCAN_ID for s in hist))
 
-# ==================================================================
-# TEST C - STORAGE READINGS
-# ==================================================================
 print("\n=== TEST C: STORAGE ===")
 code, reading = call('POST', '/api/storage/', {
     'item_id': APPLE_ID, 'zone': 'Cold Storage 1', 'category': 'Fruits',
@@ -168,12 +156,7 @@ code, alerts_w = call('GET', '/api/alerts/', token=TOKENS['warehouse'])
 check('C4: storage breach generated alert for linked item',
       any(a.get('type') == 'storage_condition_violation' and a.get('item_id') == APPLE_ID for a in alerts_w))
 
-# ==================================================================
-# TEST D - SHELF LIFE DURATION SENSITIVITY
-# ==================================================================
 print("\n=== TEST D: DURATION AFFECTS SHELF LIFE ===")
-# Use dynamic timestamps so this test is valid on any run date (the original
-# hardcoded dates went stale and made the elapsed-days arithmetic fail).
 from datetime import datetime, timedelta, timezone as _tz
 _now = datetime.now(_tz.utc)
 _stored_10d = (_now - timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -198,9 +181,6 @@ check('D3: item prediction uses stored_at (duration applied)',
       item_pred.get('duration_applied') is True, f"remaining={item_pred['predicted_remaining_days']}d")
 check('D4: prediction persisted', bool(item_pred.get('prediction_id')))
 
-# ==================================================================
-# TEST E - RECOMMENDATIONS VARY
-# ==================================================================
 print("\n=== TEST E: RECOMMENDATIONS CONDITION-DRIVEN ===")
 code, rec_ripe = call('POST', '/api/recommendations/item', {
     'category': 'Dairy Products', 'quality_score': 40.0, 'quantity': 100,
@@ -220,9 +200,6 @@ check('E4: storage fix recommended for warm dairy',
       any(r['type'] == 'storage_fix' and r.get('parameter') == 'temperature'
           for r in rec_ripe['recommendations']))
 
-# ==================================================================
-# TEST F - ROLE DASHBOARDS + AUTHORIZATION
-# ==================================================================
 print("\n=== TEST F: ROLES ===")
 code, overview = call('GET', '/api/recommendations/inventory-overview', token=TOKENS['retail'])
 check('F1: GET inventory-overview works (405 bug fixed)', code == 200 and overview.get('total_items') >= 1)
@@ -246,9 +223,6 @@ check('F8: freshness analytics derived from real items',
 code, cons_inv = call('GET', '/api/inventory/?scope=mine', token=TOKENS['consumer'])
 check('F9: consumer personal inventory endpoint works', code == 200 and isinstance(cons_inv, list))
 
-# ==================================================================
-# TEST G - PERSISTENCE ACROSS RESTART (simulated by re-reading from DB)
-# ==================================================================
 print("\n=== TEST G: PERSISTENCE (fresh DB reads) ===")
 code, mine3 = call('GET', '/api/inventory/', token=TOKENS['retail'])
 apple_still = next((i for i in mine3 if i['_id'] == APPLE_ID), None)
@@ -260,9 +234,6 @@ check('G2: reports list from DB contains our report', any(rp['_id'] == REPORT_ID
 code, preds = call('GET', '/api/shelf-life/history?item_id=' + APPLE_ID, token=TOKENS['inspector'])
 check('G3: prediction history persisted for item', len(preds) >= 2)
 
-# ==================================================================
-# TEST H - NO FAKE DATA IN PRODUCTION PATHS
-# ==================================================================
 print("\n=== TEST H: NO FAKE DATA ===")
 fe = Path(__file__).parent.parent / 'frontend' / 'src'
 fake_hits = []
@@ -281,14 +252,12 @@ for f in be.rglob('routes/*.py'):
             fake_hits.append(f'{f.name}: {marker}')
 check('H2: no fake data in backend routes', not any('routes' in h for h in fake_hits))
 
-# ---------- cleanup: delete our own test data ----------
 print("\n=== CLEANUP ===")
 # lifecycle model: permanent delete is Administrator-only and confirmation-gated
 call('DELETE', f'/api/inventory/{APPLE_ID}?confirm=DELETE-PERMANENTLY', token=TOKENS['admin'])
 code, mine4 = call('GET', '/api/inventory/', token=TOKENS['retail'])
 check('X1: test data deleted (Apple removed)', all(i['_id'] != APPLE_ID for i in mine4))
 
-# ---------- summary ----------
 failed = [(n, d) for n, ok, d in RESULTS if not ok]
 print(f"\nRESULT: {len(RESULTS) - len(failed)}/{len(RESULTS)} E2E checks passed")
 if failed:

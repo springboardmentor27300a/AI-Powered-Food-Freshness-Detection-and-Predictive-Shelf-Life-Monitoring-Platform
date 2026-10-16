@@ -1,4 +1,3 @@
-// Milestone 3: Freshness analytics dashboard - inventory-wide insights.
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -72,7 +71,6 @@ export default function AnalyticsDashboard() {
         </p>
       </div>
 
-      {/* KPI cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={card}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', gap: '10px' }}>
@@ -119,7 +117,6 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      {/* Charts */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={card}>
           <h3 style={{ fontSize: '1.1rem', marginTop: 0, marginBottom: '16px' }}>Shelf-Life Risk Distribution</h3>
@@ -131,7 +128,6 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      {/* Urgent watchlist */}
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Priority Watchlist</h2>

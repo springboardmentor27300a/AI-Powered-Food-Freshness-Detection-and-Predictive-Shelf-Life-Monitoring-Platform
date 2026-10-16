@@ -82,7 +82,6 @@ async def generate_alerts(payload: dict, shelf_life: dict, storage_assessment: d
                                "message": (f"Critical {check['parameter'].replace('_', ' ')} deviation for {item_name} "
                                            f"(value: {check.get('value')}, optimal: {check.get('optimal_range') or check.get('optimal_value')}).")})
 
-    # ---- role-based routing: insert broadcast copies for relevant staff roles ----
     broadcasts = []
     owner_is_consumer = (item_owner_role == "Consumer") or (
         created_by is not None and created_by.get("role") == "Consumer" and item_owner_role is None)

@@ -1,4 +1,3 @@
-// Milestone 3: Storage condition monitoring & compliance dashboard.
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -68,7 +67,6 @@ export default function StorageMonitoringDashboard() {
     setSaving(true);
     setError(null);
     try {
-      // Linked readings validate against the product's own category and raise alerts for it
       await apiPost('/api/storage/', {
         ...form,
         item_id: form.item_id || null,
@@ -181,7 +179,6 @@ export default function StorageMonitoringDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={card}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', gap: '10px' }}>
@@ -218,14 +215,12 @@ export default function StorageMonitoringDashboard() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', marginBottom: '32px' }}>
-        {/* Trend chart */}
         <div style={card}>
           <h3 style={{ fontSize: '1.1rem', marginTop: 0, marginBottom: '4px' }}>Storage Score Trend</h3>
           <p style={{ color: '#888', fontSize: '0.85rem', margin: '0 0 12px' }}>Last {trendPoints.length} readings (oldest → newest)</p>
           <LineChart series={[{ name: 'Storage score', color: '#2563eb', points: trendPoints }]} yMin={0} yMax={100} />
         </div>
 
-        {/* Breach breakdown */}
         <div style={card}>
           <h3 style={{ fontSize: '1.1rem', marginTop: 0, marginBottom: '16px' }}>Parameter Breaches</h3>
           {compliance ? (
@@ -250,7 +245,6 @@ export default function StorageMonitoringDashboard() {
         </div>
       </div>
 
-      {/* Zone status table */}
       <div style={card}>
         <h2 style={{ fontSize: '1.5rem', margin: '0 0 20px' }}>Zone Compliance Status</h2>
         {!overview || overview.zones.length === 0 ? (

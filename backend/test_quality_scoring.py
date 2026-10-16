@@ -23,7 +23,6 @@ def ensure_user():
     token = get_token()
     if token:
         return token
-    # first run: create a throwaway Consumer account for the API test
     requests.post(f"{BASE}/api/auth/signup", json={
         "username": "qc_test", "password": "pass123", "role": "Consumer",
         "email": "qc_test@example.com"}, timeout=30)

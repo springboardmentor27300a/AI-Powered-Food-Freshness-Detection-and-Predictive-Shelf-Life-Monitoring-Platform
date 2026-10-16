@@ -35,7 +35,6 @@ def check(name, condition, detail=''):
     print(f"{'PASS' if condition else 'FAIL'}  {name}" + (f"  -> {detail}" if detail else ''))
 
 
-# ---------- setup: one user per role ----------
 S = str(int(time.time()))
 USERS = {
     'admin': (f'lc_admin_{S}', 'Administrator'),
@@ -53,7 +52,6 @@ for key, (uname, role) in USERS.items():
     T[key] = r['access_token']
 print(f'{len(T)} users created\n')
 
-# ==================================================================
 print("=== A. REGISTER PRODUCT ===")
 code, item = call('POST', '/api/inventory/', {
     'name': 'Lifecycle Apple', 'category': 'Fruits', 'quantity': 20, 'batch_number': f'LC-{S}',
@@ -68,7 +66,6 @@ code, detail = call('GET', f'/api/inventory/{ITEM}', token=T['retail'])
 check('A2: registered event logged', any(e['event_type'] == 'registered' and e['quantity_delta'] == 20
                                          for e in detail.get('lifecycle_events', [])))
 
-# ==================================================================
 print("\n=== B. PARTIAL SALE (8 of 20) ===")
 code, r = call('POST', f'/api/inventory/{ITEM}/sell',
                {'quantity_sold': 8, 'notes': 'morning rush'}, token=T['retail'])
@@ -80,7 +77,6 @@ check('B2: sold event logged with actor', len(sold_events) == 1
       and sold_events[0]['performed_by_role'] == 'Retail Manager'
       and sold_events[0]['quantity_delta'] == -8)
 
-# ==================================================================
 print("\n=== C. COMPLETE SALE -> SOLD OUT ===")
 code, r = call('POST', f'/api/inventory/{ITEM}/sell', {'quantity_sold': 12}, token=T['retail'])
 check('C1: full sale -> status Sold Out, quantity 0',
@@ -89,7 +85,6 @@ check('C1: full sale -> status Sold Out, quantity 0',
 code, r2 = call('POST', f'/api/inventory/{ITEM}/sell', {'quantity_sold': 1}, token=T['retail'])
 check('C2: cannot sell a Sold Out item (409)', code == 409, f'HTTP {code}')
 
-# ==================================================================
 print("\n=== D. ACTIVE INVENTORY COUNTS EXCLUDE SOLD OUT ===")
 code, active_list = call('GET', '/api/inventory/?lifecycle=active', token=T['retail'])
 check('D1: sold-out item excluded from active inventory',
@@ -104,7 +99,6 @@ code, fresh = call('GET', '/api/analytics/freshness', token=T['retail'])
 check('D4: sold-out item excluded from freshness analytics',
       all(i['_id'] != ITEM for i in fresh.get('items', [])))
 
-# ==================================================================
 print("\n=== E/F. HISTORY PRESERVED AFTER LIFECYCLE CHANGE ===")
 code, preds = call('GET', f'/api/shelf-life/history?item_id={ITEM}', token=T['retail'])
 check('F1: shelf-life prediction history still queryable', code == 200 and isinstance(preds, list))
@@ -115,7 +109,6 @@ code, events = call('GET', f'/api/inventory/{ITEM}/history', token=T['retail'])
 check('E2: full lifecycle event trail available',
       code == 200 and [e['event_type'] for e in events['events']].count('sold') == 2)
 
-# ==================================================================
 print("\n=== G. WAREHOUSE DISPOSAL FLOW ===")
 code, w_item = call('POST', '/api/inventory/', {
     'name': 'Lifecycle Yogurt', 'category': 'Dairy Products', 'quantity': 10,
@@ -143,7 +136,6 @@ check('G4: mark-expired -> status Expired, units leave active stock',
       code == 200 and r['status'] == 'Expired' and r['active_quantity'] == 0
       and r['disposed_quantity'] == 3)
 
-# ==================================================================
 print("\n=== H. CONSUMER OWNERSHIP ===")
 code, c_item = call('POST', '/api/inventory/', {
     'name': 'My Home Milk', 'category': 'Dairy Products', 'quantity': 2,
@@ -166,7 +158,6 @@ check('H3: consumer cannot archive another user\'s item (403)', code == 403, f'H
 code, r = call('POST', f"/api/inventory/{other['_id']}/sell", {'quantity_sold': 1}, token=T['consumer'])
 check('H4: consumer cannot sell (403)', code == 403, f'HTTP {code}')
 
-# ==================================================================
 print("\n=== I. INSPECTOR VIEW-ONLY ===")
 code, r = call('POST', '/api/inventory/', {
     'name': 'Inspector Contraband', 'category': 'Fruits', 'quantity': 1,
@@ -191,7 +182,6 @@ code, admin_item = call('POST', '/api/inventory/', {
 check('I6: admin CAN register inventory', code == 200 and admin_item.get('status') == 'Active')
 call('DELETE', f"/api/inventory/{admin_item['_id']}?confirm=DELETE-PERMANENTLY", token=T['admin'])
 
-# ==================================================================
 print("\n=== J. ADMIN AUTHORIZATION ===")
 code, r = call('POST', f'/api/inventory/{ITEM}/sell', {'quantity_sold': 1}, token=T['admin'])
 code, r = call('DELETE', f'/api/inventory/{ITEM}', token=T['admin'])
@@ -203,7 +193,6 @@ check('J3: deleted item is gone (404)', code == 404, f'HTTP {code}')
 code, r = call('DELETE', f'/api/inventory/{WID}?confirm=DELETE-PERMANENTLY', token=T['retail'])
 check('J4: non-admin cannot permanently delete (403)', code == 403, f'HTTP {code}')
 
-# ==================================================================
 print("\n=== K. PERSISTENCE (re-login) ===")
 code, relogin = call('POST', '/api/auth/login',
                      {'username': USERS['warehouse'][0], 'password': 'testpass1'})
@@ -212,7 +201,6 @@ yogurt = next((i for i in items2 if i['_id'] == WID), None)
 check('K1: disposal state survives re-login',
       yogurt is not None and yogurt['status'] == 'Disposed' and yogurt['disposed_quantity'] == 10)
 
-# ==================================================================
 print("\n=== L. ANALYTICS UPDATE AFTER SALE/DISPOSAL ===")
 code, active_item = call('POST', '/api/inventory/', {
     'name': 'Lifecycle Banana', 'category': 'Fruits', 'quantity': 30,
@@ -234,7 +222,6 @@ code, after2 = call('GET', '/api/recommendations/inventory-overview', token=T['r
 check('L3: fully disposed item removed from insights',
       all(e.get('item_id') != BID for e in after2.get('items', [])))
 
-# ==================================================================
 print("\n=== CLEANUP (delete all test items as admin) ===")
 for iid in (WID, CID, other['_id'], expired_item['_id'], BID):
     call('DELETE', f'/api/inventory/{iid}?confirm=DELETE-PERMANENTLY', token=T['admin'])

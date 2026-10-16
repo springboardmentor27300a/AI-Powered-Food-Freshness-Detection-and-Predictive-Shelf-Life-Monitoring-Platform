@@ -40,7 +40,6 @@ const Login = () => {
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Decorative background elements */}
       <motion.div 
         animate={{ rotate: 360 }}
         transition={{ duration: 150, repeat: Infinity, ease: 'linear' }}
@@ -78,7 +77,7 @@ const Login = () => {
         transition={{ duration: 0.6, ease: 'easeOut' }}
         style={{ 
           width: '100%', 
-          maxWidth: '500px', // Made larger as requested
+          maxWidth: '500px',
           backgroundColor: 'rgba(255, 255, 255, 0.8)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.4)',

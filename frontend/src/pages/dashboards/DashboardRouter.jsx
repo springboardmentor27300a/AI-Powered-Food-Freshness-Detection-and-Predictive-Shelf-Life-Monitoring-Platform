@@ -45,7 +45,6 @@ const DashboardRouter = () => {
       links.push({ path: '/dashboard/inventory', label: 'Inventory', icon: Box });
     }
     
-    // M3 tools; user management is embedded in the Administrator overview
     if (role === 'Warehouse Operator' || role === 'Retail Manager' || role === 'Administrator' || role === 'Food Quality Inspector') {
       links.push(
         { path: '/dashboard/shelf-life', label: 'Shelf-Life Prediction', icon: Timer },
@@ -55,7 +54,6 @@ const DashboardRouter = () => {
       );
     }
 
-    // M4: executive analytics for management roles; reports for everyone
     if (role === 'Administrator' || role === 'Retail Manager' || role === 'Warehouse Operator') {
       links.push({ path: '/dashboard/executive', label: 'Executive Analytics', icon: TrendingUp });
     }
@@ -83,7 +81,6 @@ const DashboardRouter = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-      {/* Sidebar */}
       <aside style={{ 
         width: '280px', 
         backgroundColor: '#0a0a0a', 
@@ -155,7 +152,6 @@ const DashboardRouter = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main style={{ flex: 1, padding: '48px', overflowY: 'auto', position: 'relative', color: '#000' }}>
         <Routes>
           <Route path="/" element={renderDashboardOverview()} />

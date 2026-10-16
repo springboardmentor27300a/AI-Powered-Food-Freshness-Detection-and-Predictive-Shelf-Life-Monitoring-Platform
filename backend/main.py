@@ -7,19 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes import auth, inventory, ml, shelf_life, storage, recommendations, analytics, alerts, reports, executive
 from database import ensure_indexes
 
-# ---------------------------------------------------------------------------
-# Logging: clean structured console output for the whole app (no secrets).
-# ---------------------------------------------------------------------------
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
 )
 logger = logging.getLogger("app")
 
-# ---------------------------------------------------------------------------
 # CORS: configurable via CORS_ORIGIN (comma-separated). Defaults keep local
 # development working; production must set the variable explicitly.
-# ---------------------------------------------------------------------------
 _raw_origins = os.getenv(
     "CORS_ORIGIN",
     "http://localhost:5173,http://127.0.0.1:5173",
@@ -49,13 +44,11 @@ app.include_router(ml.router, prefix="/api/ml", tags=["ml"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["alerts"])
 app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
 
-# Milestone 3 routers
 app.include_router(shelf_life.router, prefix="/api/shelf-life", tags=["shelf-life"])
 app.include_router(storage.router, prefix="/api/storage", tags=["storage"])
 app.include_router(recommendations.router, prefix="/api/recommendations", tags=["recommendations"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 
-# Milestone 4 routers
 app.include_router(executive.router, prefix="/api/executive", tags=["executive"])
 
 
@@ -76,7 +69,7 @@ async def health():
 
     model_loaded = None
     try:
-        from routes.ml import model  # already imported at app startup
+        from routes.ml import model
         model_loaded = model is not None
     except Exception:
         model_loaded = False

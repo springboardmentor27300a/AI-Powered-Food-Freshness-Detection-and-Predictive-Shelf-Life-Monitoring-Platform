@@ -91,7 +91,6 @@ async def list_reports(
     reports = []
     cursor = report_collection.find(query).sort("created_at", -1).limit(limit)
     async for document in cursor:
-        # list view: strip heavy table rows, keep metadata + summary
         document.pop("tables", None)
         reports.append(serialize_doc(document))
     return reports
@@ -131,7 +130,6 @@ async def export_report(
         raise HTTPException(status_code=403, detail="Not your report")
 
     if not doc.get("report_type"):
-        # Legacy per-scan freshness report: build an exportable view on the fly
         doc = _legacy_scan_report_view(doc)
 
     safe_title = (doc.get("title") or "report").replace(" ", "_").replace("/", "-")

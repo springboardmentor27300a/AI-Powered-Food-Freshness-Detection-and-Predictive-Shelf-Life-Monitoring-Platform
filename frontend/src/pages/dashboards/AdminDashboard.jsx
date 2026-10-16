@@ -1,5 +1,3 @@
-// Administrator dashboard: real database-backed platform stats, lifecycle
-// analytics, system monitoring and reporting management (Milestone 4).
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -152,7 +150,6 @@ export default function AdminDashboard() {
 
       {overview && (
         <>
-          {/* ---------------- Platform analytics ---------------- */}
           <h2 style={{ fontSize: '1.4rem', marginBottom: '16px' }}>Platform Analytics</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '24px', marginBottom: '32px' }}>
             {statCard(<Users size={22} />, 'Total Users', users.length, `${activeUsers} active · ${users.length - activeUsers} deactivated`, '#2563eb')}
@@ -208,7 +205,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* ---------------- System monitoring ---------------- */}
           <h2 style={{ fontSize: '1.4rem', marginBottom: '16px' }}>System Monitoring</h2>
           <div style={{ ...card, marginBottom: '32px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
@@ -250,7 +246,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* ---------------- Reporting management ---------------- */}
           <h2 style={{ fontSize: '1.4rem', marginBottom: '16px' }}>Reporting Management</h2>
           <div style={{ ...card, marginBottom: '32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
@@ -301,7 +296,6 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* ---------------- Recent alerts ---------------- */}
           <h2 style={{ fontSize: '1.4rem', marginBottom: '16px' }}>Recent Alerts</h2>
           <div style={{ ...card, marginBottom: '32px' }}>
             {alerts.length === 0 ? (
@@ -321,7 +315,6 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* ---------------- User management ---------------- */}
           <h2 style={{ fontSize: '1.4rem', marginBottom: '16px' }}>User Management</h2>
           <div style={card}>
             {users.length === 0 ? (

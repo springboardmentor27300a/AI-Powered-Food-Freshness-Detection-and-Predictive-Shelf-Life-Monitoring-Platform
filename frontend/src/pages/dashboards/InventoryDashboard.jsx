@@ -266,7 +266,6 @@ const InventoryDashboard = ({ role }) => {
         )}
       </div>
 
-      {/* lifecycle view toggle */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
         {[
           ['active', 'Active Inventory'],
@@ -361,7 +360,6 @@ const InventoryDashboard = ({ role }) => {
         )}
       </AnimatePresence>
 
-      {/* toast feedback */}
       {toast && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
           style={{
@@ -375,7 +373,6 @@ const InventoryDashboard = ({ role }) => {
         </motion.div>
       )}
 
-      {/* action modal */}
       <AnimatePresence>
         {modal && (
           <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100, padding: '20px' }} onClick={closeModal}>
@@ -476,7 +473,6 @@ const InventoryDashboard = ({ role }) => {
         )}
       </AnimatePresence>
 
-      {/* item detail drawer with lifecycle history */}
       <AnimatePresence>
         {itemDetail && (
           <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100, padding: '20px' }} onClick={() => setItemDetail(null)}>

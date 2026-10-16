@@ -31,7 +31,6 @@ async def main():
     id_strs = [str(i) for i in ids]
     print(f"test users ({len(usernames)}): {', '.join(usernames)}")
 
-    # Food items owned by test users
     items = await db.food_items.find(
         {"$or": [{"created_by": {"$in": ids}}, {"created_by": {"$in": id_strs}}]},
         {"_id": 1},
@@ -47,7 +46,6 @@ async def main():
         return res.deleted_count
 
     total = 0
-    # alerts: private recipient, item-linked, or platform notif mentioning a test user
     name_clauses = [{"recipient_username": {"$in": usernames}}]
     for un in usernames:
         name_clauses.append({"message": {"$regex": re.escape(un)}})
@@ -95,7 +93,7 @@ async def main():
     total += await drop("users", {"_id": {"$in": ids}})
 
     print(f"total documents deleted: {total}")
-    remaining = await db.users.count_documents({}, {"username": 1})
+    remaining = await db.users.count_documents({})
     names = [u["username"] for u in await db.users.find({}, {"username": 1}).to_list(100)]
     print(f"users remaining ({remaining}): {', '.join(names)}")
     print(f"alerts remaining: {await db.alerts.count_documents({})}")

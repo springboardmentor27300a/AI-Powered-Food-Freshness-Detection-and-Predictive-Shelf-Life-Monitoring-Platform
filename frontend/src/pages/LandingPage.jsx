@@ -18,7 +18,6 @@ const LandingPage = () => {
 
   return (
     <div style={{ backgroundColor: '#ffffff', color: '#000000', minHeight: '100vh', overflowX: 'hidden' }}>
-      {/* Navbar */}
       <nav style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -47,7 +46,6 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section style={{ 
         display: 'flex', 
         minHeight: '100vh', 
@@ -97,7 +95,6 @@ const LandingPage = () => {
           </motion.div>
         </div>
 
-        {/* Right side black blob and image */}
         <div style={{ 
           flex: 1, 
           height: '100vh',
@@ -130,7 +127,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section style={{ padding: '120px 48px', backgroundColor: '#fafafa', position: 'relative', zIndex: 20 }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <motion.div 
@@ -211,7 +207,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer style={{ padding: '64px 48px', backgroundColor: '#0a0a0a', color: '#fff', textAlign: 'center' }}>
         <div style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: '24px' }}>FreshMonitor.</div>
         <p style={{ color: '#888' }}>&copy; 2026 FreshMonitor Platform. All rights reserved.</p>

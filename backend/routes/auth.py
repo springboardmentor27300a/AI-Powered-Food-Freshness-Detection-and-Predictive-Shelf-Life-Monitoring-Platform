@@ -52,7 +52,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 @router.post("/signup", response_model=Token)
 async def signup(user: UserCreate):
-    # Check if user exists
     existing_user = await user_collection.find_one({"username": user.username})
     if existing_user:
         raise HTTPException(

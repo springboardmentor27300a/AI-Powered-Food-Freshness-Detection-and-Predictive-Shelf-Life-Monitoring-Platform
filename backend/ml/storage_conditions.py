@@ -170,7 +170,6 @@ def validate_storage_conditions(
     else:
         compliance_status = "Partially Compliant"
 
-    # ------------- Optimization recommendations -----------------------------
     recommendations = []
     for check in recorded:
         if check["compliant"]:
@@ -214,7 +213,6 @@ def validate_storage_conditions(
                 "priority": _SEVERITY_PRIORITY.get(check["severity"], "low"),
             })
 
-    # Unknown parameters -> prompt recording
     for check in checks:
         if check.get("not_recorded"):
             recommendations.append({

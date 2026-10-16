@@ -5,9 +5,7 @@ recommendation engines. Values are industry-typical storage guidance for the
 food categories used in the platform.
 """
 
-# ---------------------------------------------------------------
 # CATEGORY STORAGE PROFILES
-# ---------------------------------------------------------------
 # Each profile defines:
 #   optimal temp range (C), optimal humidity range (%),
 #   max storage duration (days) under OPTIMAL conditions,
@@ -22,7 +20,7 @@ CATEGORY_STORAGE_PROFILES = {
         "air_circulation": "Moderate",
         "light_exposure": "Dark",
         "packaging_factors": {
-            "Vacuum Sealed": 1.20,   # 20% longer shelf life
+            "Vacuum Sealed": 1.20,
             "Modified Atmosphere": 1.25,
             "Sealed Container": 1.10,
             "Ventilated": 1.00,
@@ -147,7 +145,7 @@ CATEGORY_STORAGE_PROFILES = {
             "Sealed Container": 1.05,
             "Ventilated": 1.00,
             "Open": 0.80,
-            "None": 1.00,  # Original sealed packaging is the factor
+            "None": 1.00,
         },
         "recommendations": [
             "Store in a cool, dry pantry away from direct sunlight.",
@@ -177,9 +175,7 @@ CATEGORY_STORAGE_PROFILES = {
     },
 }
 
-# ---------------------------------------------------------------
 # PACKAGING FAMILIES (for normalizing free-form packaging input)
-# ---------------------------------------------------------------
 PACKAGING_ALIASES = {
     "vacuum sealed": "Vacuum Sealed", "vacuum": "Vacuum Sealed",
     "modified atmosphere": "Modified Atmosphere", "map": "Modified Atmosphere",
@@ -190,13 +186,7 @@ PACKAGING_ALIASES = {
     "none": "None", "unpackaged": "None",
 }
 
-# ---------------------------------------------------------------
-# AIR CIRCULATION / LIGHT EXPOSURE VALID VALUES
-# ---------------------------------------------------------------
 AIR_CIRCULATION_LEVELS = ["Low", "Moderate", "High"]
 LIGHT_EXPOSURE_LEVELS = ["Dark", "Dim", "Bright"]
 
-# ---------------------------------------------------------------
-# RISK LEVELS
-# ---------------------------------------------------------------
 RISK_LEVELS = ["Low", "Medium", "High", "Critical"]

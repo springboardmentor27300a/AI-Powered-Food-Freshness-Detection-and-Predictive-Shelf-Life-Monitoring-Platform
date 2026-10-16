@@ -64,7 +64,7 @@ async def inventory_insights(
     Generate inventory insights from real database records for staff roles.
     Both GET and POST are supported so the dashboard contract is unambiguous.
     """
-    query: dict = {"$or": [{"status": {"$exists": False}}, {"status": "Active"}]}  # active inventory only
+    query: dict = {"$or": [{"status": {"$exists": False}}, {"status": "Active"}]}
     if request and request.item_ids:
         query["_id"] = {"$in": [to_object_id(i) for i in request.item_ids]}
 
@@ -75,7 +75,7 @@ async def inventory_insights(
             "item_id": str(item["_id"]),
             "name": item.get("name"),
             "category": item.get("category", "Packaged Foods"),
-            "quantity": item.get("active_quantity", item.get("quantity")),  # remaining stock, not original
+            "quantity": item.get("active_quantity", item.get("quantity")),
             "batch_number": item.get("batch_number"),
             "quality_score": item.get("quality_score"),
             "ml_status": item.get("ml_status"),
@@ -109,7 +109,6 @@ async def inventory_insights(
         if r["shelf_life"]["effective_remaining_days"] <= 2
     )
 
-    # Persist aggregate recommendations for traceability
     now = datetime.now(timezone.utc)
     for r in results[:20]:
         await recommendation_collection.insert_one({

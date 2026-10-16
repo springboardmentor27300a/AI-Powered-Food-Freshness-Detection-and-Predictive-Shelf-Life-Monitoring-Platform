@@ -1,4 +1,3 @@
-// Milestone 3: Shelf-life prediction & expiry forecasting dashboard.
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -22,7 +21,6 @@ const initialForm = {
   packaging_type: 'Open',
 };
 
-// Build a decay trend from the prediction: linear quality decay curve.
 function buildTrend(prediction) {
   const days = Math.max(1, Math.round(prediction.predicted_remaining_days));
   const points = [];
@@ -82,7 +80,6 @@ export default function ShelfLifeDashboard() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 420px) 1fr', gap: '24px', alignItems: 'start' }}>
-        {/* Input panel */}
         <form onSubmit={runPrediction} style={{ ...statCard, display: 'grid', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Sparkles size={18} color="#65a30d" />
@@ -145,7 +142,6 @@ export default function ShelfLifeDashboard() {
           </button>
         </form>
 
-        {/* Results panel */}
         <div style={{ display: 'grid', gap: '24px' }}>
           {!result ? (
             <div style={{ ...statCard, padding: '48px', textAlign: 'center', color: '#9ca3af' }}>
@@ -154,7 +150,6 @@ export default function ShelfLifeDashboard() {
             </div>
           ) : (
             <>
-              {/* Headline stats */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '24px' }}>
                 <div style={statCard}>
                   <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', gap: '10px' }}>
@@ -210,7 +205,6 @@ export default function ShelfLifeDashboard() {
                 </div>
               </div>
 
-              {/* Trend + breakdown */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
                 <div style={statCard}>
                   <h3 style={{ fontSize: '1.1rem', marginTop: 0, marginBottom: '16px' }}>Estimated Freshness Trend</h3>
@@ -248,7 +242,6 @@ export default function ShelfLifeDashboard() {
                   </div>
                 </div>
 
-                {/* Honesty / provenance panel */}
                 <div style={{ ...statCard, backgroundColor: '#fffbeb' }}>
                   <h3 style={{ fontSize: '1.05rem', marginTop: 0, marginBottom: '10px' }}>About This Estimate</h3>
                   <p style={{ color: '#6b7280', fontSize: '0.88rem', margin: '0 0 8px' }}>{result.estimate_disclaimer}</p>

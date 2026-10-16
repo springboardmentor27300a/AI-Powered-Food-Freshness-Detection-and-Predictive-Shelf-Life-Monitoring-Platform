@@ -26,15 +26,12 @@ def verify_math(qa):
     else:
         print("❌ MATH MISMATCH")
 
-# Use my unit test logic directly to verify
 from ml.quality_scoring import calculate_quality_score
 
-# Dummy 1: Fresh
 print("\nTest 1: Fresh")
 res1 = calculate_quality_score("Fresh", 0.9, 90.0, {"color_analysis": {"brown_pixel_ratio": 5.0}})
 verify_math(res1)
 
-# Dummy 2: Rotten
 print("\nTest 2: Rotten")
 res2 = calculate_quality_score("Rotten", 0.9, 45.0, {"color_analysis": {"brown_pixel_ratio": 50.0}})
 verify_math(res2)

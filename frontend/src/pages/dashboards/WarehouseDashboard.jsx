@@ -1,4 +1,3 @@
-// Milestone 3: Warehouse operations dashboard with live storage compliance data.
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -107,7 +106,6 @@ export default function WarehouseDashboard() {
         </div>
       </div>
 
-      {/* Storage & inventory alerts panel (spec: Warehouse Operator alert visibility) */}
       <AlertsPanel title="Storage & Inventory Alerts" />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', marginBottom: '32px' }}>
@@ -168,7 +166,6 @@ export default function WarehouseDashboard() {
         </div>
       </div>
 
-      {/* Inventory health by zone: products affected by storage conditions */}
       {overview && overview.items && overview.items.length > 0 && (
         <div style={card}>
           <h2 style={{ fontSize: '1.5rem', margin: '0 0 16px' }}>Batch Freshness & Storage Impact</h2>

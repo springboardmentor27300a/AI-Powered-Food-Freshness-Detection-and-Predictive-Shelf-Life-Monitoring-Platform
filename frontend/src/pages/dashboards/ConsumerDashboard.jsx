@@ -1,4 +1,3 @@
-// Consumer dashboard: personal food freshness monitoring on real database records.
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -31,9 +30,9 @@ export default function ConsumerDashboard() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState(null);
-  const [uploadingFor, setUploadingFor] = useState(null); // item_id being scanned
+  const [uploadingFor, setUploadingFor] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
-  const [removeTarget, setRemoveTarget] = useState(null); // {item}
+  const [removeTarget, setRemoveTarget] = useState(null);
   const [removeReason, setRemoveReason] = useState('');
   const [removeBusy, setRemoveBusy] = useState(false);
   const [toast, setToast] = useState(null);
@@ -190,7 +189,6 @@ export default function ConsumerDashboard() {
 
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onScanFile} />
 
-      {/* toast + remove-confirmation modal */}
       {toast && (
         <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 1200, backgroundColor: toast.ok ? '#dcfce7' : '#fee2e2', color: toast.ok ? '#15803d' : '#b91c1c', padding: '14px 20px', borderRadius: '14px', fontWeight: 600, boxShadow: '0 10px 30px rgba(0,0,0,0.12)' }}>
           {toast.msg}
@@ -260,7 +258,6 @@ export default function ConsumerDashboard() {
         )}
       </AnimatePresence>
 
-      {/* KPI cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={card}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px', gap: '10px' }}>
@@ -296,7 +293,6 @@ export default function ConsumerDashboard() {
         </div>
       </div>
 
-      {/* Alerts */}
       {alerts.length > 0 && (
         <div style={{ ...card, marginBottom: '32px' }}>
           <h3 style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><BellRing size={18} /> Recent Alerts</h3>
@@ -316,7 +312,6 @@ export default function ConsumerDashboard() {
         </div>
       )}
 
-      {/* My food list */}
       <div style={{ ...card, marginBottom: '32px' }}>
         <h2 style={{ fontSize: '1.5rem', margin: '0 0 20px' }}>{showArchived ? 'Removed / Archived Items (history preserved)' : 'My Inventory'}</h2>
         {!items ? <p style={{ color: '#9ca3af' }}>Loading…</p> : items.length === 0 ? (
@@ -386,7 +381,6 @@ export default function ConsumerDashboard() {
                   </div>
                 </div>
 
-                {/* Latest scan result for this item */}
                 {(() => {
                   const latest = scans.find((s) => s.item_id === item._id);
                   if (!latest) return null;
@@ -423,7 +417,6 @@ export default function ConsumerDashboard() {
         )}
       </div>
 
-      {/* My saved reports (Milestone 4) */}
       <div style={{ ...card, marginBottom: '32px' }}>
         <h2 style={{ fontSize: '1.5rem', margin: '0 0 20px' }}><FileText size={20} style={{ verticalAlign: '-3px' }} /> My Reports</h2>
         {myReports.length === 0 ? (
@@ -461,7 +454,6 @@ export default function ConsumerDashboard() {
         )}
       </div>
 
-      {/* Recently analyzed */}
       <div style={card}>
         <h2 style={{ fontSize: '1.5rem', margin: '0 0 20px' }}>Recently Analyzed Items</h2>
         {scans.length === 0 ? (
@@ -490,7 +482,6 @@ export default function ConsumerDashboard() {
         )}
       </div>
 
-      {/* Persisted report modal (freshness report / shelf-life / storage advice) */}
       {reportView && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100, padding: '20px' }} onClick={() => setReportView(null)}>
           <div onClick={(e) => e.stopPropagation()} style={{ backgroundColor: '#fff', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '760px', maxHeight: '88vh', overflowY: 'auto' }}>

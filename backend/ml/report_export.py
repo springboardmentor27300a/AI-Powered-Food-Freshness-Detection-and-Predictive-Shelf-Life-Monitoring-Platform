@@ -21,9 +21,6 @@ def _fmt_ts(value):
     return str(value) if value else "N/A"
 
 
-# ---------------------------------------------------------------------------
-# Excel
-# ---------------------------------------------------------------------------
 def export_excel(report: dict) -> bytes:
     buf = io.BytesIO()
     wb = xlsxwriter.Workbook(buf, {"in_memory": True})
@@ -69,9 +66,6 @@ def export_excel(report: dict) -> bytes:
     return buf.getvalue()
 
 
-# ---------------------------------------------------------------------------
-# PDF
-# ---------------------------------------------------------------------------
 def export_pdf(report: dict) -> bytes:
     buf = io.BytesIO()
     doc = SimpleDocTemplate(

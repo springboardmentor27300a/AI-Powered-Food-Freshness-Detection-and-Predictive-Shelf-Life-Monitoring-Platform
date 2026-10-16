@@ -46,7 +46,6 @@ const Signup = () => {
       overflow: 'hidden',
       padding: '40px 20px'
     }}>
-      {/* Decorative background elements */}
       <motion.div 
         animate={{ rotate: 360 }}
         transition={{ duration: 150, repeat: Infinity, ease: 'linear' }}

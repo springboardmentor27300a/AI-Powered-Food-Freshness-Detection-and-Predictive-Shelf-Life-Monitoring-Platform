@@ -49,7 +49,7 @@ async def freshness_analytics(user: dict = Depends(get_current_user)):
         prediction = predict_shelf_life({
             "category": item.get("category", "Packaged Foods"),
             "name": item.get("name"),
-            "quantity": item.get("active_quantity", item.get("quantity")),  # remaining stock
+            "quantity": item.get("active_quantity", item.get("quantity")),
             "batch_number": item.get("batch_number"),
             "quality_score": item.get("quality_score"),
             "ml_status": item.get("ml_status"),
@@ -72,7 +72,6 @@ async def freshness_analytics(user: dict = Depends(get_current_user)):
         prediction["label_expired"] = bool(expiry_dt and _to_aware_utc(expiry_dt) < now)
         enriched.append({**item, "shelf_life": prediction})
 
-    # Aggregate stats
     risk_counts = {"Low": 0, "Medium": 0, "High": 0, "Critical": 0}
     category_stats = {}
     for item in enriched:
@@ -92,7 +91,6 @@ async def freshness_analytics(user: dict = Depends(get_current_user)):
         else:
             stats.pop("_day_sum", None)
 
-    # Urgent items first
     enriched.sort(key=lambda x: x["shelf_life"]["effective_remaining_days"])
 
     return {
@@ -136,7 +134,7 @@ async def storage_compliance_analytics(user: dict = Depends(get_current_user)):
             if not check.get("compliant") and not check.get("not_recorded"):
                 breach_counts[check["parameter"]] = breach_counts.get(check["parameter"], 0) + 1
 
-    chronological = list(reversed(readings[:30]))  # oldest -> newest for trend charts
+    chronological = list(reversed(readings[:30]))
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),

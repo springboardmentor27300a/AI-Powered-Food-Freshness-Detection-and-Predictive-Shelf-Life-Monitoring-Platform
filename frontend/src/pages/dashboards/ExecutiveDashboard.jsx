@@ -1,5 +1,3 @@
-// Milestone 4: Executive analytics - cross-module KPIs, 14-day trends and
-// category analytics, all computed server-side from MongoDB records.
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -67,7 +65,6 @@ export default function ExecutiveDashboard() {
         {' '}{data.total_alerts} alerts and {data.total_reports} reports in the database.
       </p>
 
-      {/* KPI grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         {kpi(<Boxes size={22} />, 'Active Inventory', num(k.total_active_items), `${num(k.total_active_units)} units`, '#2563eb')}
         {kpi(<TrendingUp size={22} />, 'Fresh Inventory', pct(k.fresh_pct), 'Low-risk share of active items', '#16a34a')}
@@ -79,7 +76,6 @@ export default function ExecutiveDashboard() {
         {kpi(<Timer size={22} />, 'Avg Remaining Shelf-Life', num(k.avg_remaining_shelf_life_days), 'Days, active inventory', '#0891b2')}
       </div>
 
-      {/* Risk donut + categories */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={card}>
           <h3 style={{ marginTop: 0, fontSize: '1.1rem' }}>Active Inventory Risk Distribution</h3>
@@ -93,7 +89,6 @@ export default function ExecutiveDashboard() {
         </div>
       </div>
 
-      {/* Trends */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={card}>
           <h3 style={{ marginTop: 0, fontSize: '1.1rem' }}>Scan Activity (14 days)</h3>
@@ -131,7 +126,6 @@ export default function ExecutiveDashboard() {
         </div>
       </div>
 
-      {/* Lifecycle counts */}
       <div style={card}>
         <h3 style={{ marginTop: 0, fontSize: '1.1rem' }}>Lifecycle Status Distribution (all items)</h3>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>

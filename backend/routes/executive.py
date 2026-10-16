@@ -55,7 +55,6 @@ async def executive_analytics(user: dict = Depends(require_roles(
         "Administrator", "Retail Manager", "Warehouse Operator"))):
     now = datetime.now(timezone.utc)
 
-    # ---------------- inventory (active) ----------------
     items = []
     async for d in food_item_collection.find(_active_query(user)).limit(1000):
         items.append(d)
@@ -78,7 +77,6 @@ async def executive_analytics(user: dict = Depends(require_roles(
                         else it.get("quantity")) or 0
         st["_days"] += pred["effective_remaining_days"]
 
-    # ---------------- scans ----------------
     scans = []
     async for d in analysis_collection.find({}).sort("scanned_at", -1).limit(2000):
         scans.append(d)
@@ -87,7 +85,6 @@ async def executive_analytics(user: dict = Depends(require_roles(
     quality_scores = [s.get("quality_score") for s in scans
                       if isinstance(s.get("quality_score"), (int, float))]
 
-    # ---------------- waste (lifecycle, lifetime + period) ----------------
     pipeline = [
         {"$group": {"_id": "$status", "units": {"$sum": {"$ifNull": ["$active_quantity", "$quantity"]}},
                     "sold": {"$sum": {"$ifNull": ["$sold_quantity", 0]}},
@@ -100,7 +97,6 @@ async def executive_analytics(user: dict = Depends(require_roles(
     disposed_units = sum(v.get("disposed") or 0 for k, v in lifecycle.items())
     sold_units = sum(v.get("sold") or 0 for k, v in lifecycle.items())
 
-    # ---------------- storage compliance (latest per zone) ----------------
     latest_by_zone = {}
     async for r in storage_readings_collection.find({}).sort("recorded_at", -1).limit(200):
         z = r.get("zone", "Unknown")
@@ -123,7 +119,6 @@ async def executive_analytics(user: dict = Depends(require_roles(
         "risk_counts": risk,
     }
 
-    # ---------------- 14-day time series ----------------
     scan_start, scan_buckets_fresh = _day_buckets(DAYS)
     _, scan_buckets_rotten = _day_buckets(DAYS)
     async for s in analysis_collection.find({"scanned_at": {"$gte": scan_start}}):

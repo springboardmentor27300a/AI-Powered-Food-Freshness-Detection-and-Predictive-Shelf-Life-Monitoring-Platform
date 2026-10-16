@@ -25,12 +25,12 @@ from ml.storage_standards import CATEGORY_STORAGE_PROFILES, PACKAGING_ALIASES
 
 # Q10 temperature coefficient: spoilage rate roughly doubles per 10 C.
 Q10 = 2.0
-MAX_OUTPUT_DAYS = 365.0  # cap: estimates beyond one year are outside meaningful freshness monitoring
+MAX_OUTPUT_DAYS = 365.0
 
 DEFAULT_PACKAGING = "Ventilated"
-FRESHNESS_FLOOR = 0.15  # a visually ruined item loses >= 85% of remaining life
+FRESHNESS_FLOOR = 0.15
 
-FROZEN_THRESHOLD_C = -18.0  # standard freezer setpoint; below this the regime is "frozen"
+FROZEN_THRESHOLD_C = -18.0
 
 ESTIMATE_LABEL = "Estimated Remaining Shelf Life"
 ESTIMATE_DISCLAIMER = (
@@ -167,13 +167,13 @@ def predict_shelf_life(payload: dict) -> dict:
     fresh_factor = _freshness_factor(quality_score, ml_status)
     regime, regime_notes = _storage_regime(profile, temp_c)
 
-    # ---- Elapsed storage duration: MUST reduce remaining life ----------------
+    # Elapsed storage duration must reduce remaining life
     now = datetime.now(timezone.utc)
     stored_at = _parse_datetime(payload.get("stored_at"))
     storage_duration_days = None
     if stored_at is not None:
         elapsed = (now - stored_at).total_seconds() / 86400.0
-        storage_duration_days = round(max(0.0, elapsed), 1)  # future timestamps count as 0
+        storage_duration_days = round(max(0.0, elapsed), 1)
 
     estimated_total_days = base_days * packaging_factor * temp_factor * (1.0 - hum_penalty) * fresh_factor
 
@@ -192,7 +192,6 @@ def predict_shelf_life(payload: dict) -> dict:
         remaining_days = MAX_OUTPUT_DAYS
         capped = True
 
-    # ---- Forecast date & expiry comparison -------------------------------
     predicted_expiry = now.timestamp() + remaining_days * 86400.0
     predicted_expiry_dt = datetime.fromtimestamp(predicted_expiry, tz=timezone.utc)
 
@@ -208,7 +207,6 @@ def predict_shelf_life(payload: dict) -> dict:
         effective_days = min(remaining_days, label_expiry_days)
         effective_days = max(0.0, round(effective_days, 1))
 
-    # ---- Risk classification ---------------------------------------------
     base = base_days * packaging_factor if base_days > 0 else 1.0
     ratio = effective_days / base
     if effective_days <= 0:
@@ -225,7 +223,6 @@ def predict_shelf_life(payload: dict) -> dict:
     if ml_status == "Rotten" and risk in ("Low", "Medium"):
         risk = "High"
 
-    # ---- Prediction confidence (input-completeness heuristic) -------------
     confidence = 85.0
     if temp_c is None:
         confidence -= 10.0
@@ -257,7 +254,7 @@ def predict_shelf_life(payload: dict) -> dict:
         "storage_duration_days": storage_duration_days,
         "duration_applied": duration_applied,
         "estimated_remaining_days": remaining_days,
-        "predicted_remaining_days": remaining_days,  # backward-compatible alias
+        "predicted_remaining_days": remaining_days,
         "effective_remaining_days": effective_days,
         "predicted_expiry_date": predicted_expiry_dt.isoformat(),
         "label_expiry_date": label_expiry.isoformat() if label_expiry else None,

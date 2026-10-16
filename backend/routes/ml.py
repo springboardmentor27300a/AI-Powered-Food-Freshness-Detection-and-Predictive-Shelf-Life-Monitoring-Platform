@@ -15,7 +15,6 @@ try:
 except ImportError:
     tf = None
 
-# Milestone 3 engines
 from ml.shelf_life import predict_shelf_life
 from ml.recommendations import generate_recommendations
 from ml.alert_helpers import generate_alerts
@@ -26,7 +25,6 @@ from database import (
 from dependencies import (get_current_user, require_roles, serialize_doc, to_object_id,
                           SECRET_KEY, ALGORITHM, bearer_scheme, user_collection)
 
-# Configure logging
 logger = logging.getLogger("ml_inference")
 logger.setLevel(logging.INFO)
 ch = logging.StreamHandler()
@@ -59,7 +57,6 @@ FOOD_TYPE_CATEGORY = {
     "Cucumber": "Vegetables", "Potato": "Vegetables", "Tomato": "Vegetables",
 }
 
-# Load model globally on startup (when this module is imported)
 model = None
 if tf is not None:
     if os.path.exists(MODEL_PATH):
@@ -125,7 +122,7 @@ async def scan_image(filename: str,
             raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-    safe = Path(filename).name  # prevent path traversal
+    safe = Path(filename).name
     path = UPLOAD_DIR / safe
     if not path.exists():
         raise HTTPException(status_code=404, detail="Image not found")
@@ -156,9 +153,6 @@ async def predict_freshness(
 
     contents = await file.read()
 
-    # ------------------------------------------------------------------
-    # Resolve the linked inventory item / batch (no temporary fake objects)
-    # ------------------------------------------------------------------
     item = None
     batch = None
     if item_id:
@@ -172,9 +166,6 @@ async def predict_freshness(
         batch = await batch_collection.find_one(
             {"item_id": item["_id"], "batch_number": item.get("batch_number")})
 
-    # ------------------------------------------------------------------
-    # 1. CNN classification (Milestone 2 model, unchanged)
-    # ------------------------------------------------------------------
     try:
         img_array = preprocess_image(contents)
     except ValueError as e:
@@ -206,9 +197,6 @@ async def predict_freshness(
 
     freshness_score = round(max(0.0, min(100.0, freshness_score)))
 
-    # ------------------------------------------------------------------
-    # 2. OpenCV heuristics + combined quality scoring (Milestone 2)
-    # ------------------------------------------------------------------
     image_analysis = None
     quality_assessment = None
     try:
@@ -229,9 +217,6 @@ async def predict_freshness(
         quality_assessment["quality_score"] if quality_assessment else float(freshness_score)
     )
 
-    # ------------------------------------------------------------------
-    # 3. Shelf-life estimation (Milestone 3) with item storage context
-    # ------------------------------------------------------------------
     category = (item.get("category") if item else None) or FOOD_TYPE_CATEGORY.get(food_type, "Packaged Foods")
     scan_payload = {
         "item_id": str(item["_id"]) if item else None,
@@ -252,7 +237,6 @@ async def predict_freshness(
 
     now = datetime.now(timezone.utc)
 
-    # Persist the scan image (development-safe local storage; swappable for cloud later)
     image_filename = f"{uuid.uuid4().hex}.jpg"
     image_path = UPLOAD_DIR / image_filename
     try:
@@ -262,9 +246,6 @@ async def predict_freshness(
         logger.warning(f"Failed to persist scan image: {persist_error}")
         image_filename = None
 
-    # ------------------------------------------------------------------
-    # 4. Persist the full analysis record
-    # ------------------------------------------------------------------
     analysis_doc = {
         "item_id": str(item["_id"]) if item else None,
         "batch_id": str(batch["_id"]) if batch else None,
@@ -288,9 +269,6 @@ async def predict_freshness(
     analysis_result = await analysis_collection.insert_one(analysis_doc)
     analysis_id = str(analysis_result.inserted_id)
 
-    # ------------------------------------------------------------------
-    # 5. Shelf-life prediction + persistence
-    # ------------------------------------------------------------------
     shelf_life = None
     recommendations = None
     try:
@@ -326,9 +304,6 @@ async def predict_freshness(
     except Exception as m3_error:
         logger.warning(f"Shelf-life/recommendation generation failed: {m3_error}")
 
-    # ------------------------------------------------------------------
-    # 6. Persistent report (assembled only from persisted records)
-    # ------------------------------------------------------------------
     report_id = None
     try:
         report_doc = {
@@ -359,9 +334,6 @@ async def predict_freshness(
     except Exception as report_error:
         logger.warning(f"Failed to persist report: {report_error}")
 
-    # ------------------------------------------------------------------
-    # 7. Alerts + item quality refresh
-    # ------------------------------------------------------------------
     try:
         owner_role = None
         if item:

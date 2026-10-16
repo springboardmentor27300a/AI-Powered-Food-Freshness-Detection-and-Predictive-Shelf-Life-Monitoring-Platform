@@ -44,7 +44,7 @@ async def _log_event(item, event_type: str, quantity_delta: int, actor: dict,
     doc = {
         "item_id": str(item["_id"]),
         "batch_id": str(item["batch_id"]) if item.get("batch_id") else None,
-        "event_type": event_type,  # registered | sold | disposed | adjusted | archived | deleted
+        "event_type": event_type,
         "quantity_delta": quantity_delta,
         "quantity_after": item.get("active_quantity"),
         "reason": reason,
@@ -122,7 +122,6 @@ async def create_food_item(item: FoodItemCreate, user: dict = Depends(require_ro
         "created_by_username": user["username"],
         "created_at": now,
         "updated_at": now,
-        # lifecycle defaults
         "status": ItemLifecycle.ACTIVE.value,
         "active_quantity": item.quantity,
         "sold_quantity": 0,

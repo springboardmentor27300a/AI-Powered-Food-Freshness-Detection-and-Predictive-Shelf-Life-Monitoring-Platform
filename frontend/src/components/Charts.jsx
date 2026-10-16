@@ -1,11 +1,8 @@
-// Milestone 3: lightweight dependency-free SVG chart components.
 
 import React from 'react';
 
-// ------------------------------------------------------------------
 // LineChart: multi-series time series with hover values.
 // series: [{ name, color, points: [{ label, value }] }]
-// ------------------------------------------------------------------
 export function LineChart({ series, height = 220, yMin, yMax, unit = '' }) {
   const allPoints = series.flatMap((s) => s.points);
   if (allPoints.length === 0) {
@@ -72,10 +69,8 @@ export function LineChart({ series, height = 220, yMin, yMax, unit = '' }) {
   );
 }
 
-// ------------------------------------------------------------------
 // BarChart: horizontal bars for category comparisons.
 // data: [{ label, value, color }]
-// ------------------------------------------------------------------
 export function BarChart({ data, max, unit = '' }) {
   if (!data || data.length === 0) {
     return (
@@ -111,10 +106,8 @@ export function BarChart({ data, max, unit = '' }) {
   );
 }
 
-// ------------------------------------------------------------------
 // DonutChart: distribution of a whole.
 // data: [{ label, value, color }]
-// ------------------------------------------------------------------
 export function DonutChart({ data, size = 170, centerLabel, centerValue }) {
   const total = data.reduce((sum, d) => sum + d.value, 0);
   const radius = size / 2 - 14;
