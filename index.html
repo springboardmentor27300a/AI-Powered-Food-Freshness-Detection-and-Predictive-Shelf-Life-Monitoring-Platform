@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Food Freshness Monitoring Platform</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7f6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #2e7d32;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 700px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2e7d32;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 20px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1b5e20;
+        }
+
+        #analysisResult {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f1f8e9;
+            border: 2px solid #81c784;
+            display: none;
+        }
+
+        .result-title {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+
+        .result-item {
+            margin: 10px 0;
+            font-size: 17px;
+        }
+
+        .status {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+            background: #c8e6c9;
+            margin-top: 15px;
+        }
+
+        .error {
+            background: #ffebee;
+            border: 2px solid #ef5350;
+            color: #b71c1c;
+            }
+    .dashboard {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f1f8e9;
+    border-radius: 12px;
+    border: 2px solid #81c784;
+}
+
+.dashboard h2 {
+    color: #2e7d32;
+    margin-top: 0;
+}
+
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.dashboard-card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.dashboard-card h3 {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+.dashboard-card p {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2e7d32;
+}
+   .history-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f1f8e9;
+    border-radius: 12px;
+    border: 2px solid #81c784;
+}
+
+.history-section h2 {
+    color: #2e7d32;
+}
+
+.history-section table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.history-section th,
+.history-section td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.history-section th {
+    background: #2e7d32;
+    color: white;
+}
+.alert-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #fff8e1;
+    border-radius: 12px;
+    border: 2px solid #ffcc80;
+}
+
+.alert-section h2 {
+    color: #e65100;
+    margin-top: 0;
+}
+
+#freshnessAlert {
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    font-weight: bold;
+}
+   </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div id="loginSection" style="max-width:400px;margin:40px auto;padding:25px;border-radius:12px;">
+    <h2>👤 Login</h2>
+
+    <input type="text" id="loginUsername" placeholder="Username"
+           style="width:100%;padding:10px;margin:8px 0;">
+
+    <input type="password" id="loginPassword" placeholder="Password"
+           style="width:100%;padding:10px;margin:8px 0;">
+           <select id="loginRole" style="width:100%;padding:10px;margin:8px 0;">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+        <option value="manager">Manager</option>
+    </select>
+
+    <button onclick="loginUser()"
+            style="width:100%;padding:10px;margin-top:10px;">
+        Login
+    </button>
+
+    <p id="loginMessage"></p>
+</div>
+
+    <header>
+        <h1>Food Freshness Monitoring Platform</h1>
+        <p>AI-Based Food Freshness Analysis</p>
+    </header>
+<div class="dashboard">
+    <h2>Freshness Dashboard</h2>
+
+   <div class="dashboard-cards">
+
+    <div class="dashboard-card">
+        <h3>🍎 Food</h3>
+        <p id="dashboardFood">--</p>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>🌱 Freshness Score</h3>
+        <p id="dashboardScore">--</p>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>📂 Category</h3>
+        <p id="dashboardCategory">--</p>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>⏳ Shelf Life</h3>
+        <p id="dashboardShelfLife">--</p>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>🌡️ Temperature</h3>
+        <p id="dashboardTemperature">--</p>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>💧 Humidity</h3>
+        <p id="dashboardHumidity">--</p>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>⚠️ Alerts</h3>
+        <p id="dashboardAlerts">0</p>
+    </div>
+
+    <div class="dashboard-card">
+        <h3>♻️ Waste Reduction</h3>
+        <p id="dashboardWaste">0%</p>
+    </div>
+
+</div>
+</div>
+
+<div class="container">
+<div class="history-section">
+    <h2>Freshness History</h2>
+
+    <table>
+        <tr>
+            <th>Food</th>
+            <th>Score</th>
+            <th>Category</th>
+            <th>Shelf Life</th>
+        </tr>
+
+        <tbody id="historyTable">
+            <tr id="noHistory">
+    <td colspan="4">No analysis history yet</td>
+</tr>
+        </tbody>
+    </table>
+</div>
+<div class="alert-section">
+    <h2>Freshness Alerts</h2>
+
+    <div id="freshnessAlert">
+        No alerts at the moment.
+    </div>
+</div>
+<div class="history-section">
+    <h2>📈 Freshness Trend</h2>
+    <canvas id="freshnessChart"></canvas>
+</div>
+<div style="margin-top:20px;">
+    <button onclick="generateReport()">
+        📄 Generate Report
+    </button>
+    </div>
+<div class="inventory-section">
+    <h2>Inventory & Batch Management</h2>
+    <div class="inventory-form">
+    <input type="text" id="batchId" placeholder="Batch ID">
+    <input type="text" id="inventoryFood" placeholder="Food Name">
+    <input type="number" id="quantity" placeholder="Quantity">
+
+    <button onclick="addInventory()">Add Batch</button>
+    <button onclick="checkInventoryRotation()">
+    Check Inventory Rotation
+</button>
+</div>
+
+
+    <table>
+        <tr>
+            <th>Batch ID</th>
+            <th>Food</th>
+            <th>Quantity</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+
+        <tbody id="inventoryTable">
+        </tbody>
+    </table>
+    
+</div>      
+      <div class="container" style="margin-top:20px;">
+    <h2>Storage Compliance</h2>
+
+    <label>Storage Temperature (°C)</label>
+    <input type="number" id="storageTemperature" placeholder="Example: 5">
+
+    <label>Humidity (%)</label>
+    <input type="number" id="storageHumidity" placeholder="Example: 60">
+
+    <label>Air Circulation</label>
+    <select id="storageAir">
+        <option value="Good">Good</option>
+        <option value="Poor">Poor</option>
+    </select>
+
+    <label>Light Exposure</label>
+    <select id="storageLight">
+        <option value="Low">Low</option>
+        <option value="High">High</option>
+    </select>
+
+    <button onclick="checkStorageCompliance()">
+        Check Storage Compliance
+    </button>
+
+    <div id="storageResult" style="margin-top:15px;"></div>
+</div>  
+<div class="container" style="margin-top:20px;">
+    <h2>Waste Reduction</h2>
+
+    <label>Total Food Quantity</label>
+    <input type="number" id="totalFoodQuantity" placeholder="Example: 100">
+
+    <label>Wasted Food Quantity</label>
+    <input type="number" id="wastedFoodQuantity" placeholder="Example: 10">
+
+    <button onclick="calculateWasteReduction()">
+        Calculate Waste Reduction
+    </button>
+
+    <div id="wasteResult" style="margin-top:15px;"></div>
+</div>
+<h2>Food Freshness Analysis</h2>
+
+        <label for="foodName">Food Name</label>
+        <label for="foodImage">Food Image</label>
+<input type="file" id="foodImage" accept="image/*">
+<img id="imagePreview" width="200" style="margin-top:15px;">
+        <input
+            type="text"
+            id="foodName"
+            placeholder="Example: Apple"
+        >
+
+        <label for="temperature">Storage Temperature (°C)</label>
+        <input
+            type="number"
+            id="temperature"
+            placeholder="Example: 5"
+        >
+
+        <label for="humidity">Humidity (%)</label>
+        <input
+            type="number"
+            id="humidity"
+            placeholder="Example: 60"
+        >
+<label for="expiryDate">Expiry Date</label>
+<input
+    type="date"
+    id="expiryDate"
+    <label for="duration">Storage Duration (days)</label>
+        <label for="airCirculation">Air Circulation</label>
+<select id="airCirculation">
+    <option value="Good">Good</option>
+    <option value="Moderate">Moderate</option>
+    <option value="Poor">Poor</option>
+</select>
+        <input
+            type="number"
+            id="duration"
+            placeholder="Example: 3"
+        >
+<label for="lightExposure">Light Exposure</label>
+<select id="lightExposure">
+    <option value="Low">Low</option>
+    <option value="Moderate">Moderate</option>
+    <option value="High">High</option>
+</select>
+        <button onclick="analyzeFood()">
+            Analyze Freshness
+        </button>
+        <button type="button" onclick="downloadPDF()">Download PDF Report</button>
+        <button type="button" onclick="downloadExcel()">Download Excel Report</button>
+<div id="freshnessAlert"
+     style="display:none; padding:15px; margin:15px 0; border-radius:10px; font-weight:bold;">
+</div>
+        <div id="analysisResult"></div>
+        <div id="imageResult"></div>
+
+    </div>
+
+    <script>
+const foodImage = document.getElementById("foodImage");
+const imagePreview = document.getElementById("imagePreview");
+
+foodImage.addEventListener("change", function () {
+    const file = foodImage.files[0];
+    if (file) {
+        imagePreview.src = URL.createObjectURL(file);
+    }
+});
+
+async function analyzeFood() {
+    const foodName = document.getElementById("foodName").value.trim();
+    const temperature = document.getElementById("temperature").value;
+    const humidity = document.getElementById("humidity").value;
+    const duration = document.getElementById("duration").value;
+    const expiryDate = document.getElementById("expiryDate").value;
+    const airCirculation = document.getElementById("airCirculation").value;
+    const lightExposure = document.getElementById("lightExposure").value;
+    const imageFile = document.getElementById("foodImage").files[0];
+    const result = document.getElementById("analysisResult");
+
+    if (!foodName || !temperature || !humidity || !duration) {
+        result.style.display = "block";
+        result.className = "error";
+        result.innerHTML = "<b>Please fill all fields.</b>";
+        return;
+    }
+
+    try {
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append("file", imageFile);
+            await fetch("/upload-image", {
+                method: "POST",
+                body: formData
+            });
+        }
+
+        const response = await fetch("/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                food_name: foodName,
+                temperature: Number(temperature),
+                humidity: Number(humidity),
+                duration: Number(duration),
+                air_circulation: airCirculation,
+                light_exposure: lightExposure,
+                expiry_date: expiryDate
+            })
+        });
+
+        const data = await response.json();
+        const alertBox = document.getElementById("freshnessAlert");
+        const today = new Date();
+const expiry = new Date(expiryDate);
+
+if (expiryDate && expiry < today) {
+    alertBox.innerText = "🚨 ALERT: Food has expired. Do not consume.";
+} else if (expiryDate && expiry.toDateString() === today.toDateString()) {
+    alertBox.innerText = "⚠️ WARNING: Food expires today.";
+} else if (data.category === "Spoiled" || data.category === "Near Spoilage") {
+    alertBox.innerText = "🚨 ALERT: Food freshness is low. Consume immediately or remove from inventory.";
+} else if (data.category === "Fresh" || data.category === "Good") {
+    alertBox.innerText = "✅ Food is currently in good condition.";
+} else {
+    alertBox.innerText = "⚠️ Please monitor the food freshness.";
+    }
+
+        if (data.category === "Fresh" || data.category === "Good") {
+            alertBox.innerText = "✅ Food is in good condition.";
+        } else if (data.category === "Acceptable") {
+            alertBox.innerText = "⚠️ Food quality is decreasing. Monitor carefully.";
+        } else if (data.category === "Near Spoilage") {
+            alertBox.innerText = "⚠️ Warning: Food is near spoilage. Consume soon.";
+        } else if (data.category === "Spoiled") {
+            alertBox.innerText = "🚨 ALERT: Food appears spoiled. Do not consume.";
+        } else {
+            alertBox.innerText = "Food analysis completed.";
+        }
+
+        const noHistory = document.getElementById("noHistory");
+        if (noHistory) noHistory.remove();
+
+        const historyTable = document.getElementById("historyTable");
+        const row = historyTable.insertRow();
+        updateFreshnessChart();
+        row.insertCell(0).innerText = data.food_name;
+        row.insertCell(1).innerText = data.freshness_score;
+        row.insertCell(2).innerText = data.category;
+        row.insertCell(3).innerText = data.shelf_life + " days";
+
+        document.getElementById("dashboardScore").innerText = data.freshness_score;
+        document.getElementById("dashboardCategory").innerText = data.category;
+        document.getElementById("dashboardShelfLife").innerText = data.shelf_life + " days";
+        document.getElementById("dashboardFood").innerText = data.food_name;
+// Dashboard Temperature & Humidity
+document.getElementById("dashboardTemperature").innerText =
+    temperature + " °C";
+
+document.getElementById("dashboardHumidity").innerText =
+    humidity + " %";
+
+// Dashboard Alerts
+let alertCount = 0;
+
+if (
+    data.category === "Acceptable" ||
+    data.category === "Near Spoilage" ||
+    data.category === "Spoiled"
+) {
+    alertCount = 1;
+}
+
+document.getElementById("dashboardAlerts").innerText = alertCount;
+
+// Dashboard Waste Reduction
+let wasteReduction = 0;
+
+if (data.category === "Fresh" || data.category === "Good") {
+    wasteReduction = 100;
+} else if (data.category === "Acceptable") {
+    wasteReduction = 75;
+} else if (data.category === "Near Spoilage") {
+    wasteReduction = 50;
+}
+
+document.getElementById("dashboardWaste").innerText =
+    wasteReduction + " %"; 
+        result.className = "";
+        result.style.display = "block";
+        result.innerHTML = `
+            <h3 class="result-title">🍎 Freshness Analysis Result</h3>
+            <div class="result-item"><b>Food:</b> ${data.food_name}</div>
+            <div class="result-item"><b>Freshness Score:</b> ${data.freshness_score}%</div>
+            <div class="result-item"><b>Category:</b> ${data.category}</div>
+            <div class="result-item"><b>Estimated Shelf Life:</b> ${data.shelf_life} days</div>
+            <div class="result-item"><b>Recommendation:</b> ${data.recommendation}</div>
+            <div class="status">Status: ${data.category}</div>
+        `;
+
+        const imageResult = document.getElementById("imageResult");
+        if (imageFile) {
+            imageResult.innerHTML = `
+                <h3>Uploaded Food Image</h3>
+                <img src="${URL.createObjectURL(imageFile)}" width="250" style="border-radius:10px;">
+            `;
+        }
+    } catch (error) {
+        result.style.display = "block";
+        result.className = "error";
+        result.innerHTML = "<b>Backend connection failed.</b><br>Please make sure FastAPI server is running.";
+        console.error(error);
+    }
+}
+
+function addInventory() {
+    const batchId = document.getElementById("batchId").value.trim();
+    const food = document.getElementById("inventoryFood").value.trim();
+    const quantity = document.getElementById("quantity").value.trim();
+
+    if (!batchId || !food || !quantity) {
+        alert("Please enter all batch details.");
+        return;
+    }
+
+    const inventory = JSON.parse(localStorage.getItem("inventory")) || [];
+    inventory.push({
+        batchId: batchId,
+        food: food,
+        quantity: quantity
+    });
+
+    localStorage.setItem("inventory", JSON.stringify(inventory));
+
+    document.getElementById("batchId").value = "";
+    document.getElementById("inventoryFood").value = "";
+    document.getElementById("quantity").value = "";
+
+    loadInventory();
+}
+function checkInventoryRotation() {
+    const inventory = JSON.parse(localStorage.getItem("inventory")) || [];
+
+    if (inventory.length === 0) {
+        alert("No inventory batches available.");
+        return;
+    }
+
+    alert("Inventory Rotation: Use older batches first (FIFO) to reduce food waste.");
+}
+function loadInventory() {
+    const tableBody = document.getElementById("inventoryTable");
+    if (!tableBody) return;
+
+    const inventory = JSON.parse(localStorage.getItem("inventory")) || [];
+    tableBody.innerHTML = "";
+
+    inventory.forEach(function (item, index) {
+        const row = tableBody.insertRow();
+
+        row.insertCell(0).innerText = item.batchId;
+        row.insertCell(1).innerText = item.food;
+        row.insertCell(2).innerText = item.quantity;
+
+        const statusCell = row.insertCell(3);
+        statusCell.innerText = Number(item.quantity) > 0 ? "Available" : "Out of Stock";
+
+        const actionCell = row.insertCell(4);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.innerText = "Remove";
+        button.style.marginTop = "0";
+
+        button.addEventListener("click", function () {
+            removeInventory(index);
+        });
+
+        actionCell.appendChild(button);
+    });
+}
+
+function removeInventory(index) {
+    const inventory = JSON.parse(localStorage.getItem("inventory")) || [];
+
+    if (index < 0 || index >= inventory.length) return;
+
+    inventory.splice(index, 1);
+    localStorage.setItem("inventory", JSON.stringify(inventory));
+    loadInventory();
+}
+window.addEventListener("DOMContentLoaded", function () {
+    loadInventory();
+    loadDatabaseHistory();
+});
+
+async function loadDatabaseHistory() {
+    try {
+        const response = await fetch("/history");
+
+        if (!response.ok) {
+            return;
+        }
+
+        const history = await response.json();
+        const historyTable = document.getElementById("historyTable");
+
+        historyTable.innerHTML = "";
+
+        if (history.length === 0) {
+            historyTable.innerHTML =
+                '<tr><td colspan="4">No analysis history yet</td></tr>';
+            return;
+        }
+
+        history.forEach(function (item) {
+            const row = historyTable.insertRow();
+
+            row.insertCell(0).innerText = item.food_name;
+            row.insertCell(1).innerText = item.freshness_score;
+            row.insertCell(2).innerText = item.category;
+            row.insertCell(3).innerText = item.shelf_life + " days";
+        });
+
+    } catch (error) {
+        console.error("History loading failed:", error);
+        }
+}
+
+let freshnessChart;
+
+function updateFreshnessChart() {
+    const historyRows = document.querySelectorAll("#historyTable tr");
+
+    const labels = [];
+    const scores = [];
+
+    historyRows.forEach(function(row) {
+        const cells = row.cells;
+
+        if (cells.length >= 2) {
+            labels.push(cells[0].innerText);
+            scores.push(Number(cells[1].innerText) || 0);
+        }
+    });
+
+    const canvas = document.getElementById("freshnessChart");
+
+    if (!canvas) return;
+
+    if (freshnessChart) {
+        freshnessChart.destroy();
+    }
+
+    freshnessChart = new Chart(canvas, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Freshness Score",
+                data: scores,
+                tension: 0.3,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+    </script>
+<script>
+function loginUser() {
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+    const role = document.getElementById("loginRole").value;
+    const message = document.getElementById("loginMessage");
+
+    if (!username || !password) {
+        message.innerText = "⚠️ Please enter username and password.";
+        return;
+    }
+
+    if (role === "admin" && username === "admin" && password === "admin123") {
+        message.innerText = "✅ Admin login successful.";
+    }
+    else if (role === "user" && username === "user" && password === "user123") {
+        message.innerText = "✅ User login successful.";
+    }
+    else if (role === "manager" && username === "manager" && password === "manager123") {
+        message.innerText = "✅ Manager login successful.";
+    }
+    else {
+        message.innerText = "❌ Invalid username, password, or role.";
+    }
+}
+</script>
+<script>
+   function checkStorageCompliance() {
+    const temperature = Number(document.getElementById("storageTemperature").value);
+    const humidity = Number(document.getElementById("storageHumidity").value);
+    const air = document.getElementById("storageAir").value;
+    const light = document.getElementById("storageLight").value;
+    const result = document.getElementById("storageResult");
+
+    if (!temperature || !humidity) {
+        result.innerHTML = "⚠️ Please enter temperature and humidity.";
+        return;
+    }
+
+    if (
+        temperature >= 2 &&
+        temperature <= 8 &&
+        humidity >= 40 &&
+        humidity <= 70 &&
+        air === "Good" &&
+        light === "Low"
+    ) {
+        result.innerHTML = "✅ Storage Compliant";
+        result.style.color = "green";
+        } else {
+        result.innerHTML = "⚠️ Storage Non-Compliant";
+        result.style.color = "red";
+    }
+} 
+function calculateWasteReduction() {
+    const total = Number(document.getElementById("totalFoodQuantity").value);
+    const wasted = Number(document.getElementById("wastedFoodQuantity").value);
+    const result = document.getElementById("wasteResult");
+
+    if (total <= 0 || wasted < 0 || wasted > total) {
+        result.innerHTML = "⚠️ Please enter valid quantities.";
+        result.style.color = "red";
+        return;
+    }
+
+    const saved = total - wasted;
+    const wastePercentage = (wasted / total) * 100;
+
+    result.innerHTML =
+        "✅ Usable Food: " + saved +
+        "<br>⚠️ Waste: " + wastePercentage.toFixed(1) + "%";
+
+    result.style.color = wastePercentage <= 10 ? "green" : "red";
+}
+function generateReport() {
+    const foodName = document.getElementById("foodName")?.value || "Food";
+    const result = document.getElementById("result")?.innerText || "No analysis result available.";
+
+    const report = `
+FOOD FRESHNESS ANALYSIS REPORT
+--------------------------------
+
+Food Name: ${foodName}
+
+Analysis Result:
+${result}
+
+Generated by:
+Food Freshness Monitoring System
+`;
+
+    const blob = new Blob([report], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Food_Freshness_Report.txt";
+    link.click();
+
+    URL.revokeObjectURL(url);
+}
+async function downloadPDF() {
+    const response = await fetch("/history");
+    const history = await response.json();
+
+    if (history.length === 0) {
+        alert("No food analysis record available.");
+        return;
+    }
+
+    const latestId = history[0].id;
+
+    window.open(
+        `/generate-pdf/${latestId}`,
+        "_blank"
+    );
+}
+async function downloadExcel() {
+    window.open(
+        "/generate-excel",
+        "_blank"
+    );
+}
+</script>
+</body>
+</html>
