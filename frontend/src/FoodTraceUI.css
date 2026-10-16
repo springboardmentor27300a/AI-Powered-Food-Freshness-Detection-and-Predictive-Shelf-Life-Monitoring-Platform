@@ -1,0 +1,358 @@
+/* FoodTrace reference-matched public pages */
+:root{--ft-green:#059447;--ft-navy:#092238;--ft-soft:#f3faf4;--ft-line:#dce8e1}
+html{scroll-behavior:smooth}
+body{margin:0}
+.ft-reference-home,.ft-reference-home *,.ft-reference-auth,.ft-reference-auth *{box-sizing:border-box}
+.ft-reference-home{min-height:100vh;background:#f7fbf8;color:var(--ft-navy);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.ft-reference-landing{position:relative;width:min(100%,1536px);aspect-ratio:3/2;margin:0 auto;background:url('/landing-hi.png') center/100% 100% no-repeat;background-color:#fff}
+.ft-hotspot,.ft-ref-click,.ft-ref-submit{position:absolute;border:0;background:transparent;cursor:pointer;padding:0;z-index:10}
+.ft-home-hot{left:28.7%;top:2.1%;width:4.7%;height:6.2%}
+.ft-how-hot{left:34.3%;top:2.1%;width:8.0%;height:6.2%}
+.ft-solutions-hot{left:43.5%;top:2.1%;width:6.3%;height:6.2%}
+.ft-impact-hot{left:50.6%;top:2.1%;width:5.0%;height:6.2%}
+.ft-features-hot{left:56.9%;top:2.1%;width:6.7%;height:6.2%}
+.ft-signin-hot{right:4.3%;top:2.2%;width:10.5%;height:7.2%;border-radius:12px}
+.ft-getstarted-hot{left:7.1%;top:54%;width:23.5%;height:8.7%;border-radius:40px}
+.ft-hotspot:focus-visible,.ft-ref-click:focus-visible,.ft-ref-submit:focus-visible{outline:3px solid rgba(5,148,71,.45);outline-offset:3px}
+.ft-info-section{scroll-margin-top:24px;width:min(1180px,calc(100% - 48px));margin:0 auto;padding:78px 0}
+.ft-soft-section{width:100%;max-width:none;padding-left:max(24px,calc((100% - 1180px)/2));padding-right:max(24px,calc((100% - 1180px)/2));background:linear-gradient(135deg,#f4fbf4,#ebf7ec)}
+.ft-info-kicker{margin:0 0 9px;color:#5f8d7e;font-size:12px;font-weight:800;letter-spacing:3px}
+.ft-info-section h2{margin:0 0 34px;color:#092238;font-size:clamp(30px,4vw,48px);line-height:1.05;letter-spacing:-1.5px}
+.ft-info-grid{display:grid;gap:18px}.ft-three{grid-template-columns:repeat(3,1fr)}.ft-four{grid-template-columns:repeat(4,1fr)}
+.ft-info-grid article{background:#fff;border:1px solid #e2ebe5;border-radius:18px;padding:28px;box-shadow:0 12px 34px rgba(31,77,44,.07)}
+.ft-info-grid article>span{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#e5f6e9;color:#079347;font-weight:800;margin-bottom:16px}
+.ft-info-grid h3{margin:0 0 8px;font-size:18px;color:#0a2135}.ft-info-grid p{margin:0;color:#5c7078;line-height:1.65;font-size:14px}
+.ft-impact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.ft-impact-row div{padding:32px;border-radius:18px;background:#fff;border:1px solid #e1ebe5}.ft-impact-row strong{display:block;color:#079347;font-size:30px;margin-bottom:7px}.ft-impact-row span{color:#5c7078}
+
+/* Register/OTP use the approved screenshots as the exact visual reference. */
+.ft-reference-auth{min-height:100vh;background:#f4f8f5;position:relative;overflow:auto;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.ft-register-reference::before,.ft-otp-reference::before{content:"";display:block;margin:0 auto;background-repeat:no-repeat;background-position:center;background-size:100% 100%;position:relative}
+.ft-register-reference::before{width:min(100vw,calc(100vh * 1.146));height:min(100vh,calc(100vw / 1.146));background-image:url('/register-ref.png')}
+.ft-otp-reference::before{width:min(100vw,calc(100vh * 2.007));height:min(100vh,calc(100vw / 2.007));background-image:url('/otp-ref.png')}
+
+/* Overlay form controls on top of the register reference without changing its appearance. */
+.ft-register-overlay-card{position:absolute;inset:0;margin:auto;width:min(100vw,calc(100vh * 1.146));height:min(100vh,calc(100vw / 1.146));pointer-events:none}
+.ft-ref-form{position:absolute;inset:0;pointer-events:none}
+.ft-ref-input,.ft-ref-select{position:absolute;z-index:12;pointer-events:auto;border:0;outline:none;background:transparent;color:#223640;font:500 12px/1.2 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:0 8px;border-radius:5px}
+.ft-ref-input:focus,.ft-ref-input:not(:placeholder-shown),.ft-ref-select:focus{background:#fff;box-shadow:0 0 0 1px #d7e3dc inset}
+.ft-reg-name{left:58.2%;top:22.5%;width:35.3%;height:4.6%}
+.ft-reg-email{left:58.2%;top:30.4%;width:35.3%;height:4.6%}
+.ft-reg-password{left:58.2%;top:40.4%;width:35.3%;height:4.6%}
+.ft-reg-confirm{left:58.2%;top:49.3%;width:35.3%;height:4.6%}
+.ft-reg-role{left:58.2%;top:59.0%;width:35.3%;height:4.9%;background:rgba(255,255,255,.96)}
+.ft-reg-submit{left:54.2%;top:66.1%;width:40.8%;height:6.1%;pointer-events:auto;border-radius:6px}
+.ft-reg-signin{left:80.0%;top:87.0%;width:9.5%;height:4%;pointer-events:auto}
+.ft-ref-message{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:30;background:#fff;border:1px solid #dbe8df;border-radius:10px;padding:10px 16px;color:#214132;box-shadow:0 10px 30px rgba(20,65,35,.12);font-size:12px}
+
+/* OTP interactive boxes aligned with the approved OTP reference. */
+.ft-otp-inputs{position:absolute;inset:0;margin:auto;width:min(100vw,calc(100vh * 2.007));height:min(100vh,calc(100vw / 2.007));pointer-events:none}
+.ft-otp-input{position:absolute;top:41.2%;width:4.8%;height:10.8%;z-index:12;border:0;background:transparent;outline:none;text-align:center;font-size:20px;font-weight:700;color:#123c2d;pointer-events:auto;border-radius:7px}
+.ft-otp-input:focus,.ft-otp-input:not(:placeholder-shown){background:#fff;box-shadow:0 0 0 2px #0aa04b inset}
+.ft-otp-1{left:12.6%}.ft-otp-2{left:18.1%}.ft-otp-3{left:23.7%}.ft-otp-4{left:29.2%}.ft-otp-5{left:34.8%}.ft-otp-6{left:40.3%}
+.ft-otp-verify{left:12.3%;top:62.2%;width:32.8%;height:8.7%;pointer-events:auto;border-radius:7px}
+.ft-otp-back{left:12.1%;top:87%;width:16%;height:5%;pointer-events:auto}
+
+@media(max-width:800px){
+  .ft-info-grid.ft-three,.ft-info-grid.ft-four,.ft-impact-row{grid-template-columns:1fr}
+  .ft-info-section{padding:54px 0}
+}
+
+
+/* =========================================================
+   CRISP REGISTER PAGE — REAL HTML/CSS, NO SCREENSHOT SCALING
+========================================================= */
+.ft-register-page,.ft-register-page *{box-sizing:border-box}
+.ft-register-page{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:56% 44%;
+  background:#f7faf8;
+  color:#0a2236;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.ft-register-left{
+  position:relative;
+  min-height:100vh;
+  overflow:hidden;
+  padding:44px 7.5%;
+  background:
+    radial-gradient(circle at 80% 6%,rgba(91,190,94,.12),transparent 29%),
+    linear-gradient(135deg,#f4fbf1 0%,#eaf7eb 72%,#eef9ee 100%);
+}
+.ft-register-brand{
+  position:relative;z-index:7;
+  display:flex;align-items:center;gap:10px;
+  border:0;background:transparent;padding:0;
+  color:#0a2236;font-size:28px;font-weight:800;cursor:pointer;
+}
+.ft-register-brand>span:last-child span{color:#0a9a49}
+.ft-register-leaf{
+  color:#3eaa38;font-size:25px;transform:rotate(45deg);display:inline-block;
+}
+.ft-register-copy{position:relative;z-index:6;margin-top:74px;max-width:470px}
+.ft-register-copy h1{
+  margin:0 0 10px;font-size:43px;line-height:1.05;letter-spacing:-1.5px;font-weight:800
+}
+.ft-register-copy>p{
+  margin:0;color:#49616d;font-size:21px;line-height:1.15
+}
+.ft-register-benefits{margin-top:42px;display:grid;gap:17px}
+.ft-register-benefits>div{
+  display:grid;grid-template-columns:48px 1fr;align-items:center;gap:14px;color:#304c58
+}
+.ft-register-benefits>div>span{
+  width:48px;height:48px;border-radius:50%;
+  display:grid;place-items:center;background:#fff;color:#099849;font-size:19px;
+  box-shadow:0 7px 20px rgba(47,90,55,.08)
+}
+.ft-register-benefits p{margin:0;font-size:15px;line-height:1.28}
+.ft-register-food{
+  position:absolute;z-index:5;left:18%;bottom:-8px;
+  width:60%;max-width:570px;height:auto;object-fit:contain;
+  filter:saturate(1.03) contrast(1.02);
+}
+.ft-register-shape{position:absolute;z-index:2;border-radius:48% 52% 0 0}
+.ft-register-shape-a{
+  width:72%;height:250px;left:-18%;bottom:-78px;background:#60b66e;transform:rotate(18deg)
+}
+.ft-register-shape-b{
+  width:58%;height:190px;left:-10%;bottom:-92px;background:#188747;transform:rotate(17deg)
+}
+.ft-register-floating-leaf{
+  position:absolute;z-index:4;color:#7cbc54;opacity:.9;font-size:26px;transform:rotate(44deg)
+}
+.ft-leaf-a{right:15%;top:47%}.ft-leaf-b{right:9%;top:39%;font-size:18px}
+
+.ft-register-right{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:32px 7%;background:#fbfdfc
+}
+.ft-register-card{
+  width:min(100%,520px);background:#fff;border-radius:22px;
+  padding:38px 44px 30px;
+  box-shadow:0 18px 50px rgba(35,73,43,.10);
+  border:1px solid #edf2ef
+}
+.ft-register-card h2{
+  margin:0;font-size:31px;line-height:1.1;letter-spacing:-.8px;font-weight:800;color:#0a2236
+}
+.ft-register-sub{margin:7px 0 21px;color:#61727b;font-size:13px}
+.ft-register-form{display:grid;gap:13px}
+.ft-register-form label>span{
+  display:block;margin-bottom:6px;color:#243a45;font-size:11px;font-weight:800
+}
+.ft-register-field{
+  height:44px;display:grid;grid-template-columns:42px minmax(0,1fr) 34px;
+  align-items:center;border:1px solid #d6e0dc;border-radius:7px;background:#fff;overflow:hidden
+}
+.ft-register-field b{
+  height:100%;display:grid;place-items:center;border-right:1px solid #edf1ef;
+  color:#6a7e88;font-size:13px;font-weight:500
+}
+.ft-register-field i{
+  font-style:normal;color:#70828b;font-size:12px;text-align:center
+}
+.ft-register-field input,.ft-register-field select{
+  width:100%;height:100%;border:0;outline:0;background:#fff;
+  padding:0 12px;color:#233842;font:500 12px/1.2 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+.ft-register-field input::placeholder{color:#8a989e}
+.ft-role-field{grid-template-columns:42px minmax(0,1fr)}
+.ft-role-field select{
+  appearance:auto;-webkit-appearance:menulist;
+  padding-right:14px;color:#263a44;cursor:pointer
+}
+.ft-role-field select:invalid{color:#7d8c93}
+.ft-register-submit{
+  margin-top:2px;height:44px;border:0;border-radius:6px;
+  background:linear-gradient(135deg,#079f47,#08a94e);color:#fff;
+  font-size:13px;font-weight:800;cursor:pointer
+}
+.ft-register-submit span{margin-left:15px;font-size:17px}
+.ft-register-divider{
+  margin:17px 0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px
+}
+.ft-register-divider:before,.ft-register-divider:after{content:"";height:1px;background:#e4ebe7}
+.ft-register-divider span{font-size:10px;color:#7e8d86}
+.ft-register-google{
+  width:100%;height:42px;border:1px solid #d7e0dc;border-radius:7px;background:#fff;
+  color:#263840;font-size:12px;font-weight:700;cursor:pointer
+}
+.ft-register-google strong{margin-right:9px;color:#4285f4;font-size:16px}
+.ft-register-switch{text-align:center;margin:18px 0 0;color:#6b797f;font-size:11px}
+.ft-register-switch button{
+  border:0;background:transparent;color:#078f42;font-size:11px;font-weight:800;cursor:pointer;margin-left:5px
+}
+.ft-register-message{
+  margin-top:12px;padding:9px 10px;border-radius:7px;background:#f2f8f4;color:#376047;font-size:11px;text-align:center
+}
+
+/* Make the high-resolution home reference render sharply. */
+.ft-reference-landing{
+  image-rendering:auto;
+  background-size:cover;
+  background-position:center top;
+}
+
+@media(max-width:900px){
+  .ft-register-page{grid-template-columns:1fr}
+  .ft-register-left{display:none}
+  .ft-register-right{padding:24px}
+}
+
+
+/* =========================================================
+   CRISP LOGIN PAGE — SEPARATE FROM OLD AUTH SCREEN
+========================================================= */
+.ft-login-page,.ft-login-page *{box-sizing:border-box}
+.ft-login-page{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:55% 45%;
+  background:#fff;
+  color:#0a2236;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.ft-login-left{
+  min-height:100vh;
+  position:relative;
+  overflow:hidden;
+  padding:44px 7.5%;
+  background:
+    radial-gradient(circle at 75% 12%,rgba(91,190,94,.13),transparent 32%),
+    linear-gradient(135deg,#f5fbf2 0%,#eaf7eb 100%);
+}
+.ft-login-brand{
+  position:relative;z-index:6;
+  display:flex;align-items:center;gap:10px;
+  border:0;background:transparent;padding:0;cursor:pointer;
+  color:#0a2236;font-size:28px;font-weight:800
+}
+.ft-login-brand>span:last-child span{color:#0b9b49}
+.ft-login-brand-leaf{
+  color:#45aa38;font-size:25px;transform:rotate(45deg);display:inline-block
+}
+.ft-login-copy{position:relative;z-index:5;margin-top:74px;max-width:500px}
+.ft-login-copy h1{
+  margin:0;font-size:45px;line-height:1.05;letter-spacing:-1.5px;font-weight:800
+}
+.ft-login-copy>p{
+  margin:12px 0 0;color:#506873;font-size:19px;line-height:1.35;max-width:470px
+}
+.ft-login-benefits{margin-top:42px;display:grid;gap:17px}
+.ft-login-benefits>div{
+  display:grid;grid-template-columns:48px 1fr;gap:14px;align-items:center;color:#304c58
+}
+.ft-login-benefits>div>span{
+  width:48px;height:48px;border-radius:50%;
+  display:grid;place-items:center;background:#fff;color:#079849;font-size:19px;
+  box-shadow:0 7px 20px rgba(47,90,55,.08)
+}
+.ft-login-benefits p{margin:0;font-size:15px;line-height:1.28}
+.ft-login-food{
+  position:absolute;z-index:4;left:20%;bottom:-4px;
+  width:72%;max-width:720px;height:315px;
+  object-fit:cover;object-position:center 58%;
+  border-radius:46% 46% 0 0/30% 30% 0 0;
+  box-shadow:0 -8px 24px rgba(20,70,35,.05)
+}
+.ft-login-shape{position:absolute;z-index:2;border-radius:48% 52% 0 0}
+.ft-login-shape-a{
+  width:70%;height:230px;left:-18%;bottom:-86px;background:#59b36a;transform:rotate(16deg)
+}
+.ft-login-shape-b{
+  width:54%;height:175px;left:-9%;bottom:-96px;background:#188747;transform:rotate(15deg)
+}
+
+.ft-login-right{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 8%;
+  background:#fbfdfc
+}
+.ft-login-card{
+  width:min(100%,520px);
+  background:#fff;border-radius:22px;
+  padding:42px 44px 32px;
+  border:1px solid #edf2ef;
+  box-shadow:0 18px 55px rgba(35,73,43,.10)
+}
+.ft-login-card h2{
+  margin:0;font-size:32px;line-height:1.08;letter-spacing:-.8px;font-weight:800
+}
+.ft-login-sub{margin:7px 0 24px;color:#61727b;font-size:13px}
+.ft-login-form{display:grid;gap:16px}
+.ft-login-form label>span{
+  display:block;margin-bottom:6px;color:#243a45;font-size:11px;font-weight:800
+}
+.ft-login-field{
+  height:46px;display:grid;grid-template-columns:42px 1fr;
+  align-items:center;border:1px solid #d6e0dc;border-radius:7px;background:#fff;overflow:hidden
+}
+.ft-login-field b{
+  height:100%;display:grid;place-items:center;border-right:1px solid #edf1ef;
+  color:#6a7e88;font-size:13px;font-weight:500
+}
+.ft-login-field input{
+  width:100%;height:100%;border:0;outline:0;background:#fff;
+  padding:0 12px;color:#233842;font:500 12px/1.2 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+.ft-login-field input::placeholder{color:#8a989e}
+.ft-login-options{
+  margin-top:1px;display:flex;justify-content:space-between;align-items:center;
+  color:#607079;font-size:11px
+}
+.ft-login-remember{display:flex!important;align-items:center;gap:7px}
+.ft-login-remember input{accent-color:#079849}
+.ft-login-options button{
+  border:0;background:transparent;color:#078f42;font-size:11px;cursor:pointer
+}
+.ft-login-submit{
+  height:46px;border:0;border-radius:6px;
+  background:linear-gradient(135deg,#079f47,#08a94e);
+  color:#fff;font-size:13px;font-weight:800;cursor:pointer
+}
+.ft-login-submit span{margin-left:14px;font-size:17px}
+.ft-login-divider{
+  margin:19px 0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px
+}
+.ft-login-divider:before,.ft-login-divider:after{content:"";height:1px;background:#e4ebe7}
+.ft-login-divider span{font-size:10px;color:#7e8d86}
+.ft-login-google{
+  width:100%;height:44px;border:1px solid #d7e0dc;border-radius:7px;background:#fff;
+  color:#263840;font-size:12px;font-weight:700;cursor:pointer
+}
+.ft-login-google strong{margin-right:9px;color:#4285f4;font-size:16px}
+.ft-login-message{
+  margin-top:12px;padding:9px 10px;border-radius:7px;background:#f2f8f4;color:#376047;font-size:11px;text-align:center
+}
+.ft-login-switch{text-align:center;margin:19px 0 0;color:#6b797f;font-size:11px}
+.ft-login-switch button{
+  border:0;background:transparent;color:#078f42;font-size:11px;font-weight:800;cursor:pointer;margin-left:5px
+}
+.ft-login-back{
+  display:block;margin:15px auto 0;border:0;background:transparent;color:#83918b;font-size:10px;cursor:pointer
+}
+
+@media(max-width:900px){
+  .ft-login-page{grid-template-columns:1fr}
+  .ft-login-left{display:none}
+  .ft-login-right{padding:24px}
+}
+
+/* REMOVE ALL IMAGES FROM LOGIN + REGISTER LEFT PANEL */
+.ft-login-left img,
+.ft-register-left img,
+.ft-login-food,
+.ft-register-food {
+  display: none !important;
+}
+
+/* REMOVE LEFTOVER DECORATIVE SQUARES */
+.ft-register-floating-leaf,
+.ft-leaf-a,
+.ft-leaf-b {
+  display: none !important;
+}
+
+.ft-info-section{scroll-margin-top:18px}

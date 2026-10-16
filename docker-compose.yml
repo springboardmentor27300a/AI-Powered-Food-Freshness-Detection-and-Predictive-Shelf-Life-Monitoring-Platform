@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: food_freshness
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: foodtrace
+    volumes:
+      - foodtrace_pg:/var/lib/postgresql/data
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d food_freshness"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://postgres:foodtrace@db:5432/food_freshness
+      JWT_SECRET_KEY: change-this-before-production
+      ALLOW_DEMO_OTP: "true"
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+    volumes:
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  foodtrace_pg:
