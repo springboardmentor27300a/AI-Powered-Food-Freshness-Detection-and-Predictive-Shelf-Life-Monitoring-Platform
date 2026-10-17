@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FreshAI — Food Freshness Monitoring Platform</title>
+<meta name="description" content="AI-powered food freshness monitoring: image analysis, shelf-life prediction, spoilage detection and storage recommendations." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+<meta name="theme-color" content="#07120e" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="FreshAI" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="scroll-progress" id="progress"></div>
+
+<header class="nav" id="nav">
+  <a href="#home" class="logo"><span class="logo-dot"></span>Fresh<b>AI</b></a>
+  <nav>
+    <a href="#objective">Objective</a>
+    <a href="#demo">Live Demo</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#modules">Modules</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#stack">Tech Stack</a>
+    <a href="#metrics">Metrics</a>
+  </nav>
+  <div class="nav-actions"><button class="btn btn-sm btn-ghost" id="installBtn" hidden>⬇ Install App</button><a href="login.html" class="btn btn-sm btn-ghost">Log in</a><a href="login.html" class="btn btn-sm">Open App</a></div>
+</header>
+
+<main>
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-text reveal">
+    <span class="pill">AI-Powered • Computer Vision • Shelf-Life Prediction</span>
+    <h1>Food Freshness <span class="grad">Monitoring Platform</span></h1>
+    <p class="lead">Estimate freshness, predict remaining shelf life, detect spoilage indicators and get smart storage recommendations — from a single photo and your storage conditions.</p>
+    <div class="cta">
+      <a href="login.html" class="btn">Open the App</a>
+      <a href="#demo" class="btn btn-ghost">Try the Live Demo</a>
+    </div>
+    <div class="stats">
+      <div><b data-count="12">0</b><span>Core Modules</span></div>
+      <div><b data-count="8">0</b><span>Food Categories</span></div>
+      <div><b data-count="5">0</b><span>User Roles</span></div>
+      <div><b data-count="8">0</b><span>Week Delivery</span></div>
+    </div>
+  </div>
+  <div class="hero-visual reveal">
+    <div class="orbit">
+      <div class="core">🍎<small id="heroScore">92</small></div>
+      <div class="ring r1"><i>🥦</i></div>
+      <div class="ring r2"><i>🥛</i></div>
+      <div class="ring r3"><i>🍞</i></div>
+      <div class="ring r4"><i>🐟</i></div>
+      <div class="scan-line"></div>
+    </div>
+    <div class="float-card c1"><span class="dot good"></span> Freshness: <b>Fresh</b></div>
+    <div class="float-card c2">Shelf life: <b>6 days</b></div>
+    <div class="float-card c3"><span class="dot warn"></span> Mold risk: <b>Low</b></div>
+  </div>
+</section>
+
+<!-- OBJECTIVE -->
+<section id="objective" class="section">
+  <div class="section-head reveal"><span class="eyebrow">01 · Objective</span><h2>Reduce food waste with intelligent freshness monitoring</h2></div>
+  <div class="two-col">
+    <div class="card reveal">
+      <h3>Mission</h3>
+      <p>Build an AI-powered Food Freshness Monitoring Platform that uses <b>image analysis</b>, <b>environmental conditions</b> and <b>storage information</b> to estimate food freshness, predict remaining shelf life, detect spoilage indicators and generate storage recommendations.</p>
+      <p>The platform helps <b>consumers, retailers, restaurants, warehouses, food manufacturers and supply chain operators</b> reduce food waste and improve food quality.</p>
+    </div>
+    <div class="card reveal">
+      <h3>Outcomes</h3>
+      <ul class="check">
+        <li>AI-powered freshness platform developed and deployed</li>
+        <li>Secure authentication &amp; role-based access control</li>
+        <li>Image-based food freshness assessment workflows</li>
+        <li>Shelf-life prediction &amp; spoilage detection systems</li>
+        <li>Storage condition monitoring &amp; optimization modules</li>
+        <li>Freshness scoring &amp; food quality analytics</li>
+        <li>Dashboards for freshness monitoring &amp; inventory insights</li>
+        <li>Deployed with Docker on cloud platforms such as AWS or Azure</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo" class="section">
+  <div class="section-head reveal"><span class="eyebrow">02 · Live Demo</span><h2>Try the freshness engine</h2>
+    <p>A browser-side simulation of the weighted scoring model: <b>Visual 40% · Storage 25% · Shelf-Life 20% · Age 15%</b>. Upload a photo to run a simulated color scan, or just move the sliders.</p></div>
+  <div class="demo reveal">
+    <div class="demo-controls">
+      <label>Food category
+        <select id="category">
+          <option value="Fruits" data-life="7">🍎 Fruits</option>
+          <option value="Vegetables" data-life="8">🥦 Vegetables</option>
+          <option value="Dairy Products" data-life="10">🥛 Dairy Products</option>
+          <option value="Meat & Poultry" data-life="4">🍗 Meat &amp; Poultry</option>
+          <option value="Seafood" data-life="3">🐟 Seafood</option>
+          <option value="Bakery Products" data-life="5">🍞 Bakery Products</option>
+          <option value="Packaged Foods" data-life="90">📦 Packaged Foods</option>
+          <option value="Beverages" data-life="60">🥤 Beverages</option>
+        </select>
+      </label>
+      <label>Visual condition <output id="vVal">85</output>%
+        <input type="range" id="visual" min="0" max="100" value="85" /></label>
+      <label>Storage temperature <output id="tVal">4</output>°C
+        <input type="range" id="temp" min="-5" max="35" value="4" /></label>
+      <label>Humidity <output id="hVal">70</output>%
+        <input type="range" id="hum" min="10" max="100" value="70" /></label>
+      <label>Storage duration <output id="dVal">2</output> days
+        <input type="range" id="days" min="0" max="30" value="2" /></label>
+      <label>Packaging
+        <select id="pack"><option value="1">Vacuum / sealed</option><option value="0.85" selected>Standard wrap</option><option value="0.6">Open / none</option></select>
+      </label>
+      <div class="upload" id="drop">
+        <input type="file" id="file" accept="image/*" hidden />
+        <button class="btn btn-ghost" id="pick" type="button">📷 Upload food image</button>
+        <small>Image stays in your browser — nothing is uploaded.</small>
+      </div>
+    </div>
+
+    <div class="demo-result">
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 200 200" class="gauge">
+          <circle cx="100" cy="100" r="86" class="g-bg" />
+          <circle cx="100" cy="100" r="86" class="g-fg" id="gfg" />
+        </svg>
+        <div class="gauge-center"><b id="score">0</b><span>Freshness Score</span></div>
+      </div>
+      <div class="badge-row"><span class="status" id="status">Fresh</span></div>
+      <div class="kv">
+        <div><span>Remaining shelf life</span><b id="life">—</b></div>
+        <div><span>Spoilage probability</span><b id="spoil">—</b></div>
+        <div><span>Confidence</span><b id="conf">—</b></div>
+      </div>
+      <div class="bars">
+        <div class="bar"><span>Visual (40%)</span><i id="b1"></i></div>
+        <div class="bar"><span>Storage (25%)</span><i id="b2"></i></div>
+        <div class="bar"><span>Shelf-life (20%)</span><i id="b3"></i></div>
+        <div class="bar"><span>Age (15%)</span><i id="b4"></i></div>
+      </div>
+      <div class="preview" id="preview" hidden>
+        <img id="img" alt="Uploaded food" />
+        <div class="scan"></div>
+        <ul id="findings"></ul>
+      </div>
+      <div class="reco"><h4>💡 Recommendations</h4><ul id="reco"></ul></div>
+    </div>
+  </div>
+  <div class="cats reveal">
+    <h3>Freshness categories</h3>
+    <div class="cat-row">
+      <span class="c c1">Fresh</span><span class="c c2">Good</span><span class="c c3">Acceptable</span><span class="c c4">Near Spoilage</span><span class="c c5">Spoiled</span>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture" class="section">
+  <div class="section-head reveal"><span class="eyebrow">03 · Architecture</span><h2>System architecture</h2><p>Hover a layer to see what it contains.</p></div>
+  <div class="arch reveal">
+    <div class="layer l-clients"><h4>Clients / Users</h4>
+      <div class="chips"><span>Responsive Web App</span><span>Mobile App</span><span>Dashboards</span><span>Visualizations</span><span>Reports</span></div>
+      <small>Roles: Consumer · Retail Manager · Warehouse Operator · Food Quality Inspector · Administrator</small></div>
+    <div class="flow">▼ HTTPS / REST ▼</div>
+    <div class="layer l-gw"><h4>API Gateway (FastAPI)</h4>
+      <div class="chips"><span>Routing</span><span>Authentication</span><span>Rate Limiting</span><span>Request Validation</span><span>Load Balancing</span><span>CORS</span></div></div>
+    <div class="flow">▼ ▼ ▼</div>
+    <div class="layer l-ms"><h4>Microservices Layer</h4>
+      <div class="grid-ms">
+        <div><b>User Service</b><small>User mgmt, auth, roles, profile</small></div>
+        <div><b>Inventory Service</b><small>Food items, batches, categories, expiry</small></div>
+        <div><b>Image Analysis</b><small>Upload, preprocessing, feature extraction, spoilage detection</small></div>
+        <div><b>Freshness Assessment</b><small>Scoring, quality, spoilage probability, trends</small></div>
+        <div><b>Shelf-Life Prediction</b><small>Estimation, risk forecasting, analytics</small></div>
+        <div><b>Storage Monitoring</b><small>Temperature, humidity, compliance</small></div>
+        <div><b>Scoring Engine</b><small>Freshness, storage, shelf-life, health score</small></div>
+        <div><b>Recommendation</b><small>Storage, consumption, rotation, waste tips</small></div>
+        <div><b>Notification</b><small>Email, SMS, push, in-app alerts</small></div>
+        <div><b>Analytics</b><small>Aggregation, KPIs, insights, predictive</small></div>
+        <div><b>Report Service</b><small>PDF, Excel, custom &amp; scheduled</small></div>
+        <div><b>Admin Service</b><small>System monitoring, config, audit logs</small></div>
+      </div></div>
+    <div class="flow">▼ ▼ ▼</div>
+    <div class="layer l-ai"><h4>AI / ML &amp; Computer Vision Engine</h4>
+      <div class="chips"><span>Image Classification (Fresh/Spoiled)</span><span>Spoilage Detection (Mold, Bruise)</span><span>Freshness Scoring</span><span>Shelf-Life Prediction</span><span>Anomaly Detection</span><span>Recommendation Engine</span></div>
+      <small>Deep Learning · Computer Vision · Feature Engineering · Time Series Forecasting</small></div>
+    <div class="flow">▼ ▼ ▼</div>
+    <div class="layer l-data"><h4>Data Layer</h4>
+      <div class="grid-db">
+        <div><b>PostgreSQL</b><small>Users, inventory, batches, alerts, reports</small></div>
+        <div><b>MongoDB</b><small>Product details, image metadata, logs</small></div>
+        <div><b>Elasticsearch</b><small>Search index, categories, analytics</small></div>
+        <div><b>Vector DB (FAISS)</b><small>Image embeddings, similarity</small></div>
+        <div><b>Redis</b><small>Sessions, cache, quick lookup</small></div>
+        <div><b>InfluxDB</b><small>Sensor, temperature, humidity series</small></div>
+        <div><b>File Storage</b><small>AWS S3 / Azure Blob — images, reports</small></div>
+      </div></div>
+    <div class="side-row">
+      <div class="layer slim"><h4>External Services</h4><small>Weather API · IoT Sensors · Food DB &amp; Product Info · Food Safety Standards · Barcode/QR · Supplier APIs · Cloud Storage</small></div>
+      <div class="layer slim"><h4>Monitoring &amp; Logging</h4><small>App monitoring · Error tracking · Performance · Logs · Alert management</small></div>
+      <div class="layer slim"><h4>Backup &amp; Security</h4><small>Automated backups · Encryption · Security monitoring · Access control · Disaster recovery</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section id="modules" class="section">
+  <div class="section-head reveal"><span class="eyebrow">04 · Modules</span><h2>12 modules to be implemented</h2><p>Click a module to expand its details.</p></div>
+  <div class="modules" id="moduleGrid"></div>
+</section>
+
+<!-- DASHBOARDS -->
+<section id="dashboards" class="section">
+  <div class="section-head reveal"><span class="eyebrow">05 · Dashboards</span><h2>A dashboard for every role</h2></div>
+  <div class="tabs reveal" id="dashTabs"></div>
+  <div class="dash-panel reveal" id="dashPanel"></div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap" class="section">
+  <div class="section-head reveal"><span class="eyebrow">06 · Roadmap</span><h2>8-week implementation plan</h2></div>
+  <div class="timeline" id="timeline"></div>
+  <div class="datasets reveal">
+    <h3>Recommended datasets</h3>
+    <div class="ds-grid">
+      <div><b>Fruits Freshness Dataset</b><small>Fruit freshness classification · spoilage detection</small></div>
+      <div><b>Vegetable Freshness Dataset</b><small>Vegetable quality monitoring · shelf-life prediction</small></div>
+      <div><b>Kaggle Food Freshness Dataset</b><small>Fresh vs spoiled classification · quality assessment</small></div>
+      <div><b>Food-101 Dataset</b><small>Food category identification · product classification</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- EVALUATION -->
+<section id="evaluation" class="section">
+  <div class="section-head reveal"><span class="eyebrow">07 · Evaluation</span><h2>Evaluation criteria</h2></div>
+  <div class="eval" id="evalGrid"></div>
+</section>
+
+<!-- STACK -->
+<section id="stack" class="section">
+  <div class="section-head reveal"><span class="eyebrow">08 · Tech Stack</span><h2>Tools &amp; technology</h2></div>
+  <div class="stack" id="stackGrid"></div>
+</section>
+
+<!-- METRICS -->
+<section id="metrics" class="section">
+  <div class="section-head reveal"><span class="eyebrow">09 · Metrics</span><h2>Performance metrics</h2></div>
+  <div class="metrics" id="metricGrid"></div>
+  <div class="goals reveal">
+    <h3>Example quantitative goals</h3>
+    <div class="goal-grid">
+      <div><b>Freshness Assessment</b><p>Accurately classify food products based on freshness and quality indicators.</p></div>
+      <div><b>Shelf-Life Prediction</b><p>Predict remaining shelf life with high accuracy using image and storage data.</p></div>
+      <div><b>Waste Reduction</b><p>Reduce food waste through proactive freshness monitoring and alerts.</p></div>
+      <div><b>Inventory Optimization</b><p>Improve inventory quality management and product rotation efficiency.</p></div>
+      <div><b>Platform Performance</b><p>Support large-scale monitoring and prediction workflows with stable performance and responsiveness.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="logo"><span class="logo-dot"></span>Fresh<b>AI</b></div>
+  <p>Food Freshness Monitoring Platform — reduce waste, improve quality.</p>
+  <small>Demo scores are simulated in the browser for illustration and are not food-safety advice. When in doubt, throw it out.</small>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

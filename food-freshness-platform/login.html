@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign in — FreshAI</title>
+<meta name="theme-color" content="#07120e" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#07120e;--bg2:#0c1d16;--card:rgba(255,255,255,.05);--line:rgba(255,255,255,.1);--text:#e8f5ee;--muted:#8fb0a0;--g1:#34d399;--g2:#22d3ee;--bad:#f87171}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:grid;grid-template-columns:1.05fr 1fr;overflow-x:hidden}
+#bg{position:fixed;inset:0;z-index:-1;width:100%;height:100%}
+h1,h2,h3{font-family:'Space Grotesk',Inter,sans-serif}
+a{color:var(--g1);text-decoration:none}a:hover{text-decoration:underline}
+.brand{padding:48px 6vw;display:flex;flex-direction:column;justify-content:space-between;gap:30px}
+.logo{display:flex;align-items:center;font-family:'Space Grotesk';font-weight:700;font-size:1.4rem;color:var(--text)}
+.logo b{color:var(--g1)}.logo i{width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 0 14px var(--g1);margin-right:9px;animation:pulse 2s infinite}
+@keyframes pulse{50%{transform:scale(1.35);opacity:.7}}
+.brand h1{font-size:clamp(2rem,3.6vw,3.2rem);line-height:1.1;margin-bottom:16px}
+.grad{background:linear-gradient(120deg,var(--g1),var(--g2),#a7f3d0,var(--g1));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:300% 0}}
+.brand p{color:var(--muted);max-width:480px}
+.feats{display:grid;gap:12px;margin-top:26px}
+.feats div{display:flex;gap:12px;align-items:center;color:var(--muted);font-size:.93rem;animation:rise .8s both}
+.feats div:nth-child(2){animation-delay:.12s}.feats div:nth-child(3){animation-delay:.24s}.feats div:nth-child(4){animation-delay:.36s}
+.feats span{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+.gauge{width:150px;position:relative;margin-top:10px}
+.gauge svg{transform:rotate(-90deg)}
+.gauge circle{fill:none;stroke-width:12}
+.gauge .bg{stroke:var(--line)}.gauge .fg{stroke:var(--g1);stroke-linecap:round;stroke-dasharray:377;stroke-dashoffset:377;animation:fill 2.4s .4s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes fill{to{stroke-dashoffset:38}}
+.gauge b{position:absolute;inset:0;display:grid;place-items:center;font:700 2.1rem 'Space Grotesk'}
+.panel{display:grid;place-items:center;padding:30px 5vw;background:rgba(7,18,14,.55);backdrop-filter:blur(14px);border-left:1px solid var(--line)}
+.box{width:100%;max-width:430px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin-bottom:24px}
+.tabs button{padding:11px;border:0;border-radius:11px;background:none;color:var(--muted);font:600 .92rem Inter;cursor:pointer;transition:.2s}
+.tabs button.on{background:linear-gradient(135deg,var(--g1),var(--g2));color:#032016}
+h2{font-size:1.7rem;margin-bottom:6px}.sub{color:var(--muted);margin-bottom:22px;font-size:.93rem}
+form{display:grid;gap:16px}
+label{display:grid;gap:7px;font-size:.84rem;color:var(--muted);font-weight:500}
+.f{position:relative}
+input[type=text],input[type=email],input[type=password],select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.28);color:var(--text);font:inherit;font-size:.95rem;outline:0;transition:.2s}
+input:focus,select:focus{border-color:var(--g1);box-shadow:0 0 0 3px rgba(52,211,153,.18)}
+.eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--muted);cursor:pointer;padding:6px 8px;font-size:.8rem}
+.row{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--muted)}
+.row label{display:flex;flex-direction:row;align-items:center;gap:8px}
+.btn{width:100%;padding:14px;border:0;border-radius:12px;font:600 1rem Inter;cursor:pointer;color:#032016;background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 8px 26px rgba(52,211,153,.28);transition:.25s}
+.btn:hover{transform:translateY(-2px)}.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.err{display:none;padding:11px 14px;border-radius:12px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:#fecaca;font-size:.88rem}
+.err.show{display:block;animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.meter{height:5px;border-radius:9px;background:var(--line);overflow:hidden}.meter i{display:block;height:100%;width:0;transition:.3s;background:var(--bad)}
+.hint{font-size:.78rem;color:var(--muted)}
+.demo{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.demo h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;font-family:Inter}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);text-align:left;cursor:pointer;font:inherit;font-size:.82rem;transition:.2s}
+.chip:hover{border-color:var(--g1);transform:translateY(-2px)}
+.chip b{display:block;font-size:.86rem}.chip span{color:var(--muted);font-size:.74rem}
+.chip:last-child{grid-column:1/-1}
+.demo p{margin-top:10px;font-size:.78rem;color:var(--muted)}
+.back{margin-top:20px;text-align:center;font-size:.85rem}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;padding:20px;z-index:10}
+.modal.show{display:grid}.modal div{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:26px;max-width:400px}
+.modal h3{margin-bottom:10px}.modal p{color:var(--muted);font-size:.92rem;margin-bottom:16px}
+@media(max-width:900px){body{grid-template-columns:1fr}.brand{padding:26px 6vw 10px}.brand .feats,.gauge,.brand p{display:none}.panel{border-left:0;background:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<section class="brand">
+  <a href="index.html" class="logo"><i></i>Fresh<b>AI</b></a>
+  <div>
+    <h1>Know what's fresh,<br /><span class="grad">before it spoils.</span></h1>
+    <p>Sign in to monitor freshness, predict shelf life, track storage conditions and cut food waste.</p>
+    <div class="feats">
+      <div><span>📷</span>Photo-based freshness scoring</div>
+      <div><span>⏳</span>Shelf-life prediction and FEFO alerts</div>
+      <div><span>🌡️</span>Live storage-condition monitoring</div>
+      <div><span>📊</span>Role-based dashboards and reports</div>
+    </div>
+  </div>
+  <div class="gauge"><svg viewBox="0 0 140 140" width="150"><circle class="bg" cx="70" cy="70" r="60"/><circle class="fg" cx="70" cy="70" r="60"/></svg><b>92</b></div>
+</section>
+
+<section class="panel"><div class="box">
+  <div class="tabs"><button id="tSign" class="on" type="button">Sign in</button><button id="tReg" type="button">Create account</button></div>
+
+  <form id="fSign" novalidate>
+    <div><h2>Welcome back</h2><p class="sub">Sign in to your FreshAI workspace.</p></div>
+    <div class="err" id="eSign" role="alert"></div>
+    <label>Email<input type="email" id="sEmail" autocomplete="username" placeholder="you@company.com" required /></label>
+    <label>Password<div class="f"><input type="password" id="sPw" autocomplete="current-password" placeholder="Your password" required /><button class="eye" type="button" data-eye="sPw">Show</button></div></label>
+    <div class="row"><label><input type="checkbox" id="remember" /> Keep me signed in</label><a href="#" id="forgot">Forgot password?</a></div>
+    <button class="btn" id="bSign">Sign in</button>
+  </form>
+
+  <form id="fReg" novalidate hidden>
+    <div><h2>Create your account</h2><p class="sub">Create your own login in seconds. Free demo account.</p></div>
+    <div class="err" id="eReg" role="alert"></div>
+    <label>Full name<input type="text" id="rName" autocomplete="name" placeholder="Your name" required /></label>
+    <label>Email<input type="email" id="rEmail" autocomplete="email" placeholder="you@company.com" required /></label>
+    <label>Password<div class="f"><input type="password" id="rPw" autocomplete="new-password" placeholder="At least 8 characters" required /><button class="eye" type="button" data-eye="rPw">Show</button></div>
+      <div class="meter"><i id="meter"></i></div><span class="hint" id="pwHint">Use 8+ characters with letters and numbers.</span></label>
+    <label>Confirm password<input type="password" id="rPw2" autocomplete="new-password" placeholder="Repeat password" required /></label>
+    <label>Explore the app as<select id="rRole"><option value="consumer">Consumer — home kitchen</option><option value="retail">Retail Manager — store inventory</option><option value="warehouse">Warehouse Operator — storage zones</option><option value="inspector">Quality Inspector — inspections</option></select><span class="hint">Pick a role to see its dashboard. You can create other accounts to compare roles.</span></label>
+    <button class="btn" id="bReg">Create account</button>
+  </form>
+
+  <div class="demo">
+    <h3>Try a demo account (click to fill)</h3>
+    <div class="chips" id="chips">
+      <button class="chip" data-e="consumer@freshai.demo" type="button"><b>Consumer</b><span>Home kitchen</span></button>
+      <button class="chip" data-e="retail@freshai.demo" type="button"><b>Retail Manager</b><span>Store inventory</span></button>
+      <button class="chip" data-e="warehouse@freshai.demo" type="button"><b>Warehouse Operator</b><span>Storage zones</span></button>
+      <button class="chip" data-e="inspector@freshai.demo" type="button"><b>Quality Inspector</b><span>Inspections</span></button>
+      <button class="chip" data-e="admin@freshai.demo" type="button"><b>Administrator</b><span>Users, audit, all data</span></button>
+    </div>
+    <p>All demo accounts use password <b>Fresh@123</b>. Data is stored only in your browser.</p>
+  </div>
+  <p class="back"><a href="index.html">← Back to website</a></p>
+</div></section>
+
+<div class="modal" id="modal"><div><h3>Reset your password</h3><p>Demo reset: enter the email you signed up with and choose a new password. (A real system would email you a link.)</p>
+<form id="fReset" novalidate style="gap:12px"><div class="err" id="eReset" role="alert"></div>
+<label>Email<input type="email" id="xEmail" placeholder="you@company.com" /></label><label>New password<input type="password" id="xPw" autocomplete="new-password" placeholder="8+ characters, letters and numbers" /></label>
+<div style="display:flex;gap:10px"><button class="btn" id="bReset">Reset password</button><button class="btn" id="mClose" type="button" style="background:var(--card);color:var(--text);box-shadow:none;border:1px solid var(--line)">Cancel</button></div></form></div></div>
+
+<script src="core.js"></script>
+<script>
+(function(){
+  /* particles */
+  const c=document.getElementById('bg'),x=c.getContext('2d');let w,h,p=[];
+  function rs(){w=c.width=innerWidth;h=c.height=innerHeight;p=Array.from({length:Math.min(70,w*h/22000|0)},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3}))}
+  addEventListener('resize',rs);rs();
+  (function f(){x.clearRect(0,0,w,h);const g=x.createRadialGradient(w*.2,h*.2,0,w*.2,h*.2,w*.6);g.addColorStop(0,'rgba(52,211,153,.10)');g.addColorStop(1,'transparent');x.fillStyle=g;x.fillRect(0,0,w,h);
+    p.forEach(a=>{a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>w)a.vx*=-1;if(a.y<0||a.y>h)a.vy*=-1;x.beginPath();x.arc(a.x,a.y,1.8,0,7);x.fillStyle='rgba(52,211,153,.6)';x.fill()});
+    for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){const d=Math.hypot(p[i].x-p[j].x,p[i].y-p[j].y);if(d<120){x.strokeStyle='rgba(34,211,238,'+.13*(1-d/120)+')';x.beginPath();x.moveTo(p[i].x,p[i].y);x.lineTo(p[j].x,p[j].y);x.stroke()}}
+    requestAnimationFrame(f)})();
+
+  FA.init();
+  if(FA.session()){location.replace('app.html');return}
+  const $=id=>document.getElementById(id);
+  const next=new URLSearchParams(location.search).get('next');
+  function go(){location.href=(next&&/^#\/[a-z]+$/.test(next))?'app.html'+next:'app.html'}
+  function tab(reg){$('fSign').hidden=reg;$('fReg').hidden=!reg;$('tSign').classList.toggle('on',!reg);$('tReg').classList.toggle('on',reg)}
+  $('tSign').onclick=()=>tab(false);$('tReg').onclick=()=>tab(true);
+  document.querySelectorAll('[data-eye]').forEach(b=>b.onclick=()=>{const i=$(b.dataset.eye);i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'Show':'Hide'});
+  function err(id,m){const e=$(id);e.style.cssText='';e.textContent=m;e.classList.remove('show');void e.offsetWidth;e.classList.add('show')}
+  const okEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  $('fSign').onsubmit=e=>{e.preventDefault();const em=$('sEmail').value.trim(),pw=$('sPw').value;
+    if(!okEmail(em))return err('eSign','Enter a valid email address.');if(!pw)return err('eSign','Enter your password.');
+    const b=$('bSign');b.disabled=true;b.textContent='Signing in…';
+    setTimeout(()=>{const r=FA.login(em,pw,$('remember').checked);if(r.ok){b.textContent='Welcome, '+r.user.name.split(' ')[0]+' ✓';setTimeout(go,350)}else{b.disabled=false;b.textContent='Sign in';err('eSign',r.error)}},350)};
+  function strength(v){let s=0;if(v.length>=8)s++;if(v.length>=12)s++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++;if(/\d/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;return s}
+  $('rPw').oninput=e=>{const s=strength(e.target.value),m=$('meter');m.style.width=s*20+'%';m.style.background=s<3?'#f87171':s<4?'#fbbf24':'#34d399';$('pwHint').textContent=e.target.value?['Very weak','Weak','Fair','Good','Strong','Excellent'][s]:'Use 8+ characters with letters and numbers.'};
+  $('fReg').onsubmit=e=>{e.preventDefault();const n=$('rName').value.trim(),em=$('rEmail').value.trim(),pw=$('rPw').value;
+    if(n.length<2)return err('eReg','Enter your full name.');if(!okEmail(em))return err('eReg','Enter a valid email address.');
+    const pi=FA.pwIssue(pw);if(pi)return err('eReg',pi);if(pw!==$('rPw2').value)return err('eReg','Passwords do not match.');
+    const r=FA.register(n,em,pw,$('rRole').value);if(!r.ok)return err('eReg',r.error);const l=FA.login(em,pw,false);if(l.ok)go()};
+  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{tab(false);$('sEmail').value=b.dataset.e;$('sPw').value='Fresh@123';$('sPw').type='password';$('bSign').focus()});
+  $('forgot').onclick=e=>{e.preventDefault();$('xEmail').value=$('sEmail').value;$('modal').classList.add('show')};$('mClose').onclick=()=>$('modal').classList.remove('show');
+  $('fReset').onsubmit=e=>{e.preventDefault();const r=FA.resetPassword($('xEmail').value,$('xPw').value);if(!r.ok)return err('eReset',r.error);$('modal').classList.remove('show');$('sEmail').value=$('xEmail').value;$('sPw').value='';$('sPw').focus();err('eSign','Password updated — sign in with your new password.');$('eSign').style.cssText='display:block;background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.4);color:#a7f3d0'};
+  if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
