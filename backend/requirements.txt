@@ -1,0 +1,17 @@
+fastapi>=0.115.0
+uvicorn>=0.30.0
+pydantic>=2.8.0
+sqlalchemy>=2.0.30
+psycopg2-binary>=2.9.9
+passlib[bcrypt]>=1.7.4
+bcrypt>=4.0.1
+pillow>=10.4.0
+numpy>=1.26.0
+tensorflow-cpu==2.21.0
+openpyxl>=3.1.5
+reportlab>=4.2.0
+python-multipart>=0.0.9
+requests>=2.31.0
+opencv-python-headless
+psycopg2-binary
+psycopg[binary]>=3.2

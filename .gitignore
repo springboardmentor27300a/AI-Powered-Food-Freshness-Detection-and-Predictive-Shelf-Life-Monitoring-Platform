@@ -1,1 +1,22 @@
+backend/dataset/
 
+# Python cache and environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Secrets and local environment settings
+.env
+.env.*
+!.env.example
+
+# Local uploads and generated files
+backend/uploads/
+.pytest_cache/
+
+# Virtual environments
+venv/
+backend/venv/
+backend/venv313/

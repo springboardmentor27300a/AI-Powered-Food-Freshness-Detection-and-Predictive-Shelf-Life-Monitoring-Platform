@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshSense AI - Food Inventory & FEFO</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-layout">
+
+        <!-- ================= FIXED SIDEBAR NAVIGATION ================= -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="brand">
+                    <div class="logo">🌿</div>
+                    <span>FreshSense <span>AI</span></span>
+                </a>
+                <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">✕</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Overview</span>
+                </a>
+                <a href="inspection.html" class="nav-item">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-text">Food Inspection</span>
+                </a>
+                <a href="storage.html" class="nav-item">
+                    <span class="nav-icon">🌡️</span>
+                    <span class="nav-text">Storage Analysis</span>
+                </a>
+                <a href="shelf-life.html" class="nav-item">
+                    <span class="nav-icon">⏳</span>
+                    <span class="nav-text">Shelf-Life</span>
+                </a>
+                <a href="inventory.html" class="nav-item active">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-text">Alerts</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Analytics</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-preview">
+                    <div class="user-avatar" id="sidebarAvatar">👤</div>
+                    <div class="user-info-text">
+                        <span class="user-name" id="sidebarUserName">User</span>
+                        <span class="user-role" id="sidebarUserRole">Consumer</span>
+                    </div>
+                </div>
+                <button class="sidebar-logout-btn" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar backdrop for mobile drawer -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+        <!-- ================= MAIN CONTENT WRAPPER ================= -->
+        <div class="main-wrapper">
+
+            <!-- STICKY TOPBAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">
+                        ☰
+                    </button>
+                    <div class="breadcrumbs">
+                        <span class="breadcrumb-root">FreshSense AI</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">Inventory</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <span class="user-role-badge" id="headerRole">Role: Consumer</span>
+                    <span class="header-user-text">Welcome, <strong class="user-email" id="headerUser">User</strong></span>
+                    <button class="topbar-logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT: INVENTORY ONLY -->
+            <main class="page-content">
+
+                <div class="page-header">
+                    <div>
+                        <div class="tag">SUPPLY CHAIN & WASTE MITIGATION</div>
+                        <h1>Food Inventory & FEFO Rotation</h1>
+                        <p>Track your food stock across all 8 food categories with automated First-Expired, First-Out (FEFO) priority queues to prevent food spoilage and minimize waste.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-primary" onclick="document.getElementById('addInventoryFormCard').scrollIntoView({behavior: 'smooth'})">➕ Add Item</button>
+                        <a href="reports.html" class="btn-secondary">📥 Export CSV</a>
+                    </div>
+                </div>
+
+                <!-- FEFO WASTE REDUCTION INSIGHTS BANNER -->
+                <div id="wasteReductionBox" style="margin-bottom: 24px;"></div>
+
+                <!-- ADD FOOD ITEM FORM CARD -->
+                <section class="card" id="addInventoryFormCard">
+                    <div class="card-header">
+                        <h2>➕ Register Food Item to Inventory</h2>
+                        <span class="badge badge-info">PostgreSQL Persistent Storage</span>
+                    </div>
+
+                    <div class="form-grid-4">
+                        <div>
+                            <label for="invName">Food Name *</label>
+                            <input type="text" id="invName" placeholder="e.g. Fresh Gala Apples" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="invCat">Food Category *</label>
+                            <select id="invCat" class="custom-select">
+                                <option value="Fruits">Fruits</option>
+                                <option value="Vegetables">Vegetables</option>
+                                <option value="Dairy Products">Dairy Products</option>
+                                <option value="Meat & Poultry">Meat & Poultry</option>
+                                <option value="Seafood">Seafood</option>
+                                <option value="Bakery Products">Bakery Products</option>
+                                <option value="Packaged Foods">Packaged Foods</option>
+                                <option value="Beverages">Beverages</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="invQty">Quantity *</label>
+                            <input type="number" id="invQty" min="0.1" step="0.5" value="1" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="invUnit">Unit *</label>
+                            <select id="invUnit" class="custom-select">
+                                <option value="items">items / pcs</option>
+                                <option value="kg">kg</option>
+                                <option value="grams">grams</option>
+                                <option value="liters">liters</option>
+                                <option value="packs">packs / boxes</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="invExpiry">Expiry Date *</label>
+                            <input type="date" id="invExpiry" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="invPurchaseDate">Purchase Date</label>
+                            <input type="date" id="invPurchaseDate" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="invBatch">Batch Info / Lot #</label>
+                            <input type="text" id="invBatch" placeholder="e.g. LOT-5921" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="invLocation">Storage Location</label>
+                            <select id="invLocation" class="custom-select">
+                                <option value="Refrigerator">Refrigerator</option>
+                                <option value="Freezer">Freezer</option>
+                                <option value="Pantry">Pantry Cabinet</option>
+                                <option value="Countertop">Countertop</option>
+                                <option value="Cold Room">Cold Room / Warehouse</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="invFreshness">Freshness Status</label>
+                            <select id="invFreshness" class="custom-select">
+                                <option value="Fresh">Fresh</option>
+                                <option value="Good">Good</option>
+                                <option value="Acceptable">Acceptable</option>
+                                <option value="Near Spoilage">Near Spoilage</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="invStorageTemp">Storage Temp (°C)</label>
+                            <input type="number" id="invStorageTemp" step="0.5" placeholder="e.g. 4.0" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="invHumidity">Humidity (%)</label>
+                            <input type="number" id="invHumidity" step="1" placeholder="e.g. 85" class="custom-input">
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button type="button" class="btn-primary" style="width: 100%; height: 42px;" onclick="addInventoryItem()">
+                                Add To Inventory
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- INVENTORY TABLE CARD WITH SEARCH & FILTERS -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>📦 Tracked Inventory Table</h2>
+                        <button class="btn-secondary" onclick="loadInventory(); loadInventoryInsights();">🔄 Refresh</button>
+                    </div>
+
+                    <!-- SEARCH & FILTER TOOLBAR -->
+                    <div class="table-toolbar">
+                        <div class="toolbar-search">
+                            <input type="text" id="invSearchInput" placeholder="🔍 Search food name, batch, location..." class="custom-input">
+                        </div>
+                        <div class="toolbar-filters">
+                            <select id="invCategoryFilter" class="custom-select" style="min-width: 170px;">
+                                <option value="ALL">All Categories</option>
+                                <option value="Fruits">Fruits</option>
+                                <option value="Vegetables">Vegetables</option>
+                                <option value="Dairy Products">Dairy Products</option>
+                                <option value="Meat & Poultry">Meat & Poultry</option>
+                                <option value="Seafood">Seafood</option>
+                                <option value="Bakery Products">Bakery Products</option>
+                                <option value="Packaged Foods">Packaged Foods</option>
+                                <option value="Beverages">Beverages</option>
+                            </select>
+
+                            <select id="invExpiryFilter" class="custom-select" style="min-width: 170px;">
+                                <option value="ALL">All Priorities</option>
+                                <option value="CONSUME_FIRST">Consume First (FEFO)</option>
+                                <option value="EXPIRING_SOON">Expiring Soon (≤5d)</option>
+                                <option value="STABLE">Stable (>5d)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- DATA TABLE (11 COLUMNS AS SPECIFIED) -->
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Food Name</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Batch</th>
+                                    <th>Location</th>
+                                    <th>Purchase Date</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days Remaining</th>
+                                    <th>Freshness</th>
+                                    <th>FEFO Priority</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryBody">
+                                <tr>
+                                    <td colspan="11" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                        Loading inventory from database...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- ================= EDIT INVENTORY MODAL ================= -->
+    <div class="modal-backdrop" id="editModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>✏️ Edit Inventory Item</h3>
+                <button class="modal-close" onclick="closeEditInventoryModal()">✕</button>
+            </div>
+            <input type="hidden" id="editItemId">
+            <div class="form-grid-2">
+                <div>
+                    <label for="editItemName">Food Name</label>
+                    <input type="text" id="editItemName" class="custom-input">
+                </div>
+                <div>
+                    <label for="editItemCat">Category</label>
+                    <select id="editItemCat" class="custom-select">
+                        <option value="Fruits">Fruits</option>
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Dairy Products">Dairy Products</option>
+                        <option value="Meat & Poultry">Meat & Poultry</option>
+                        <option value="Seafood">Seafood</option>
+                        <option value="Bakery Products">Bakery Products</option>
+                        <option value="Packaged Foods">Packaged Foods</option>
+                        <option value="Beverages">Beverages</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editItemQty">Quantity</label>
+                    <input type="number" id="editItemQty" step="0.5" class="custom-input">
+                </div>
+                <div>
+                    <label for="editItemUnit">Unit</label>
+                    <select id="editItemUnit" class="custom-select">
+                        <option value="items">items</option>
+                        <option value="kg">kg</option>
+                        <option value="grams">grams</option>
+                        <option value="liters">liters</option>
+                        <option value="packs">packs</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="editItemExpiry">Expiry Date</label>
+                    <input type="date" id="editItemExpiry" class="custom-input">
+                </div>
+                <div>
+                    <label for="editItemLocation">Storage Location</label>
+                    <select id="editItemLocation" class="custom-select">
+                        <option value="Refrigerator">Refrigerator</option>
+                        <option value="Freezer">Freezer</option>
+                        <option value="Pantry">Pantry Cabinet</option>
+                        <option value="Countertop">Countertop</option>
+                        <option value="Cold Room">Cold Room / Warehouse</option>
+                    </select>
+                </div>
+                <div style="grid-column: span 2;">
+                    <label for="editItemFreshness">Freshness Status</label>
+                    <select id="editItemFreshness" class="custom-select">
+                        <option value="Fresh">Fresh</option>
+                        <option value="Good">Good</option>
+                        <option value="Acceptable">Acceptable</option>
+                        <option value="Near Spoilage">Near Spoilage</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeEditInventoryModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="saveEditInventoryItem()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="script.js"></script>
+</body>
+</html>

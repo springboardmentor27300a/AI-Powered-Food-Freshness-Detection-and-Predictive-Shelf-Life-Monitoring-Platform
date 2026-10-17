@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshSense AI - AI-Powered Food Freshness Monitoring System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+        <a href="index.html" class="brand">
+            <div class="logo">🌿</div>
+            <span>FreshSense <span>AI</span></span>
+        </a>
+
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#authSection" onclick="showLogin()">Login</a></li>
+        </ul>
+
+        <div>
+            <button class="btn-secondary" onclick="scrollToAuth('register')">Get Started</button>
+        </div>
+    </header>
+
+    <!-- ================= HERO & AUTH SECTION ================= -->
+    <main class="landing-hero" id="home">
+
+        <!-- HERO CONTENT -->
+        <section class="hero-content">
+            <div class="tag">AI-POWERED FOOD MONITORING</div>
+
+            <h1>Know your food.<br><span>Before it's too late.</span></h1>
+
+            <p class="hero-description">
+                FreshSense AI empowers consumers and kitchens with deep-learning food inspection.
+                Upload food images to instantly detect spoilage, measure freshness confidence, and
+                maintain accurate food inventory logs with zero guesswork.
+            </p>
+
+            <div class="features-list" id="features">
+                <div class="feature-item">
+                    <div class="feature-icon">🔍</div>
+                    <div>
+                        <b>AI Freshness Detection</b>
+                        <small>Classifies food as Fresh or Spoiled using high-accuracy MobileNetV2</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">🛡️</div>
+                    <div>
+                        <b>Food Safety Monitoring</b>
+                        <small>Helps reduce food poisoning risks and prevents unnecessary food waste</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div>
+                        <b>Instant Results</b>
+                        <small>Sub-second image inference with precise confidence ratings</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">📜</div>
+                    <div>
+                        <b>Prediction History</b>
+                        <small>Persistent database logs of all past food assessments</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <div>
+                        <b>Real-Time Statistics</b>
+                        <small>Automated dashboard tracking fresh ratios and inspection trends</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;" id="about">
+                <button class="choose-btn" onclick="scrollToAuth('register')" style="padding: 14px 28px; font-size: 16px;">
+                    Get Started with FreshSense →
+                </button>
+            </div>
+        </section>
+
+        <!-- AUTH CARDS (RIGHT SIDE) -->
+        <aside class="auth-area" id="authSection">
+
+            <!-- LOGIN CARD -->
+            <div class="auth-card" id="loginBox">
+                <div class="auth-badge">● Welcome Back</div>
+                <h2>Sign In</h2>
+                <p class="auth-subtext">Access your personal food freshness dashboard.</p>
+
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+                </div>
+
+                <div class="form-row">
+                    <label class="check-label">
+                        <input type="checkbox" id="rememberMe">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-link" onclick="alert('Please contact your administrator to reset your password.'); return false;">Forgot password?</a>
+                </div>
+
+                <button type="button" class="main-button" id="loginBtn" onclick="login()">
+                    Enter Dashboard <span>→</span>
+                </button>
+
+                <div class="divider">
+                    <span></span>
+                    <text>OR</text>
+                    <span></span>
+                </div>
+
+                <p class="account-text">
+                    New to FreshSense?
+                    <a href="#" onclick="showRegister(); return false;">Create an account</a>
+                </p>
+            </div>
+
+            <!-- REGISTER CARD -->
+            <div class="auth-card hidden" id="registerBox">
+                <div class="auth-badge">● Get Started</div>
+                <h2>Create Account</h2>
+                <p class="auth-subtext">Start monitoring freshness and quality today.</p>
+
+                <div class="form-group">
+                    <label for="registerName">Full Name</label>
+                    <input type="text" id="registerName" placeholder="Your Full Name" autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">Email Address</label>
+                    <input type="email" id="registerEmail" placeholder="you@example.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" placeholder="At least 6 characters" autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerConfirmPassword">Confirm Password</label>
+                    <input type="password" id="registerConfirmPassword" placeholder="Repeat your password" autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerRole">Platform Role</label>
+                    <select id="registerRole" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+                        <option value="Consumer">Consumer</option>
+                        <option value="Retail Manager">Retail Manager</option>
+                        <option value="Warehouse Operator">Warehouse Operator</option>
+                        <option value="Food Quality Inspector">Food Quality Inspector</option>
+                        <option value="Administrator">Administrator</option>
+                    </select>
+                </div>
+
+                <button type="button" class="main-button" id="registerBtn" onclick="register()">
+                    Create Account <span>→</span>
+                </button>
+
+                <div class="divider">
+                    <span></span>
+                    <text>OR</text>
+                    <span></span>
+                </div>
+
+                <p class="account-text">
+                    Already have an account?
+                    <a href="#" onclick="showLogin(); return false;">Sign in</a>
+                </p>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        function scrollToAuth(mode) {
+            if (mode === 'register') {
+                showRegister();
+            } else {
+                showLogin();
+            }
+            document.getElementById('authSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshSense AI - Shelf-Life Prediction</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-layout">
+
+        <!-- ================= FIXED SIDEBAR NAVIGATION ================= -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="brand">
+                    <div class="logo">🌿</div>
+                    <span>FreshSense <span>AI</span></span>
+                </a>
+                <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">✕</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Overview</span>
+                </a>
+                <a href="inspection.html" class="nav-item">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-text">Food Inspection</span>
+                </a>
+                <a href="storage.html" class="nav-item">
+                    <span class="nav-icon">🌡️</span>
+                    <span class="nav-text">Storage Analysis</span>
+                </a>
+                <a href="shelf-life.html" class="nav-item active">
+                    <span class="nav-icon">⏳</span>
+                    <span class="nav-text">Shelf-Life</span>
+                </a>
+                <a href="inventory.html" class="nav-item">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-text">Alerts</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Analytics</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-preview">
+                    <div class="user-avatar" id="sidebarAvatar">👤</div>
+                    <div class="user-info-text">
+                        <span class="user-name" id="sidebarUserName">User</span>
+                        <span class="user-role" id="sidebarUserRole">Consumer</span>
+                    </div>
+                </div>
+                <button class="sidebar-logout-btn" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar backdrop for mobile drawer -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+        <!-- ================= MAIN CONTENT WRAPPER ================= -->
+        <div class="main-wrapper">
+
+            <!-- STICKY TOPBAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">
+                        ☰
+                    </button>
+                    <div class="breadcrumbs">
+                        <span class="breadcrumb-root">FreshSense AI</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">Shelf-Life</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <span class="user-role-badge" id="headerRole">Role: Consumer</span>
+                    <span class="header-user-text">Welcome, <strong class="user-email" id="headerUser">User</strong></span>
+                    <button class="topbar-logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT: SHELF-LIFE ONLY -->
+            <main class="page-content">
+
+                <div class="page-header">
+                    <div>
+                        <div class="tag">PREDICTIVE SPOILAGE KINETICS</div>
+                        <h1>Predictive Shelf-Life & Expiry Estimation</h1>
+                        <p>Calculate remaining safe consumption days based on food category baseline, current freshness grade, and temperature acceleration kinetics (Q10 Arrhenius model).</p>
+                    </div>
+                </div>
+
+                <!-- SHELF-LIFE INPUTS FORM -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>⏳ Shelf-Life Calculation Parameters</h2>
+                        <span class="badge badge-info">Q10 Temperature Degradation Model</span>
+                    </div>
+
+                    <div class="form-grid-3">
+                        <div>
+                            <label for="slCat">Food Category *</label>
+                            <select id="slCat" class="custom-select">
+                                <option value="Fruits">Fruits</option>
+                                <option value="Vegetables">Vegetables</option>
+                                <option value="Dairy Products">Dairy Products</option>
+                                <option value="Meat & Poultry">Meat & Poultry</option>
+                                <option value="Seafood">Seafood</option>
+                                <option value="Bakery Products">Bakery Products</option>
+                                <option value="Packaged Foods">Packaged Foods</option>
+                                <option value="Beverages">Beverages</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="slFreshness">Freshness Score (0–100%) *</label>
+                            <input type="number" id="slFreshness" min="0" max="100" value="85" step="0.5" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="slTemp">Storage Temperature (°C) *</label>
+                            <input type="number" id="slTemp" value="4.0" step="0.5" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="slDaysStored">Days Already Stored</label>
+                            <input type="number" id="slDaysStored" value="1" min="0" class="custom-input">
+                        </div>
+                        <div>
+                            <label for="slExpiry">Printed Expiry Date (Optional)</label>
+                            <input type="date" id="slExpiry" class="custom-input">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <button type="button" class="btn-primary" onclick="calculateShelfLifeManual()">
+                            ⏳ Calculate Remaining Shelf-Life
+                        </button>
+                    </div>
+
+                    <!-- SHELF-LIFE RESULT BOX -->
+                    <div id="shelfLifeResultBox"></div>
+
+                </section>
+
+                <!-- KINETIC SCIENTIFIC EXPLANATION -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>🔬 How FreshSense AI Calculates Shelf-Life</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                        Our estimation combines empirical food microbiology baselines with kinetic Arrhenius reaction rates:
+                    </p>
+                    <div class="form-grid-3">
+                        <div class="eval-box">
+                            <h4 style="color: var(--primary-light); margin-bottom: 6px;">1. Category Baseline</h4>
+                            <p style="font-size: 13px; color: var(--text-secondary);">
+                                Uses calibrated baseline lifespans under optimal refrigeration (e.g., Seafood: 2 days, Meat: 3 days, Dairy: 10 days, Fruits: 7 days).
+                            </p>
+                        </div>
+                        <div class="eval-box">
+                            <h4 style="color: var(--primary-light); margin-bottom: 6px;">2. Visual Freshness Factor</h4>
+                            <p style="font-size: 13px; color: var(--text-secondary);">
+                                Multiplies the remaining lifespan by the AI freshness score percentage. Samples showing degradation experience proportional lifespan deductions.
+                            </p>
+                        </div>
+                        <div class="eval-box">
+                            <h4 style="color: var(--primary-light); margin-bottom: 6px;">3. Q10 Temperature Penalty</h4>
+                            <p style="font-size: 13px; color: var(--text-secondary);">
+                                Biochemical degradation reaction rates double for every 10°C elevation above optimal refrigeration threshold according to Q10 kinetics.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- Application Script -->
+    <script src="script.js"></script>
+</body>
+</html>

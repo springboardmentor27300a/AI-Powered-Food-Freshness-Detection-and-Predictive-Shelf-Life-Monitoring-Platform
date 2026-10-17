@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshSense AI - Reports & Data Exports</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-layout">
+
+        <!-- ================= FIXED SIDEBAR NAVIGATION ================= -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="brand">
+                    <div class="logo">🌿</div>
+                    <span>FreshSense <span>AI</span></span>
+                </a>
+                <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">✕</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Overview</span>
+                </a>
+                <a href="inspection.html" class="nav-item">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-text">Food Inspection</span>
+                </a>
+                <a href="storage.html" class="nav-item">
+                    <span class="nav-icon">🌡️</span>
+                    <span class="nav-text">Storage Analysis</span>
+                </a>
+                <a href="shelf-life.html" class="nav-item">
+                    <span class="nav-icon">⏳</span>
+                    <span class="nav-text">Shelf-Life</span>
+                </a>
+                <a href="inventory.html" class="nav-item">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-text">Alerts</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Analytics</span>
+                </a>
+                <a href="reports.html" class="nav-item active">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-preview">
+                    <div class="user-avatar" id="sidebarAvatar">👤</div>
+                    <div class="user-info-text">
+                        <span class="user-name" id="sidebarUserName">User</span>
+                        <span class="user-role" id="sidebarUserRole">Consumer</span>
+                    </div>
+                </div>
+                <button class="sidebar-logout-btn" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar backdrop for mobile drawer -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+        <!-- ================= MAIN CONTENT WRAPPER ================= -->
+        <div class="main-wrapper">
+
+            <!-- STICKY TOPBAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">
+                        ☰
+                    </button>
+                    <div class="breadcrumbs">
+                        <span class="breadcrumb-root">FreshSense AI</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">Reports</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <span class="user-role-badge" id="headerRole">Role: Consumer</span>
+                    <span class="header-user-text">Welcome, <strong class="user-email" id="headerUser">User</strong></span>
+                    <button class="topbar-logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT: REPORTS ONLY -->
+            <main class="page-content">
+
+                <div class="page-header">
+                    <div>
+                        <div class="tag">AUDIT & COMPLIANCE</div>
+                        <h1>System Reports & CSV Exports</h1>
+                        <p>Generate compliance summaries across freshness assessments, storage telemetry, shelf-life forecasts, and export structured CSV datasets.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="exportPDF()">📄 Download PDF Report</button>
+                        <button class="btn-primary" onclick="exportExcel()" style="background: #0284c7;">📊 Export Excel (.xlsx)</button>
+                        <button class="btn-secondary" onclick="exportData('inventory')">📥 Export Inventory (CSV)</button>
+                        <button class="btn-secondary" onclick="exportData('history')">📥 Export Inspections (CSV)</button>
+                        <button class="btn-secondary" onclick="window.print()">🖨️ Print</button>
+                    </div>
+
+                </div>
+
+                <!-- 5 STRUCTURED REPORT CARDS -->
+                <div class="reports-grid" style="margin-bottom: 28px;">
+
+                    <!-- 1. Freshness Report -->
+                    <div class="report-card">
+                        <h4>1. Freshness Compliance Report</h4>
+                        <p id="repFreshness">Loading freshness report metrics...</p>
+                    </div>
+
+                    <!-- 2. Shelf-Life Report -->
+                    <div class="report-card">
+                        <h4>2. Shelf-Life Estimation Report</h4>
+                        <p id="repShelfLife">Loading shelf-life report metrics...</p>
+                    </div>
+
+                    <!-- 3. Inventory Quality Report -->
+                    <div class="report-card">
+                        <h4>3. Inventory Quality & Expiry Report</h4>
+                        <p id="repInventory">Loading inventory report metrics...</p>
+                    </div>
+
+                    <!-- 4. Storage Report -->
+                    <div class="report-card">
+                        <h4>4. Storage Condition Monitoring Report</h4>
+                        <p id="repStorage">Loading storage report metrics...</p>
+                    </div>
+
+                    <!-- 5. Waste Reduction Report (Full width or in grid) -->
+                    <div class="report-card" style="grid-column: span 2;">
+                        <h4>5. Waste Reduction & FEFO Priority Report</h4>
+                        <p id="repWaste">Loading waste reduction metrics...</p>
+                    </div>
+
+                </div>
+
+                <!-- INSPECTION AUDIT HISTORY LOG TABLE -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2>🕘 Complete Inspection Audit Log</h2>
+                        <button class="btn-secondary" onclick="loadReportsInspectionHistory()">🔄 Refresh Logs</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Audit ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Sample File</th>
+                                    <th>Primary Result</th>
+                                    <th>Grade (5-Tier)</th>
+                                    <th>Confidence</th>
+                                    <th>Quality Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsHistoryBody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                        Loading audit history logs...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- Application Script -->
+    <script src="script.js"></script>
+</body>
+</html>

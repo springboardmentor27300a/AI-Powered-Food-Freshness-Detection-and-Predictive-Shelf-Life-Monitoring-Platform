@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshSense AI - Analytics & Trends</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="app-layout">
+
+        <!-- ================= FIXED SIDEBAR NAVIGATION ================= -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="brand">
+                    <div class="logo">🌿</div>
+                    <span>FreshSense <span>AI</span></span>
+                </a>
+                <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">✕</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Overview</span>
+                </a>
+                <a href="inspection.html" class="nav-item">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-text">Food Inspection</span>
+                </a>
+                <a href="storage.html" class="nav-item">
+                    <span class="nav-icon">🌡️</span>
+                    <span class="nav-text">Storage Analysis</span>
+                </a>
+                <a href="shelf-life.html" class="nav-item">
+                    <span class="nav-icon">⏳</span>
+                    <span class="nav-text">Shelf-Life</span>
+                </a>
+                <a href="inventory.html" class="nav-item">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Inventory</span>
+                </a>
+                <a href="alerts.html" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-text">Alerts</span>
+                </a>
+                <a href="analytics.html" class="nav-item active">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Analytics</span>
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Reports</span>
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-preview">
+                    <div class="user-avatar" id="sidebarAvatar">👤</div>
+                    <div class="user-info-text">
+                        <span class="user-name" id="sidebarUserName">User</span>
+                        <span class="user-role" id="sidebarUserRole">Consumer</span>
+                    </div>
+                </div>
+                <button class="sidebar-logout-btn" onclick="logout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar backdrop for mobile drawer -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+        <!-- ================= MAIN CONTENT WRAPPER ================= -->
+        <div class="main-wrapper">
+
+            <!-- STICKY TOPBAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" aria-label="Toggle navigation">
+                        ☰
+                    </button>
+                    <div class="breadcrumbs">
+                        <span class="breadcrumb-root">FreshSense AI</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">Analytics</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <span class="user-role-badge" id="headerRole">Role: Consumer</span>
+                    <span class="header-user-text">Welcome, <strong class="user-email" id="headerUser">User</strong></span>
+                    <button class="topbar-logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT: ANALYTICS ONLY -->
+            <main class="page-content">
+
+                <div class="page-header">
+                    <div>
+                        <div class="tag">INTELLIGENCE & VISUAL DATA</div>
+                        <h1>Quality Analytics & Freshness Trends</h1>
+                        <p>Detailed telemetry on freshness grades, category inventory breakdowns, quality trends over time, and spoilage ratios.</p>
+                    </div>
+                    <div>
+                        <button class="btn-secondary" onclick="loadAnalyticsPage()">🔄 Refresh Analytics</button>
+                    </div>
+                </div>
+
+                <!-- TOP METRICS GRID -->
+                <div class="stats-grid">
+                    <div class="stat">
+                        <span id="anTotalAnalyses" class="stat-number">0</span>
+                        <span class="stat-label">Total Analyses</span>
+                    </div>
+                    <div class="stat">
+                        <span id="anAvgFreshScore" class="stat-number">0.0%</span>
+                        <span class="stat-label">Avg Freshness Score</span>
+                    </div>
+                    <div class="stat">
+                        <span id="anAvgConfidence" class="stat-number">0.0%</span>
+                        <span class="stat-label">Avg Confidence</span>
+                    </div>
+                    <div class="stat">
+                        <span id="anFreshPct" class="stat-number" style="color: #10b981;">0.0%</span>
+                        <span class="stat-label">Fresh Percentage</span>
+                    </div>
+                    <div class="stat">
+                        <span id="anSpoiledPct" class="stat-number" style="color: #ef4444;">0.0%</span>
+                        <span class="stat-label">Spoiled Percentage</span>
+                    </div>
+                </div>
+
+                <!-- 4 CHARTS GRID (2x2) -->
+                <div class="charts-grid">
+
+                    <!-- Chart 1: Freshness Grade Distribution -->
+                    <div class="chart-card">
+                        <h3>1. Freshness Grade Distribution</h3>
+                        <canvas id="gradeChart" style="max-height: 280px;"></canvas>
+                    </div>
+
+                    <!-- Chart 2: Inventory by Category -->
+                    <div class="chart-card">
+                        <h3>2. Inventory Items by Category</h3>
+                        <canvas id="categoryChart" style="max-height: 280px;"></canvas>
+                    </div>
+
+                    <!-- Chart 3: Freshness Trend -->
+                    <div class="chart-card">
+                        <h3>3. Historical Freshness Trend (Recent Scans)</h3>
+                        <canvas id="trendChart" style="max-height: 280px;"></canvas>
+                    </div>
+
+                    <!-- Chart 4: Spoilage Ratio Trend -->
+                    <div class="chart-card">
+                        <h3>4. Spoilage Ratio (Safe vs. At-Risk)</h3>
+                        <canvas id="spoilageChart" style="max-height: 280px;"></canvas>
+                    </div>
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+    <!-- Application Script -->
+    <script src="script.js"></script>
+</body>
+</html>
