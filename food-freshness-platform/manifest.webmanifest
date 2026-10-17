@@ -1,0 +1,16 @@
+{
+  "name": "FreshAI — Food Freshness Monitoring Platform",
+  "short_name": "FreshAI",
+  "description": "AI-powered food freshness monitoring, shelf-life prediction and storage recommendations.",
+  "start_url": "./login.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07120e",
+  "theme_color": "#07120e",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
