@@ -27,7 +27,7 @@ from fastapi.security import (
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
-from database import engine, get_db
+from database import Base, engine, get_db
 
 from models import (
     User,
@@ -53,6 +53,10 @@ from auth import (
     create_access_token,
     verify_access_token
 )
+
+import models
+
+Base.metadata.create_all(bind=engine)
 
 
 # ============================================================
