@@ -10,3 +10,4 @@ bcrypt
 numpy
 Pillow
 tensorflow
+psycopg[binary]
