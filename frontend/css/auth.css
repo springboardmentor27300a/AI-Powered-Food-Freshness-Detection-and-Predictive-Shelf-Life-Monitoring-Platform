@@ -1,0 +1,549 @@
+/* ==========================================================================
+   Food Freshness Monitoring Platform - Authentication Styling
+   Modern Split-Screen Layout with Interactive AI Food Scanner Visual
+   ========================================================================== */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 10% 20%, #ccfbf1 0%, #f0fdfa 35%, #e2e8f0 100%);
+  padding: 30px 20px;
+  font-family: inherit;
+}
+
+.auth-split-wrapper {
+  width: 100%;
+  max-width: 1060px;
+  min-height: 640px;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  background: #ffffff;
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.auth-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18);
+  padding: 36px 32px;
+}
+
+/* ==========================================================================
+   LEFT PANEL: AI Food Scanner Simulation Showcase
+   ========================================================================== */
+.auth-scanner-visual {
+  background: linear-gradient(145deg, #071521 0%, #0d2838 50%, #05141f 100%);
+  color: #f8fafc;
+  padding: 40px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Sci-fi tech grid background texture */
+.auth-scanner-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(14, 165, 233, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 165, 233, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+.scanner-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+.scanner-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scanner-live-badge .scanner-pulse-dot {
+  width: 7px;
+  height: 7px;
+  background: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #34d399;
+  animation: pulseDot 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.scanner-fps-counter {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: #7dd3fc;
+  opacity: 0.85;
+}
+
+/* Central Food Scanning Chamber */
+.scanner-chamber-container {
+  position: relative;
+  margin: 20px auto;
+  width: 100%;
+  max-width: 340px;
+  height: 310px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.scanner-reticle-box {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.15) 0%, rgba(15, 23, 42, 0.6) 75%);
+  box-shadow: 0 0 30px rgba(13, 148, 136, 0.2);
+  border: 1px dashed rgba(56, 189, 248, 0.25);
+}
+
+/* Corner Reticle Brackets */
+.scanner-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: #38bdf8;
+  border-style: solid;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px #0284c7);
+}
+.corner-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-top-left-radius: 4px; }
+.corner-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-top-right-radius: 4px; }
+.corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-bottom-left-radius: 4px; }
+.corner-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-bottom-right-radius: 4px; }
+
+/* Animated Laser Scan Beam */
+.scanner-laser-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #38bdf8 20%, #34d399 50%, #38bdf8 80%, transparent);
+  box-shadow: 0 0 14px 2px #38bdf8, 0 0 4px 1px #34d399;
+  z-index: 10;
+  pointer-events: none;
+  animation: laserSweep 3.2s ease-in-out infinite alternate;
+}
+
+.scanner-laser-glow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 28px;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.2), transparent);
+  pointer-events: none;
+  z-index: 9;
+  animation: laserSweepGlow 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes laserSweep {
+  0% { top: 12px; }
+  100% { top: 235px; }
+}
+
+@keyframes laserSweepGlow {
+  0% { top: 12px; }
+  100% { top: 215px; }
+}
+
+/* Center Food Graphic */
+.scanned-food-item {
+  width: 155px;
+  height: 155px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: foodHover 4s ease-in-out infinite alternate;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
+  user-select: none;
+}
+
+.scanned-food-item svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes foodHover {
+  0% { transform: translateY(-4px) scale(0.98); }
+  100% { transform: translateY(4px) scale(1.02); }
+}
+
+/* Floating HUD Badges */
+.hud-tag {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #f1f5f9;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  z-index: 11;
+  transition: all 0.3s ease;
+}
+
+.hud-tag strong {
+  color: #38bdf8;
+}
+
+.hud-tag-freshness {
+  top: 15px;
+  left: -20px;
+  border-left: 3px solid #10b981;
+}
+
+.hud-tag-shelflife {
+  bottom: 22px;
+  right: -25px;
+  border-left: 3px solid #38bdf8;
+}
+
+.hud-tag-safety {
+  top: 85px;
+  right: -32px;
+  border-left: 3px solid #f59e0b;
+}
+
+/* Bottom Telemetry HUD Matrix */
+.scanner-telemetry-hud {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  z-index: 2;
+}
+
+.telemetry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.telemetry-row:last-child {
+  margin-bottom: 0;
+}
+
+.telemetry-label {
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.telemetry-val {
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+}
+
+.val-fresh { color: #34d399; }
+.val-cyan { color: #38bdf8; }
+.val-gold { color: #fbbf24; }
+
+/* Specimen Switcher Buttons */
+.specimen-switcher {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.specimen-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.specimen-btn:hover, .specimen-btn.active {
+  background: rgba(14, 165, 233, 0.25);
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   RIGHT PANEL: Clean Auth Form
+   ========================================================================== */
+.auth-form-side {
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.auth-header {
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  text-decoration: none;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+}
+
+.auth-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.auth-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.auth-alert {
+  padding: 12px 14px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 13px;
+  margin-bottom: 18px;
+  display: none;
+}
+
+.auth-alert.error {
+  display: block;
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.auth-alert.success {
+  display: block;
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md, 8px);
+  font-size: 14px;
+  color: #0f172a;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 13px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 6px;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+}
+
+.auth-submit-btn:hover {
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.35);
+}
+
+.demo-credentials {
+  margin-top: 20px;
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius-md, 8px);
+  padding: 12px 14px;
+  font-size: 12px;
+}
+
+.demo-credentials summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #334155;
+  user-select: none;
+}
+
+.demo-credentials ul {
+  list-style: none;
+  margin: 10px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.demo-credentials li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #64748b;
+  padding: 3px 0;
+}
+
+.demo-credentials button {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #0d9488;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.15s ease;
+}
+
+.demo-credentials button:hover {
+  background: #0d9488;
+  color: #ffffff;
+  border-color: #0d9488;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.auth-footer a {
+  font-weight: 700;
+  color: #0d9488;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+@media (max-width: 900px) {
+  .auth-split-wrapper {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+  }
+  
+  .auth-scanner-visual {
+    padding: 30px 24px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .scanner-chamber-container {
+    height: 250px;
+  }
+  
+  .scanner-reticle-box {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .scanned-food-item {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .hud-tag {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+  
+  .hud-tag-freshness { left: -10px; }
+  .hud-tag-shelflife { right: -10px; }
+  .hud-tag-safety { display: none; }
+  
+  .auth-form-side {
+    padding: 32px 24px;
+  }
+}

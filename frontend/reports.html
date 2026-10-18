@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quality & Compliance Reports | Food Freshness Monitoring Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    .report-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .cert-box {
+      border: 2px dashed #0d9488;
+      background: #f0fdfa;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-top: 16px;
+    }
+    .cert-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed rgba(13, 148, 136, 0.2);
+      font-size: 14px;
+    }
+    .cert-row:last-child {
+      border-bottom: none;
+    }
+    @media print {
+      .sidebar, .top-header, .toolbar-card, .btn, #toast-container {
+        display: none !important;
+      }
+      .main-wrapper {
+        margin-left: 0 !important;
+      }
+      .card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🌱</div>
+        <div>
+          <div class="brand-title">FreshGuard</div>
+          <div class="brand-subtitle">Compliance Suite</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Consumer Pantry</div>
+        <a href="dashboard.html" class="nav-item">
+          <span>📊</span> Overview Dashboard
+        </a>
+        <a href="inventory.html" class="nav-item">
+          <span>📦</span> Inventory
+        </a>
+        <a href="dashboard.html?view=scanner" class="nav-item">
+          <span>🔬</span> AI Freshness Scanner
+        </a>
+        <a href="dashboard.html?view=shelf-life" class="nav-item">
+          <span>🧮</span> Shelf-Life Prediction
+        </a>
+        <a href="dashboard.html?view=recommendations" class="nav-item">
+          <span>💡</span> Storage Guidelines
+        </a>
+        <a href="dashboard.html?view=alerts" class="nav-item">
+          <span>🚨</span> Expiry Alerts
+        </a>
+        <a href="add-food.html" class="nav-item">
+          <span>➕</span> Add Food Item
+        </a>
+        <a href="reports.html" class="nav-item active">
+          <span>📋</span> Quality Reports
+        </a>
+
+        <div class="nav-section-title">Account</div>
+        <a href="profile.html" class="nav-item">
+          <span>👤</span> Profile & Role
+        </a>
+        <a href="#logout" class="nav-item btn-logout">
+          <span>🚪</span> Logout
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-quick-profile">
+          <div class="user-avatar">U</div>
+          <div class="user-info-text">
+            <div class="user-display-name">Loading...</div>
+            <div class="user-role-badge">Auditor</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+          <div>
+            <h1 class="page-title">Quality & Freshness Compliance Reports</h1>
+          </div>
+        </div>
+        <div class="header-right" style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button id="btn-print-report" class="btn btn-secondary btn-sm">🖨️ Print Report</button>
+          <button id="btn-export-csv" class="btn btn-secondary btn-sm">📥 CSV</button>
+          <button id="btn-export-excel" class="btn btn-primary btn-sm" style="background:#059669; border-color:#059669;">📊 Download Excel</button>
+          <button id="btn-export-pdf" class="btn btn-primary btn-sm" style="background:#0f766e; border-color:#0f766e;">📄 Download PDF</button>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <!-- Summary Cards -->
+        <div class="report-summary-grid">
+          <div class="card">
+            <div style="font-size: 11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Compliance Status</div>
+            <div style="margin-top: 8px;">
+              <span id="rep-compliance-status" class="badge badge-fresh" style="font-size: 14px; padding: 6px 12px;">COMPLIANT</span>
+            </div>
+            <div id="rep-report-id" style="font-size:11px; color:var(--text-muted); margin-top:8px;">Report ID: -</div>
+          </div>
+
+          <div class="card">
+            <div style="font-size: 11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Audited Inventory Items</div>
+            <div id="rep-total-items" style="font-size: 26px; font-weight:800; color:var(--text-main); margin-top:4px;">0</div>
+            <div id="rep-gen-date" style="font-size:11px; color:var(--text-muted); margin-top:4px;">Generated: -</div>
+          </div>
+
+          <div class="card">
+            <div style="font-size: 11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Average Quality Score</div>
+            <div id="rep-avg-score" style="font-size: 26px; font-weight:800; color:#0d9488; margin-top:4px;">0%</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Multi-Spectral Scale</div>
+          </div>
+
+          <div class="card">
+            <div style="font-size: 11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">AI Vision Analyses</div>
+            <div id="rep-analyses-count" style="font-size: 26px; font-weight:800; color:var(--text-main); margin-top:4px;">0</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Total Inferences Run</div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="toolbar-card">
+          <div class="toolbar-filters">
+            <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Filter Scope:</label>
+
+            <select id="report-category-filter" class="filter-select">
+              <option value="all">All Food Categories</option>
+              <option value="Fruits">🍎 Fruits</option>
+              <option value="Vegetables">🥦 Vegetables</option>
+              <option value="Dairy">🧀 Dairy</option>
+              <option value="Meat">🥩 Meat</option>
+              <option value="Fish">🐟 Fish</option>
+              <option value="Grains">🌾 Grains</option>
+              <option value="Bakery">🍞 Bakery</option>
+              <option value="Packaged Food">🥫 Packaged Food</option>
+            </select>
+
+            <select id="report-storage-filter" class="filter-select">
+              <option value="all">All Storage Methods</option>
+              <option value="Refrigerated">Refrigerated</option>
+              <option value="Frozen">Frozen</option>
+              <option value="Room Temperature">Room Temperature</option>
+              <option value="Pantry">Pantry</option>
+              <option value="Cold Storage">Cold Storage</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Reports Table -->
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Food Item</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Designated Expiry</th>
+                <th>Storage Mode</th>
+                <th>Visual Score</th>
+                <th>Status</th>
+                <th>Certificate</th>
+              </tr>
+            </thead>
+            <tbody id="reports-table-body">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 30px;">
+                  <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
+                  <p style="margin-top:8px; color:var(--text-muted);">Loading audit records...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Quality Certificate Modal -->
+  <div id="certificate-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 640px;">
+      <div class="modal-header">
+        <div>
+          <span class="badge badge-fresh">Official QA Certificate</span>
+          <h3 id="cert-id" class="card-title" style="margin-top:4px;">CERT-XXXXXXXX</h3>
+        </div>
+        <button class="modal-close" onclick="closeCertificateModal()">&times;</button>
+      </div>
+
+      <div class="cert-box">
+        <div class="cert-row">
+          <span style="color:var(--text-muted);">Inspected Product</span>
+          <strong id="cert-item-name">-</strong>
+        </div>
+        <div class="cert-row">
+          <span style="color:var(--text-muted);">Category / Classification</span>
+          <span id="cert-category">-</span>
+        </div>
+        <div class="cert-row">
+          <span style="color:var(--text-muted);">Assigned Batch Lot</span>
+          <span id="cert-batch">-</span>
+        </div>
+        <div class="cert-row">
+          <span style="color:var(--text-muted);">AI Visual Quality Score</span>
+          <strong id="cert-score" style="color:#0d9488;">-%</strong>
+        </div>
+        <div class="cert-row">
+          <span style="color:var(--text-muted);">Predicted Remaining Shelf Life</span>
+          <strong id="cert-shelf-life">-</strong>
+        </div>
+        <div class="cert-row">
+          <span style="color:var(--text-muted);">Recommended FEFO Action</span>
+          <span id="cert-fefo">-</span>
+        </div>
+        <div class="cert-row">
+          <span style="color:var(--text-muted);">Markdown Clearance Discount</span>
+          <span id="cert-markdown">-</span>
+        </div>
+        <div class="cert-row">
+          <span style="color:var(--text-muted);">Compliance Verification</span>
+          <span id="cert-compliance" style="font-weight:600;">-</span>
+        </div>
+
+        <div style="margin-top: 14px; font-size:12px; color:var(--text-muted);">
+          <strong>Defect Inspection Details:</strong>
+          <ul id="cert-defects-list" style="margin-top:6px; padding-left:18px;">
+            <li>Standard inspection</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+        <button type="button" class="btn btn-secondary" onclick="window.print()">🖨️ Print Certificate</button>
+        <button type="button" class="btn btn-primary" onclick="closeCertificateModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/reports.js"></script>
+</body>
+</html>

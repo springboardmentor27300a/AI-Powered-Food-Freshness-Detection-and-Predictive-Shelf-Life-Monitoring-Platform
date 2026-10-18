@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Food Freshness Monitoring Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🌱</div>
+        <div>
+          <div class="brand-title">FreshGuard</div>
+          <div class="brand-subtitle">Food Intelligence</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Consumer Pantry</div>
+        <a href="dashboard.html" class="nav-item active" id="nav-item-overview" onclick="switchConsumerView('overview'); return false;">
+          <span>📊</span> Overview Dashboard
+        </a>
+        <a href="inventory.html" class="nav-item" id="nav-item-inventory">
+          <span>📦</span> Inventory
+        </a>
+        <a href="#scanner" class="nav-item" id="nav-item-scanner" onclick="switchConsumerView('scanner'); return false;">
+          <span>🔬</span> AI Freshness Scanner
+        </a>
+        <a href="#shelf-life" class="nav-item" id="nav-item-shelf-life" onclick="switchConsumerView('shelf-life'); return false;">
+          <span>🧮</span> Shelf-Life Prediction
+        </a>
+        <a href="#recommendations" class="nav-item" id="nav-item-recommendations" onclick="switchConsumerView('recommendations'); return false;">
+          <span>💡</span> Storage Guidelines
+        </a>
+        <a href="#alerts" class="nav-item" id="nav-item-alerts" onclick="switchConsumerView('alerts'); return false;">
+          <span>🚨</span> Expiry Alerts
+          <span id="sidebar-alerts-badge" class="nav-badge danger" style="display:none;">0</span>
+        </a>
+        <a href="add-food.html" class="nav-item" id="nav-item-add-food">
+          <span>➕</span> Add Food Item
+        </a>
+        <a href="reports.html" class="nav-item" id="nav-item-reports">
+          <span>📋</span> Quality Reports
+        </a>
+        <div class="nav-section-title">Account</div>
+        <a href="profile.html" class="nav-item">
+          <span>👤</span> Profile & Role
+        </a>
+        <a href="#logout" class="nav-item btn-logout">
+          <span>🚪</span> Logout
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-quick-profile">
+          <div class="user-avatar">U</div>
+          <div class="user-info-text">
+            <div class="user-display-name">Loading...</div>
+            <div class="user-role-badge">Consumer</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+          <h1 class="page-title">Overview Dashboard</h1>
+        </div>
+        <div class="header-right" style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="seedDatasetItems()" title="Load sample food items directly from platform datasets">
+            🌱 Load Dataset Items
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openQuickAiModal()">
+            ⚡ Quick AI Scan
+          </button>
+          <a href="add-food.html" class="btn btn-primary btn-sm">+ Add Food Item</a>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <!-- Consumer Hero & Welcome Banner -->
+        <div style="background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%); border-radius: var(--radius-lg); padding: 22px 26px; color: white; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-md);">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span style="font-size: 22px;">🌱</span>
+              <h2 style="font-size: 20px; font-weight: 800; margin: 0; color: white;">Consumer Freshness & Shelf-Life Center</h2>
+            </div>
+            <p style="font-size: 13px; margin: 0; color: #ccfbf1; opacity: 0.95;">
+              Monitor real-time food freshness, Arrhenius kinetic shelf life, cold-chain storage guidelines, and prevent food waste.
+            </p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <span class="pulse-dot green" style="background:#4ade80;"></span>
+              <span>Vision AI & Arrhenius Engine Online</span>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" style="background:white; color:#0f766e; border:none; font-weight:700;" onclick="switchConsumerView('scanner')">
+              ⚡ Open Scanner Station
+            </button>
+          </div>
+        </div>
+
+        <!-- Consumer View Navigation Tabs -->
+        <div class="consumer-nav-tabs">
+          <button class="consumer-nav-tab active" data-view="overview" onclick="switchConsumerView('overview')">
+            <span>📊</span> Overview Dashboard
+          </button>
+          <button class="consumer-nav-tab" data-view="scanner" onclick="switchConsumerView('scanner')">
+            <span>🔬</span> AI Freshness Scanner
+          </button>
+          <button class="consumer-nav-tab" data-view="shelf-life" onclick="switchConsumerView('shelf-life')">
+            <span>🧮</span> Shelf-Life Prediction
+          </button>
+          <button class="consumer-nav-tab" data-view="recommendations" onclick="switchConsumerView('recommendations')">
+            <span>💡</span> Storage Recommendations
+          </button>
+          <button class="consumer-nav-tab" data-view="alerts" onclick="switchConsumerView('alerts')">
+            <span>🚨</span> Expiry & Spoilage Alerts
+            <span id="tab-alerts-count" class="badge badge-danger" style="display:none; font-size:10px; padding:2px 6px;">0</span>
+          </button>
+          <button class="consumer-nav-tab" data-view="history" onclick="switchConsumerView('history')">
+            <span>📜</span> Scan History
+          </button>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 1: OVERVIEW DASHBOARD                                        -->
+        <!-- ================================================================= -->
+        <div id="view-overview" class="consumer-view-section">
+          <!-- 4 Primary Feature Action Cards in Overview Dashboard -->
+          <div class="consumer-action-cards">
+            <!-- Action Card 1: AI Food Freshness Scanner -->
+            <div class="consumer-action-card" id="action-card-scanner" onclick="switchConsumerView('scanner')">
+              <div class="action-card-header">
+                <div class="action-card-icon" style="background: #e6fcf5; color: #0d9488;">🔬</div>
+                <span class="action-card-badge" style="background: #d1fae5; color: #065f46;">VISION AI V2.4</span>
+              </div>
+              <div>
+                <div class="action-card-title">AI Freshness Scanner</div>
+                <div class="action-card-desc">Scan food images via drag-and-drop or camera to classify freshness and identify defects.</div>
+              </div>
+              <div class="action-card-footer" style="color: #059669;">
+                <span>Launch Scanner</span>
+                <span>&rarr;</span>
+              </div>
+            </div>
+
+            <!-- Action Card 2: Shelf-Life Prediction -->
+            <div class="consumer-action-card" id="action-card-shelf-life" onclick="switchConsumerView('shelf-life')">
+              <div class="action-card-header">
+                <div class="action-card-icon" style="background: #eff6ff; color: #2563eb;">🧮</div>
+                <span class="action-card-badge" style="background: #dbeafe; color: #1d4ed8;">ARRHENIUS Q₁₀</span>
+              </div>
+              <div>
+                <div class="action-card-title">Shelf-Life Prediction</div>
+                <div class="action-card-desc">Simulate temperature and humidity impact with dynamic Arrhenius kinetic decay modeling.</div>
+              </div>
+              <div class="action-card-footer" style="color: #2563eb;">
+                <span>Simulate Kinetics</span>
+                <span>&rarr;</span>
+              </div>
+            </div>
+
+            <!-- Action Card 3: Storage Recommendations -->
+            <div class="consumer-action-card" id="action-card-recommendations" onclick="switchConsumerView('recommendations')">
+              <div class="action-card-header">
+                <div class="action-card-icon" style="background: #fefce8; color: #ca8a04;">💡</div>
+                <span class="action-card-badge" style="background: #fef08a; color: #854d0e;">PANTRY GUIDE</span>
+              </div>
+              <div>
+                <div class="action-card-title">Storage Guidelines</div>
+                <div class="action-card-desc">Food-specific refrigeration rules, optimal climate bounds, and ethylene segregation tips.</div>
+              </div>
+              <div class="action-card-footer" style="color: #ca8a04;">
+                <span>View Guidelines</span>
+                <span>&rarr;</span>
+              </div>
+            </div>
+
+            <!-- Action Card 4: Expiry and Spoilage Alerts -->
+            <div class="consumer-action-card" id="action-card-alerts" onclick="switchConsumerView('alerts')">
+              <div class="action-card-header">
+                <div class="action-card-icon" style="background: #fef2f2; color: #dc2626;">🚨</div>
+                <span class="action-card-badge" id="action-alerts-badge" style="background: #dcfce7; color: #166534;">0 ALERTS</span>
+              </div>
+              <div>
+                <div class="action-card-title">Expiry & Spoilage Alerts</div>
+                <div class="action-card-desc">Real-time alerts for impending expirations (&le;72h) and actionable spoilage risk indicators.</div>
+              </div>
+              <div class="action-card-footer" style="color: #dc2626;">
+                <span>Inspect Alerts</span>
+                <span>&rarr;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Quick Utility Bar -->
+          <div class="quick-action-bar" style="margin-top: -6px; margin-bottom: 24px;">
+            <button type="button" class="quick-action-btn" id="btn-toggle-iot" onclick="toggleTelemetry()">
+              <span>🌡️</span> Cold-Chain Sensor Stream
+            </button>
+            <a href="reports.html" class="quick-action-btn">
+              <span>📋</span> Batch QA Certificates
+            </a>
+            <a href="inventory.html" class="quick-action-btn">
+              <span>📦</span> Full Pantry Inventory
+            </a>
+            <a href="add-food.html" class="quick-action-btn">
+              <span>➕</span> Add Food Item
+            </a>
+          </div>
+
+          <!-- Live Cold-Chain IoT Sensor Telemetry Strip (Toggleable) -->
+          <div class="telemetry-strip" id="telemetry-strip" style="display: none;">
+            <div class="telemetry-card">
+              <div class="telemetry-header">
+                <span class="telemetry-zone">Cold Room #1 (Produce)</span>
+                <span class="pulse-dot green"></span>
+              </div>
+              <div class="telemetry-metrics">
+                <span class="telemetry-temp" id="iot-t1">3.2°C</span>
+                <span class="telemetry-rh" id="iot-rh1">88% RH</span>
+              </div>
+              <div class="telemetry-footer">
+                <span>Status: Optimal</span>
+                <span>Ref: 2.0–4.0°C</span>
+              </div>
+            </div>
+
+            <div class="telemetry-card">
+              <div class="telemetry-header">
+                <span class="telemetry-zone">Chiller #3 (Dairy & Deli)</span>
+                <span class="pulse-dot green"></span>
+              </div>
+              <div class="telemetry-metrics">
+                <span class="telemetry-temp" id="iot-t2">3.9°C</span>
+                <span class="telemetry-rh" id="iot-rh2">71% RH</span>
+              </div>
+              <div class="telemetry-footer">
+                <span>Status: Normal</span>
+                <span>Ref: 1.0–4.0°C</span>
+              </div>
+            </div>
+
+            <div class="telemetry-card">
+              <div class="telemetry-header">
+                <span class="telemetry-zone">Freezer Bay (Meat & Fish)</span>
+                <span class="pulse-dot green"></span>
+              </div>
+              <div class="telemetry-metrics">
+                <span class="telemetry-temp" id="iot-t3">-18.6°C</span>
+                <span class="telemetry-rh" id="iot-rh3">64% RH</span>
+              </div>
+              <div class="telemetry-footer">
+                <span>Status: Frozen Compliant</span>
+                <span>Ref: &lt; -18°C</span>
+              </div>
+            </div>
+
+            <div class="telemetry-card">
+              <div class="telemetry-header">
+                <span class="telemetry-zone">Ambient Pallet Dock</span>
+                <span class="pulse-dot amber"></span>
+              </div>
+              <div class="telemetry-metrics">
+                <span class="telemetry-temp" id="iot-t4" style="color:#d97706;">21.8°C</span>
+                <span class="telemetry-rh" id="iot-rh4">52% RH</span>
+              </div>
+              <div class="telemetry-footer">
+                <span>Status: Dry Staged</span>
+                <span>Ref: 18.0–24.0°C</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6 Metrics Statistics Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">Total Food Items</span>
+                <span id="stat-total-items" class="stat-value">0</span>
+                <span class="stat-subtext">Active in pantry</span>
+              </div>
+              <div class="stat-icon primary">📦</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">Total Quantity</span>
+                <span id="stat-total-qty" class="stat-value">0</span>
+                <span class="stat-subtext">Cumulative weight/units</span>
+              </div>
+              <div class="stat-icon secondary">⚖️</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">Expiring Soon</span>
+                <span id="stat-expiring-soon" class="stat-value" style="color: #d97706;">0</span>
+                <span class="stat-subtext">Within next 72 hours</span>
+              </div>
+              <div class="stat-icon warning">⏳</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">AI Analysis Pending</span>
+                <span id="stat-pending-ai" class="stat-value" style="color: #0f766e;">0</span>
+                <span class="stat-subtext">Awaiting Vision inference</span>
+              </div>
+              <div class="stat-icon pending">🤖</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">Spoiled / Expired</span>
+                <span id="stat-spoiled-items" class="stat-value" style="color: #dc2626;">0</span>
+                <span class="stat-subtext">Past designated shelf life</span>
+              </div>
+              <div class="stat-icon danger">☣️</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">Storage Alerts</span>
+                <span id="stat-storage-alerts" class="stat-value">0</span>
+                <span class="stat-subtext">Temperature/Humidity drift</span>
+              </div>
+              <div class="stat-icon warning">🌡️</div>
+            </div>
+          </div>
+
+          <!-- Dynamic Chart.js Analytics Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Freshness Status Distribution</h2>
+                <span class="badge badge-fresh" id="freshness-summary-badge">Real-Time</span>
+              </div>
+              <div style="height: 250px; position: relative;">
+                <canvas id="freshnessStatusChart"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">7-Day Expiry Horizon</h2>
+                <span class="badge" style="background:#f1f5f9; color:#475569;">Upcoming Expirations</span>
+              </div>
+              <div style="height: 250px; position: relative;">
+                <canvas id="expiryHorizonChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Breakdown & Recent Items -->
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 24px;">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Category Distribution</h2>
+              </div>
+              <div id="category-distribution-container">
+                <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+                  <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
+                  <p style="margin-top:8px;">Calculating categories...</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+                <h2 class="card-title" style="margin: 0;">Recently Tracked Items</h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <input
+                    type="text"
+                    id="recent-search-input"
+                    placeholder="🔍 Filter items..."
+                    style="padding: 6px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); outline: none;"
+                    oninput="filterRecentTable(this.value)"
+                  >
+                  <a href="inventory.html" class="btn btn-secondary btn-sm">Full Inventory &rarr;</a>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Food Item</th>
+                      <th>Category</th>
+                      <th>Quantity</th>
+                      <th>Expiry Date</th>
+                      <th>Condition</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-items-body">
+                    <tr>
+                      <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                        <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
+                        <p style="margin-top:8px;">Loading inventory records...</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Recent AI Food Scans Overview Slice -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">🔬</span>
+                <div>
+                  <h2 class="card-title" style="margin: 0;">Recent AI Food Scans & Analysis History</h2>
+                  <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;">
+                    Computer Vision defect evaluations, surface discoloration checks, and Arrhenius kinetic shelf-life predictions
+                  </p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="switchConsumerView('history')">View Full History &rarr;</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="switchConsumerView('scanner')">+ New AI Scan</button>
+              </div>
+            </div>
+            <div id="recent-scans-container" style="padding: 16px 20px;">
+              <div style="text-align: center; padding: 24px; color: var(--text-muted);">
+                <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
+                <p style="margin-top:8px;">Retrieving recent AI freshness diagnostics...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Expiry Reminders Overview Slice -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="card">
+              <div class="card-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">⏳</span>
+                  <h2 class="card-title" style="margin:0;">Expiry Reminders & Attention List</h2>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="badge badge-warning" id="consumer-expiring-badge">0 Items &le; 72h</span>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="switchConsumerView('alerts')">Manage Alerts</button>
+                </div>
+              </div>
+              <div id="consumer-expiry-alerts-list" style="padding: 16px 20px;">
+                <p style="color: var(--text-muted); font-size: 13px; margin: 0;">Scanning inventory for impending expiration dates...</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 18px;">💡</span>
+                  <h2 class="card-title" style="margin:0;">Personalized Food Storage Tips</h2>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="switchConsumerView('recommendations')">All Guidelines &rarr;</button>
+              </div>
+              <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: flex-start; gap: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: var(--radius-md);">
+                  <span style="font-size: 24px;">🍎</span>
+                  <div>
+                    <strong style="color: #166534; font-size: 13px;">Fresh Fruits & Vegetables (Crisper Drawer)</strong>
+                    <p style="color: #15803d; font-size: 12px; margin: 2px 0 0 0;">
+                      Keep apples, bananas, and avocados separate from leafy greens to avoid accelerated ethylene ripening. Store greens in perforated bags at 85-95% RH.
+                    </p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start; gap: 12px; background: #f0f9ff; border: 1px solid #bae6fd; padding: 12px; border-radius: var(--radius-md);">
+                  <span style="font-size: 24px;">🥛</span>
+                  <div>
+                    <strong style="color: #0369a1; font-size: 13px;">Dairy & Plant Milks (Internal Shelf)</strong>
+                    <p style="color: #0284c7; font-size: 12px; margin: 2px 0 0 0;">
+                      Store milk, cream, and yogurts on middle refrigerator shelves (2–4°C) rather than door compartments, where frequent door openings cause temperature swings.
+                    </p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start; gap: 12px; background: #fefce8; border: 1px solid #fef08a; padding: 12px; border-radius: var(--radius-md);">
+                  <span style="font-size: 24px;">🍞</span>
+                  <div>
+                    <strong style="color: #854d0e; font-size: 13px;">Bakery Goods & Artisan Breads</strong>
+                    <p style="color: #a16207; font-size: 12px; margin: 2px 0 0 0;">
+                      Never refrigerate fresh artisan bread—retrogradation accelerates staling at 4°C. Keep at room temperature in a bread box or slice and freeze immediately.
+                    </p>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start; gap: 12px; background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: var(--radius-md);">
+                  <span style="font-size: 24px;">🥩</span>
+                  <div>
+                    <strong style="color: #991b1b; font-size: 13px;">Raw Meat & Seafood (Bottom Shelf)</strong>
+                    <p style="color: #b91c1c; font-size: 12px; margin: 2px 0 0 0;">
+                      Maintain at 0–2°C on bottom refrigerator shelf in leak-proof trays. Consume within 48 hours or vacuum-seal and store in the freezer (-18°C).
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 2: AI FOOD FRESHNESS SCANNER (FEATURE 1)                     -->
+        <!-- ================================================================= -->
+        <div id="view-scanner" class="consumer-view-section" style="display: none;">
+          <div style="display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; align-items: start;">
+            <!-- Left Card: Input & Upload -->
+            <div class="card">
+              <div class="card-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">📸</span>
+                  <h3 class="card-title" style="margin: 0;">AI Computer Vision Food Scanner</h3>
+                </div>
+                <span class="badge badge-fresh">CV Engine v2.4</span>
+              </div>
+              <div style="padding: 20px;">
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 16px;">
+                  Upload or drop a food image. The AI analyzes surface discoloration, fungal mycelium, browning, and calculates Arrhenius shelf-life kinetics.
+                </p>
+
+                <!-- Associate with existing item or standalone -->
+                <div class="form-group">
+                  <label class="form-label">Link with Existing Pantry Item (Optional):</label>
+                  <select id="scanner-item-select" class="form-control" onchange="onScannerItemSelect(this.value)">
+                    <option value="">-- Standalone Scan (No Pantry Item Linked) --</option>
+                  </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label class="form-label">Food Name:</label>
+                    <input type="text" id="scanner-food-name" class="form-control" placeholder="e.g. Red Gala Apple" value="Fresh Apple">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Category:</label>
+                    <select id="scanner-category-select" class="form-control">
+                      <option value="Fruits">Fruits</option>
+                      <option value="Vegetables">Vegetables</option>
+                      <option value="Dairy">Dairy</option>
+                      <option value="Meat">Meat & Poultry</option>
+                      <option value="Fish">Fish & Seafood</option>
+                      <option value="Bakery">Bakery</option>
+                      <option value="Grains">Grains & Cereals</option>
+                      <option value="Packaged Food">Packaged Food</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label class="form-label">Observed Storage Temp (°C):</label>
+                    <input type="number" id="scanner-temp" class="form-control" placeholder="e.g. 4.0" step="0.5" value="4.0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Observed Relative Humidity (%):</label>
+                    <input type="number" id="scanner-humidity" class="form-control" placeholder="e.g. 85" step="1" value="85">
+                  </div>
+                </div>
+
+                <!-- Image Input Method Selector: Upload File vs Image Address -->
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; background: var(--bg-surface); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                  <button type="button" class="btn btn-sm" id="btn-scanner-mode-upload" style="flex: 1; font-weight: 700; background: white; border: 1px solid #cbd5e1; color: var(--primary);" onclick="switchScannerMode('upload')">
+                    📁 Upload Food Image
+                  </button>
+                  <button type="button" class="btn btn-sm" id="btn-scanner-mode-url" style="flex: 1; font-weight: 600; background: transparent; border: none; color: var(--text-muted);" onclick="switchScannerMode('url')">
+                    🌐 Image Address (URL)
+                  </button>
+                </div>
+
+                <!-- Mode 1: Drag & Drop Dropzone -->
+                <div id="scanner-upload-panel">
+                  <div class="image-upload-wrapper" id="scanner-dropzone" onclick="document.getElementById('scanner-file-input').click()">
+                    <span style="font-size: 40px; display: block; margin-bottom: 8px;">📷</span>
+                    <strong style="color: var(--text-main); font-size: 14px;">Drag & Drop Food Image or Click to Browse</strong>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Supports JPEG, PNG, WebP up to 10MB</p>
+                    <input type="file" id="scanner-file-input" accept="image/*" style="display: none;" onchange="handleScannerFile(this.files[0])">
+                  </div>
+                </div>
+
+                <!-- Mode 2: Image Address (URL) Panel -->
+                <div id="scanner-url-panel" style="display: none;">
+                  <div style="background: #f8fafc; border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 18px 16px;">
+                    <label class="form-label" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                      <span style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--text-main);">
+                        <span>🌐</span> Food Image Address (URL)
+                      </span>
+                      <span class="badge" style="background:#e0f2fe; color:#0369a1; font-size: 10px;">Direct Web Link</span>
+                    </label>
+                    <div style="display: flex; gap: 8px;">
+                      <input
+                        type="url"
+                        id="scanner-url-input"
+                        class="form-control"
+                        placeholder="Paste image address (https://... or web URL)"
+                        style="flex: 1; font-size: 13px;"
+                        onkeydown="if(event.key==='Enter'){ event.preventDefault(); loadScannerImageUrl(); }"
+                      >
+                      <button type="button" class="btn btn-primary btn-sm" id="btn-load-scanner-url" onclick="loadScannerImageUrl()" style="white-space: nowrap; font-weight: 700; padding: 0 14px;">
+                        📥 Load Image
+                      </button>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 8px 0 0 0;">
+                      Enter the web address of any food photo (JPEG, PNG, WebP). The AI Vision engine will fetch and analyze it directly.
+                    </p>
+
+                    <!-- Helpful Sample Image Addresses -->
+                    <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Try Sample Address:</span>
+                      <button type="button" class="badge" style="background:#fee2e2; color:#b91c1c; border:none; cursor:pointer; padding:3px 8px;" onclick="useSampleScannerUrl('https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&auto=format&fit=crop', 'Crisp Red Apple', 'Fruits')">🍎 Apple</button>
+                      <button type="button" class="badge" style="background:#dcfce7; color:#166534; border:none; cursor:pointer; padding:3px 8px;" onclick="useSampleScannerUrl('https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop', 'Fresh Broccoli', 'Vegetables')">🥦 Broccoli</button>
+                      <button type="button" class="badge" style="background:#fef08a; color:#854d0e; border:none; cursor:pointer; padding:3px 8px;" onclick="useSampleScannerUrl('https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=600&auto=format&fit=crop', 'Fresh Milk', 'Dairy')">🥛 Milk</button>
+                      <button type="button" class="badge" style="background:#e0e7ff; color:#3730a3; border:none; cursor:pointer; padding:3px 8px;" onclick="useSampleScannerUrl('https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&auto=format&fit=crop', 'Fresh Beef Steak', 'Meat')">🥩 Meat</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Preview Area with Laser scanning line -->
+                <div id="scanner-preview-container" style="display: none; margin-top: 16px; text-align: center;">
+                  <div class="scanner-preview-wrapper">
+                    <div class="scanner-laser" id="scanner-laser-bar"></div>
+                    <img id="scanner-preview-img" src="" alt="Food Preview" style="width: 100%; max-height: 220px; object-fit: contain; background: #000;">
+                  </div>
+                  <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 8px;">
+                    <span id="scanner-source-badge" class="badge" style="background: #e2e8f0; color: #475569; font-size: 11px;">Image Loaded</span>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="clearScannerImage()">✕ Clear Image</button>
+                  </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                  <button type="button" class="btn btn-primary" id="btn-execute-scanner" style="width: 100%; padding: 12px; font-weight: 700; font-size: 15px;" onclick="runScannerStation()" disabled>
+                    🔍 Run AI Computer Vision & Kinetic Analysis
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Card: Live Diagnostics Results Panel -->
+            <div class="card">
+              <div class="card-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 20px;">📊</span>
+                  <h3 class="card-title" style="margin: 0;">Inference Diagnostics & Kinetic Prediction</h3>
+                </div>
+                <span id="scanner-status-badge" class="badge badge-fresh" style="display: none;">Fresh</span>
+              </div>
+              <div id="scanner-results-body" style="padding: 20px;">
+                <!-- Empty State -->
+                <div id="scanner-empty-state" style="text-align: center; padding: 48px 20px; color: var(--text-muted);">
+                  <span style="font-size: 48px; display: block; margin-bottom: 12px;">🥗</span>
+                  <h4 style="color: var(--text-main); margin: 0 0 6px 0;">No Analysis Performed Yet</h4>
+                  <p style="font-size: 13px; max-width: 320px; margin: 0 auto;">
+                    Select or upload a food photo on the left and click "Run AI Analysis" to view Computer Vision diagnostics and shelf life.
+                  </p>
+                </div>
+
+                <!-- Active Results Panel -->
+                <div id="scanner-active-results" style="display: none;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                    <div>
+                      <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Classification Result</span>
+                      <h3 id="res-food-name" style="margin: 2px 0 0 0; font-size: 18px; color: var(--text-main);">Apple Sample</h3>
+                      <div id="res-food-category" style="font-size: 12px; color: var(--text-muted);">Fruits Category</div>
+                    </div>
+                    <div style="text-align: right;">
+                      <span id="res-overall-status-badge" class="badge badge-fresh" style="font-size: 13px; padding: 6px 12px;">Optimal Freshness</span>
+                      <div id="res-analysis-timestamp" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Analyzed just now</div>
+                    </div>
+                  </div>
+
+                  <!-- 4 Core KPIs Grid -->
+                  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+                    <div style="background: #f8fafc; padding: 12px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+                      <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Freshness</div>
+                      <div id="res-score-val" style="font-size: 22px; font-weight: 800; color: var(--primary);">94%</div>
+                      <div style="font-size: 10px; color: #10b981;">Weighted 4-Pillar</div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 12px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+                      <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Shelf Life</div>
+                      <div id="res-shelflife-val" style="font-size: 22px; font-weight: 800; color: #2563eb;">6.8d</div>
+                      <div style="font-size: 10px; color: var(--text-muted);">Arrhenius Kinetic</div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 12px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+                      <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Confidence</div>
+                      <div id="res-confidence-val" style="font-size: 22px; font-weight: 800; color: #0284c7;">96%</div>
+                      <div style="font-size: 10px; color: var(--text-muted);">CV Model Score</div>
+                    </div>
+                    <div style="background: #f8fafc; padding: 12px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+                      <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Spoilage Risk</div>
+                      <div id="res-risk-val" style="font-size: 18px; font-weight: 800; color: #16a34a; margin-top:2px;">Low</div>
+                      <div style="font-size: 10px; color: var(--text-muted);">Microbial Hazard</div>
+                    </div>
+                  </div>
+
+                  <!-- Sub-Scores Breakdown -->
+                  <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px;">
+                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+                      Computer Vision Sub-Scores & Surface Diagnostics
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
+                      <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                          <span>Color Index:</span>
+                          <strong id="res-sub-color">92 / 100</strong>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                          <div id="res-bar-color" style="width: 92%; height: 100%; background: #10b981;"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                          <span>Texture Integrity:</span>
+                          <strong id="res-sub-texture">94 / 100</strong>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                          <div id="res-bar-texture" style="width: 94%; height: 100%; background: #0d9488;"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                          <span>Browning Metric:</span>
+                          <strong id="res-sub-browning">Optimal (Low)</strong>
+                        </div>
+                      </div>
+                      <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                          <span>Mold & Mycelium:</span>
+                          <strong id="res-sub-mold" style="color: #16a34a;">None Detected</strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Defects & Warnings -->
+                  <div id="res-defects-box" style="background: #f0fdfa; border: 1px solid #ccfbf1; padding: 12px 14px; border-radius: var(--radius-md); font-size: 12px; color: #0f766e; margin-bottom: 14px;">
+                    <strong>Visual Inspection:</strong> <span id="res-defects-text">Intact skin cuticle, uniform pigmentation, zero mycelial growth.</span>
+                  </div>
+
+                  <!-- Storage Recommendation -->
+                  <div id="res-storage-box" style="background: #eff6ff; border: 1px solid #dbeafe; padding: 12px 14px; border-radius: var(--radius-md); font-size: 12px; color: #1e40af; margin-bottom: 16px;">
+                    <strong>Prescriptive Recommendation:</strong> <span id="res-storage-text">Store in crisper drawer at 2°C–4°C and 85–95% RH.</span>
+                  </div>
+
+                  <!-- Actions -->
+                  <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="sendScanToSimulator()">
+                      🧮 Test in Shelf-Life Simulator
+                    </button>
+                    <a href="inventory.html" class="btn btn-primary btn-sm">
+                      📦 View Pantry Inventory
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 3: SHELF-LIFE PREDICTION SIMULATOR (FEATURE 2)                -->
+        <!-- ================================================================= -->
+        <div id="view-shelf-life" class="consumer-view-section" style="display: none;">
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">🧮</span>
+                <div>
+                  <h3 class="card-title" style="margin: 0;">Arrhenius Shelf-Life Kinetic Simulator</h3>
+                  <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;">
+                    Predict remaining edible days and 7-day quality trajectories under varying temperature and humidity conditions.
+                  </p>
+                </div>
+              </div>
+              <span class="badge" style="background:#f1f5f9; color:#475569;">Arrhenius Kinetics (Ea / Q₁₀)</span>
+            </div>
+
+            <div style="padding: 20px;">
+              <!-- 1. Custom Food Item Entry & Shelf-Life Predictor Hero Card -->
+              <div style="background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 50%, #f8fafc 100%); border: 1px solid #ccfbf1; border-radius: var(--radius-lg); padding: 22px; margin-bottom: 22px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+                  <div>
+                    <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #0f766e; display: flex; align-items: center; gap: 8px;">
+                      <span>🔍</span> Enter Any Food Item to Predict Shelf Life
+                    </h4>
+                    <p style="margin: 3px 0 0 0; font-size: 12px; color: var(--text-muted);">
+                      Type any food item (e.g. Mango, Tomato, Chicken Breast, Whole Milk, Salmon, Cheese, Spinach) or select from your active pantry.
+                    </p>
+                  </div>
+                  <span class="badge" style="background: #ccfbf1; color: #0f766e; font-weight: 700; font-size: 11px; padding: 4px 10px;">
+                    Arrhenius Kinetic Engine Online
+                  </span>
+                </div>
+
+                <div class="shelf-life-input-grid">
+                  <!-- Food Name Input with autocomplete datalist -->
+                  <div class="form-group" style="margin: 0;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700; margin-bottom: 4px;">Enter Food Item Name:</label>
+                    <div style="position: relative;">
+                      <span id="vsim-food-icon" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 18px;">🍏</span>
+                      <input
+                        type="text"
+                        id="vsim-food-name-input"
+                        class="form-control"
+                        placeholder="Type food name (e.g., Mango, Tomato, Chicken...)"
+                        list="vsim-food-datalist"
+                        autocomplete="off"
+                        style="padding-left: 40px; font-weight: 600;"
+                        value="Apples"
+                      >
+                    </div>
+                    <datalist id="vsim-food-datalist">
+                      <!-- Populated dynamically via JS -->
+                    </datalist>
+                  </div>
+
+                  <!-- Category Selector -->
+                  <div class="form-group" style="margin: 0;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700; margin-bottom: 4px;">Category:</label>
+                    <select id="vsim-category-select" class="form-control" style="font-weight: 600;">
+                      <option value="auto">✨ Auto-Detect</option>
+                      <option value="Fruits">🍎 Fruits</option>
+                      <option value="Vegetables">🥦 Vegetables</option>
+                      <option value="Dairy">🧀 Dairy & Eggs</option>
+                      <option value="Meat">🥩 Meat & Poultry</option>
+                      <option value="Fish">🐟 Fish & Seafood</option>
+                      <option value="Bakery">🍞 Bakery</option>
+                      <option value="Grains">🌾 Grains & Pasta</option>
+                      <option value="Packaged Food">📦 Packaged Food</option>
+                      <option value="Other">🍽️ Other</option>
+                    </select>
+                  </div>
+
+                  <!-- Select from Pantry Inventory -->
+                  <div class="form-group" style="margin: 0;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 700; margin-bottom: 4px;">Or Select from Pantry:</label>
+                    <select id="vsim-pantry-select" class="form-control" style="font-size: 13px;">
+                      <option value="">-- Choose active pantry item --</option>
+                    </select>
+                  </div>
+
+                  <!-- Predict Action Button -->
+                  <div>
+                    <button
+                      type="button"
+                      id="btn-predict-custom-item"
+                      class="btn btn-primary"
+                      style="height: 42px; padding: 0 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap;"
+                      onclick="predictCustomFoodShelfLife()"
+                    >
+                      <span>⚡</span> Predict Shelf Life
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Quick Suggested Commodities Pills -->
+                <div style="margin-top: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Quick Items:</span>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Mango', 'Fruits')">🥭 Mango</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Tomato', 'Vegetables')">🍅 Tomato</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Chicken Breast', 'Meat')">🍗 Chicken</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Whole Milk', 'Dairy')">🥛 Milk</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Salmon Fillet', 'Fish')">🐟 Salmon</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Cheddar Cheese', 'Dairy')">🧀 Cheese</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Spinach', 'Vegetables')">🥬 Spinach</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Bananas', 'Fruits')">🍌 Banana</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Fresh Eggs', 'Dairy')">🥚 Eggs</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Sourdough Bread', 'Bakery')">🍞 Bread</button>
+                  <button type="button" class="btn btn-outline btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="selectQuickFoodItem('Rolled Oats', 'Grains')">🌾 Oats</button>
+                </div>
+              </div>
+
+              <!-- Preset Pills -->
+              <div style="margin-bottom: 16px;">
+                <label class="form-label" style="font-weight: 700; font-size: 12px;">Standard Category Presets:</label>
+                <div class="sample-preset-pills">
+                  <button type="button" class="preset-pill active" data-name="Apples" data-cat="Fruits" data-temp="4" data-rh="90" data-base="24" data-q10="2.2" data-score="95" data-emoji="🍏">🍏 Apples (Fruits)</button>
+                  <button type="button" class="preset-pill" data-name="Berries" data-cat="Fruits" data-temp="2" data-rh="92" data-base="6" data-q10="2.5" data-score="90" data-emoji="🫐">🫐 Strawberries (Berries)</button>
+                  <button type="button" class="preset-pill" data-name="Milk" data-cat="Dairy" data-temp="3" data-rh="70" data-base="10" data-q10="2.6" data-score="88" data-emoji="🥛">🥛 Whole Milk (Dairy)</button>
+                  <button type="button" class="preset-pill" data-name="Salmon" data-cat="Fish" data-temp="1" data-rh="90" data-base="4" data-q10="3.0" data-score="92" data-emoji="🐟">🐟 Fresh Salmon (Fish)</button>
+                  <button type="button" class="preset-pill" data-name="Meat" data-cat="Meat" data-temp="1" data-rh="75" data-base="7" data-q10="2.8" data-score="90" data-emoji="🥩">🥩 Fresh Poultry (Meat)</button>
+                  <button type="button" class="preset-pill" data-name="Bread" data-cat="Bakery" data-temp="21" data-rh="55" data-base="6" data-q10="1.8" data-score="92" data-emoji="🍞">🍞 Sourdough (Bakery)</button>
+                  <button type="button" class="preset-pill" data-name="Avocado" data-cat="Fruits" data-temp="12" data-rh="65" data-base="7" data-q10="2.4" data-score="80" data-emoji="🥑">🥑 Avocado (Fruits)</button>
+                  <button type="button" class="preset-pill" data-name="Grains" data-cat="Grains" data-temp="20" data-rh="45" data-base="180" data-q10="1.4" data-score="98" data-emoji="🌾">🌾 Rolled Oats (Grains)</button>
+                </div>
+              </div>
+
+              <!-- Interactive Sliders and Simulation Result Grid -->
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;">
+                <!-- Left: Controls -->
+                <div>
+                  <div class="slider-group">
+                    <div class="slider-label-row">
+                      <span>Ambient Storage Temperature (°C)</span>
+                      <span id="vsim-temp-val" class="slider-val-tag">4.0°C</span>
+                    </div>
+                    <input type="range" id="vsim-temp" class="custom-slider" min="-5" max="35" step="0.5" value="4">
+                  </div>
+
+                  <div class="slider-group">
+                    <div class="slider-label-row">
+                      <span>Relative Humidity (% RH)</span>
+                      <span id="vsim-rh-val" class="slider-val-tag">90%</span>
+                    </div>
+                    <input type="range" id="vsim-rh" class="custom-slider" min="30" max="98" step="1" value="90">
+                  </div>
+
+                  <div class="slider-group">
+                    <div class="slider-label-row">
+                      <span>Current Freshness Quality Score (%)</span>
+                      <span id="vsim-score-val" class="slider-val-tag">90%</span>
+                    </div>
+                    <input type="range" id="vsim-score" class="custom-slider" min="40" max="100" step="1" value="90">
+                  </div>
+
+                  <div class="form-group" style="margin-top: 14px;">
+                    <label class="form-label">Packaging Barrier Protection:</label>
+                    <select id="vsim-packaging" class="form-control" onchange="runShelfLifeSimulation()">
+                      <option value="Standard Pack">Standard Pack (1.0x)</option>
+                      <option value="Vacuum Pack">Vacuum Pack Barrier (1.85x)</option>
+                      <option value="Modified Atmosphere Bag">Modified Atmosphere Packaging / MAP (1.55x)</option>
+                      <option value="Clamshell Punnet">Clamshell Punnet (1.15x)</option>
+                      <option value="Open Air">Open Air / Unwrapped (0.70x)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Right: Predicted Metrics Panel -->
+                <div style="background: #f8fafc; border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                      <div>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px;">
+                          Prediction Output for
+                        </div>
+                        <h4 id="vsim-display-name" style="margin: 0; font-size: 18px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                          <span id="vsim-active-emoji">🍏</span> <span id="vsim-active-food-name">Apples</span>
+                        </h4>
+                        <span id="vsim-active-category" style="font-size: 11px; color: var(--text-muted);">Fruits Category</span>
+                      </div>
+                      <div id="vsim-stress-badge" class="badge badge-fresh">Thermal Stress: Optimal</div>
+                    </div>
+
+                    <div id="vsim-days" style="font-size: 34px; font-weight: 900; color: var(--primary); line-height: 1.1; margin-top: 8px;">24.0 Days</div>
+                    <div id="vsim-adjusted-expiry" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Projected expiry: Calculating...</div>
+
+                    <div class="shelf-life-meter-bg" style="margin-top: 14px;">
+                      <div id="vsim-bar" class="shelf-life-meter-fill" style="width: 100%; background: #10b981;"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; font-size: 12px;">
+                      <div style="background: white; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <span style="color: var(--text-muted); font-size: 11px;">Decay Rate:</span><br>
+                        <strong id="vsim-rate">4.17% / day</strong>
+                      </div>
+                      <div style="background: white; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <span style="color: var(--text-muted); font-size: 11px;">Arrhenius Multiplier:</span><br>
+                        <strong id="vsim-q10-val">1.00x Base</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="vsim-recommendation-text" style="font-size: 12px; color: #047857; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 12px; border-radius: var(--radius-sm); margin-top: 14px;">
+                    Storage conditions within recommended thermal bounds. Safe for standard pantry rotation.
+                  </div>
+                </div>
+              </div>
+
+              <!-- 7-Day Quality Trajectory Progression Forecast -->
+              <div style="margin-top: 24px;">
+                <h4 style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">
+                  📈 7-Day Forward Shelf-Life Quality Trajectory
+                </h4>
+                <div id="vsim-trajectory-container" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;">
+                  <!-- Dynamic 7-day cards injected via JavaScript -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 4: STORAGE RECOMMENDATIONS (FEATURE 3)                       -->
+        <!-- ================================================================= -->
+        <div id="view-recommendations" class="consumer-view-section" style="display: none;">
+          <!-- Top Category Filter Pills -->
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+            <button type="button" class="preset-pill active" onclick="filterGuidelines('all', this)">All Categories</button>
+            <button type="button" class="preset-pill" onclick="filterGuidelines('Fruits', this)">🍎 Fruits</button>
+            <button type="button" class="preset-pill" onclick="filterGuidelines('Vegetables', this)">🥦 Vegetables</button>
+            <button type="button" class="preset-pill" onclick="filterGuidelines('Dairy', this)">🧀 Dairy</button>
+            <button type="button" class="preset-pill" onclick="filterGuidelines('Meat', this)">🥩 Meat</button>
+            <button type="button" class="preset-pill" onclick="filterGuidelines('Fish', this)">🐟 Fish</button>
+            <button type="button" class="preset-pill" onclick="filterGuidelines('Bakery', this)">🍞 Bakery</button>
+            <button type="button" class="preset-pill" onclick="filterGuidelines('Grains', this)">🌾 Grains</button>
+            <button type="button" class="preset-pill" onclick="filterGuidelines('Packaged Food', this)">🥫 Packaged</button>
+          </div>
+
+          <!-- Guidelines Directory Grid -->
+          <div class="guideline-grid" id="guidelines-directory-container">
+            <div style="text-align: center; padding: 40px; color: var(--text-muted); grid-column: 1 / -1;">
+              <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
+              <p style="margin-top:8px;">Loading authoritative storage guidelines...</p>
+            </div>
+          </div>
+
+          <!-- Ethylene Gas Management Callout Banner -->
+          <div style="margin-top: 24px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-lg); padding: 20px; display: flex; gap: 16px; align-items: flex-start;">
+            <span style="font-size: 32px;">🍌</span>
+            <div>
+              <h4 style="color: #92400e; margin: 0 0 6px 0; font-size: 15px;">Ethylene Gas Management & Segregation Rule</h4>
+              <p style="color: #b45309; font-size: 13px; margin: 0; line-height: 1.5;">
+                Ethylene is an odorless, naturally occurring plant hormone that triggers ripening and rapid senescence.
+                <strong>High Ethylene Producers:</strong> Apples, Bananas, Avocados, Melons, and Pears.
+                <strong>Ethylene-Sensitive Foods:</strong> Leafy greens, Broccoli, Cucumbers, Carrots, and Herbs.
+                <em>Rule of Thumb:</em> Always segregate producers in a dedicated fruit bowl or separate refrigerator bin to avoid premature yellowing and rotting of sensitive greens.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 5: EXPIRY & SPOILAGE ALERTS (FEATURE 4)                      -->
+        <!-- ================================================================= -->
+        <div id="view-alerts" class="consumer-view-section" style="display: none;">
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">🚨</span>
+                <div>
+                  <h3 class="card-title" style="margin: 0;">Food Expiry & Spoilage Watchlist</h3>
+                  <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;">
+                    Items requiring prompt consumption (&le;72 hours) and spoilage intervention notices.
+                  </p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="markAllNotificationsAcknowledge()">
+                  ✓ Mark Notifications Read
+                </button>
+              </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div style="padding: 12px 20px 0 20px; display: flex; gap: 8px; border-bottom: 1px solid var(--border-color);">
+              <button type="button" class="consumer-nav-tab active" style="padding:6px 14px; font-size:12px;" onclick="filterAlertsView('all', this)">All Attention Items</button>
+              <button type="button" class="consumer-nav-tab" style="padding:6px 14px; font-size:12px;" onclick="filterAlertsView('critical', this)">Critical (&le; 24h / Expired)</button>
+              <button type="button" class="consumer-nav-tab" style="padding:6px 14px; font-size:12px;" onclick="filterAlertsView('warning', this)">Warning (&le; 48h)</button>
+              <button type="button" class="consumer-nav-tab" style="padding:6px 14px; font-size:12px;" onclick="filterAlertsView('notice', this)">Upcoming (&le; 72h)</button>
+            </div>
+
+            <!-- Alerts List Container -->
+            <div id="full-alerts-list-container" style="padding: 20px;">
+              <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
+                <p style="margin-top:8px;">Evaluating expiry thresholds and notifications...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 6: SCAN HISTORY (FEATURE 5)                                  -->
+        <!-- ================================================================= -->
+        <div id="view-history" class="consumer-view-section" style="display: none;">
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">📜</span>
+                <div>
+                  <h3 class="card-title" style="margin: 0;">Consumer Food Scan History & Diagnostics</h3>
+                  <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;">
+                    Complete record of all Computer Vision scans and shelf-life predictions for your account.
+                  </p>
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" onclick="switchConsumerView('scanner')">+ New AI Scan</button>
+            </div>
+
+            <!-- History Filter Toolbar -->
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+              <div style="display: flex; gap: 10px; flex: 1; min-width: 260px;">
+                <input
+                  type="text"
+                  id="history-search-input"
+                  placeholder="🔍 Search scanned foods by name..."
+                  class="form-control"
+                  style="max-width: 320px;"
+                  oninput="debounceSearchHistory(this.value)"
+                >
+                <select id="history-category-filter" class="form-control" style="max-width: 180px;" onchange="loadConsumerScanHistory()">
+                  <option value="all">All Categories</option>
+                  <option value="Fruits">Fruits</option>
+                  <option value="Vegetables">Vegetables</option>
+                  <option value="Dairy">Dairy</option>
+                  <option value="Meat">Meat</option>
+                  <option value="Fish">Fish</option>
+                  <option value="Bakery">Bakery</option>
+                  <option value="Grains">Grains</option>
+                  <option value="Packaged Food">Packaged Food</option>
+                </select>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted);" id="history-count-badge">
+                Showing recent scans
+              </div>
+            </div>
+
+            <!-- History Grid -->
+            <div id="full-history-grid-container" style="padding: 20px;">
+              <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
+                <p style="margin-top:8px;">Retrieving scan history records from MongoDB...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Quick AI Vision Scan Modal -->
+  <div id="quick-ai-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">⚡</span>
+          <h3 class="card-title" style="margin: 0;">Quick AI Freshness Scan</h3>
+        </div>
+        <button class="modal-close" onclick="closeQuickAiModal()">&times;</button>
+      </div>
+
+      <div style="padding: 16px 0;">
+        <div class="form-group">
+          <label class="form-label">Select Inventory Food Item (or Test Any Item):</label>
+          <select id="quick-ai-item-select" class="form-control">
+            <option value="">-- Choose Existing Item to Update --</option>
+          </select>
+        </div>
+
+        <!-- Input Mode Selector in Quick AI Modal -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; background: var(--bg-surface); padding: 3px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <button type="button" class="btn btn-sm" id="btn-quick-mode-upload" style="flex: 1; font-weight: 700; background: white; border: 1px solid #cbd5e1; color: var(--primary);" onclick="switchQuickMode('upload')">
+            📁 Upload File
+          </button>
+          <button type="button" class="btn btn-sm" id="btn-quick-mode-url" style="flex: 1; font-weight: 600; background: transparent; border: none; color: var(--text-muted);" onclick="switchQuickMode('url')">
+            🌐 Image Address (URL)
+          </button>
+        </div>
+
+        <div id="quick-upload-panel">
+          <div class="image-upload-wrapper" id="quick-dropzone" onclick="document.getElementById('quick-file-input').click()">
+            <span style="font-size: 36px; display: block; margin-bottom: 8px;">📸</span>
+            <strong style="color: var(--text-main); font-size: 14px;">Click or Drag & Drop Food Image</strong>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Supports JPEG, PNG, WebP up to 10MB</p>
+            <input type="file" id="quick-file-input" accept="image/*" style="display: none;" onchange="handleQuickFile(this.files[0])">
+          </div>
+        </div>
+
+        <div id="quick-url-panel" style="display: none; margin-bottom: 14px;">
+          <div style="background: #f8fafc; border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 14px;">
+            <label class="form-label" style="font-size: 12px; margin-bottom: 6px; font-weight: 700;">Food Image Address (URL):</label>
+            <div style="display: flex; gap: 8px;">
+              <input
+                type="url"
+                id="quick-url-input"
+                class="form-control"
+                placeholder="Paste food image web address (https://...)"
+                style="font-size: 13px;"
+                onkeydown="if(event.key==='Enter'){ event.preventDefault(); loadQuickImageUrl(); }"
+              >
+              <button type="button" class="btn btn-primary btn-sm" onclick="loadQuickImageUrl()" style="font-weight: 700;">
+                📥 Load
+              </button>
+            </div>
+            <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+              <span style="font-size: 10px; color: var(--text-muted);">Try Sample:</span>
+              <button type="button" class="badge" style="background:#fee2e2; color:#b91c1c; border:none; cursor:pointer;" onclick="useSampleQuickUrl('https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&auto=format&fit=crop')">🍎 Apple</button>
+              <button type="button" class="badge" style="background:#dcfce7; color:#166534; border:none; cursor:pointer;" onclick="useSampleQuickUrl('https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=600&auto=format&fit=crop')">🥦 Broccoli</button>
+              <button type="button" class="badge" style="background:#fef08a; color:#854d0e; border:none; cursor:pointer;" onclick="useSampleQuickUrl('https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=600&auto=format&fit=crop')">🥛 Milk</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Box -->
+        <div id="quick-preview-box" style="display: none; text-align: center; margin-top: 14px;">
+          <img id="quick-preview-img" src="" alt="Preview" style="max-height: 180px; border-radius: var(--radius-md); object-fit: contain;">
+        </div>
+
+        <!-- Scan Output Box -->
+        <div id="quick-scan-output" style="display: none; margin-top: 16px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+              <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">AI Computer Vision & Arrhenius Results</span>
+              <h4 id="quick-scanned-name" style="margin: 2px 0 0 0; font-size: 15px; color: var(--text-main);">Item Analysis</h4>
+            </div>
+            <span id="quick-result-badge" class="badge badge-fresh">Fresh</span>
+          </div>
+
+          <!-- 4 KPI Metrics Grid -->
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;">
+            <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Quality Score</div>
+              <div id="quick-quality-score" style="font-size: 20px; font-weight: 800; color: var(--primary);">94%</div>
+            </div>
+            <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Shelf Life</div>
+              <div id="quick-shelf-life" style="font-size: 20px; font-weight: 800; color: var(--secondary);">6.5 Days</div>
+            </div>
+            <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Confidence</div>
+              <div id="quick-confidence-score" style="font-size: 20px; font-weight: 800; color: #0284c7;">96%</div>
+            </div>
+            <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Spoilage Risk</div>
+              <div id="quick-spoilage-risk" style="font-size: 16px; font-weight: 800; color: #16a34a; margin-top:2px;">Low</div>
+            </div>
+          </div>
+
+          <!-- Defect and Storage Recommendation Notes -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div id="quick-rec-text" style="font-size: 12px; color: #0f766e; background: #f0fdfa; border: 1px solid #ccfbf1; padding: 10px 12px; border-radius: 6px;">
+              Visual surfaces optimal. No fungal colonies or browning detected.
+            </div>
+            <div id="quick-storage-advice" style="font-size: 12px; color: #1e3a8a; background: #eff6ff; border: 1px solid #dbeafe; padding: 10px 12px; border-radius: 6px;">
+              <strong>Storage Tip:</strong> Maintain refrigerated between 2°C and 4°C in a high-humidity compartment.
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeQuickAiModal()">Close</button>
+          <button type="button" class="btn btn-primary" id="btn-run-quick-scan" onclick="executeQuickScan()" disabled>
+            🔍 Run OpenCV & Arrhenius AI
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Scan Diagnostic Modal -->
+  <div id="modal-scan-detail" class="modal-overlay">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 22px;">🔬</span>
+          <div>
+            <h3 class="card-title" id="mdetail-food-name" style="margin: 0;">Food Diagnostics</h3>
+            <span style="font-size: 11px; color: var(--text-muted);" id="mdetail-subtitle">AI Vision & Kinetic Analysis</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeScanDetailModal()">&times;</button>
+      </div>
+
+      <div style="padding: 16px 0; max-height: 80vh; overflow-y: auto;">
+        <!-- Top Banner with Image and Primary Score -->
+        <div style="display: flex; gap: 18px; align-items: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+          <img id="mdetail-img" src="" alt="Food Scan" style="width: 100px; height: 100px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--border-color);">
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <span id="mdetail-category-badge" class="badge" style="background:#e0f2fe; color:#0369a1; font-size:11px;">Category</span>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" id="mdetail-date">Date</div>
+              </div>
+              <span id="mdetail-status-badge" class="badge badge-fresh" style="font-size: 13px; padding: 5px 12px;">Fresh</span>
+            </div>
+            <div style="margin-top: 10px; display: flex; gap: 14px;">
+              <div>
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Freshness Score</span>
+                <div id="mdetail-score" style="font-size: 24px; font-weight: 800; color: var(--primary);">94%</div>
+              </div>
+              <div>
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Shelf Life</span>
+                <div id="mdetail-shelflife" style="font-size: 24px; font-weight: 800; color: #2563eb;">6.5d</div>
+              </div>
+              <div>
+                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Confidence</span>
+                <div id="mdetail-confidence" style="font-size: 24px; font-weight: 800; color: #0284c7;">96%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Computer Vision Sub-scores Grid -->
+        <div style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px;">
+          <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px 0;">
+            Computer Vision Surface Analysis
+          </h4>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px; text-align: center;">
+            <div style="background: #f8fafc; padding: 10px; border-radius: var(--radius-sm);">
+              <span style="color: var(--text-muted); font-size: 11px;">Color Quality</span>
+              <div id="mdetail-color-score" style="font-size: 16px; font-weight: 700; color: #10b981; margin-top: 2px;">92%</div>
+            </div>
+            <div style="background: #f8fafc; padding: 10px; border-radius: var(--radius-sm);">
+              <span style="color: var(--text-muted); font-size: 11px;">Texture Score</span>
+              <div id="mdetail-texture-score" style="font-size: 16px; font-weight: 700; color: #0d9488; margin-top: 2px;">94%</div>
+            </div>
+            <div style="background: #f8fafc; padding: 10px; border-radius: var(--radius-sm);">
+              <span style="color: var(--text-muted); font-size: 11px;">Spoilage Risk</span>
+              <div id="mdetail-risk-score" style="font-size: 16px; font-weight: 700; color: #16a34a; margin-top: 2px;">Low</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Defects & Visual Anomalies -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px; font-size: 12px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <strong>Detected Visual Defects:</strong>
+            <span id="mdetail-defects-text" style="color: #0f766e; font-weight: 600;">None Detected</span>
+          </div>
+          <div style="display: flex; gap: 16px; margin-top: 6px; color: var(--text-muted);">
+            <span>Mold / Spores: <strong id="mdetail-mold-flag" style="color:#16a34a;">No</strong></span>
+            <span>Bruising / Decay: <strong id="mdetail-bruise-flag" style="color:#16a34a;">No</strong></span>
+            <span>Model: <span id="mdetail-model-version">cv-arrhenius-v2.4</span></span>
+          </div>
+        </div>
+
+        <!-- Prescriptive Recommendations -->
+        <div id="mdetail-recs-container" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 14px; font-size: 12px; color: #166534;">
+          <strong>Prescriptive Storage & Consumption Advice:</strong>
+          <div id="mdetail-recs-list" style="margin-top: 6px; line-height: 1.5;">
+            Optimal conditions maintained. Suitable for regular consumption.
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeScanDetailModal()">Close Diagnostics</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

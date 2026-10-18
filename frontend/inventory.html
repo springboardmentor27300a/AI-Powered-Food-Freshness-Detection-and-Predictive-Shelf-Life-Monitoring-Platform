@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Inventory | Food Freshness Monitoring Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🌱</div>
+        <div>
+          <div class="brand-title">FreshGuard</div>
+          <div class="brand-subtitle">Food Intelligence</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Consumer Pantry</div>
+        <a href="dashboard.html" class="nav-item">
+          <span>📊</span> Overview Dashboard
+        </a>
+        <a href="inventory.html" class="nav-item active">
+          <span>📦</span> Inventory
+        </a>
+        <a href="dashboard.html?view=scanner" class="nav-item">
+          <span>🔬</span> AI Freshness Scanner
+        </a>
+        <a href="dashboard.html?view=shelf-life" class="nav-item">
+          <span>🧮</span> Shelf-Life Prediction
+        </a>
+        <a href="dashboard.html?view=recommendations" class="nav-item">
+          <span>💡</span> Storage Guidelines
+        </a>
+        <a href="dashboard.html?view=alerts" class="nav-item">
+          <span>🚨</span> Expiry Alerts
+          <span id="sidebar-alerts-badge" class="nav-badge danger" style="display:none;">0</span>
+        </a>
+        <a href="add-food.html" class="nav-item">
+          <span>➕</span> Add Food Item
+        </a>
+        <a href="reports.html" class="nav-item">
+          <span>📋</span> Quality Reports
+        </a>
+
+        <div class="nav-section-title">Account</div>
+        <a href="profile.html" class="nav-item">
+          <span>👤</span> Profile & Role
+        </a>
+        <a href="#logout" class="nav-item btn-logout">
+          <span>🚪</span> Logout
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-quick-profile">
+          <div class="user-avatar">U</div>
+          <div class="user-info-text">
+            <div class="user-display-name">Loading...</div>
+            <div class="user-role-badge">Consumer</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+          <h1 class="page-title">Food Inventory Management</h1>
+        </div>
+        <div class="header-right" style="display:flex; gap:10px; align-items:center;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-seed-dataset" onclick="seedDatasetItems()" title="Load sample food items directly from platform datasets">
+            🌱 Load Dataset Items
+          </button>
+          <a href="add-food.html" class="btn btn-primary btn-sm">+ Add Food Item</a>
+        </div>
+      </header>
+
+      <main class="content-body">
+        <!-- 4 Primary Freshness Intelligence Action Cards -->
+        <div class="consumer-action-cards" style="margin-bottom: 24px;">
+          <!-- Action Card 1: AI Food Freshness Scanner -->
+          <a href="dashboard.html?view=scanner" class="consumer-action-card" id="action-card-scanner" style="text-decoration:none; color:inherit;">
+            <div class="action-card-header">
+              <div class="action-card-icon" style="background: #e6fcf5; color: #0d9488;">🔬</div>
+              <span class="action-card-badge" style="background: #d1fae5; color: #065f46;">VISION AI V2.4</span>
+            </div>
+            <div>
+              <div class="action-card-title">AI Freshness Scanner</div>
+              <div class="action-card-desc">Scan food images via drag-and-drop or camera to classify freshness and identify defects.</div>
+            </div>
+            <div class="action-card-footer" style="color: #059669;">
+              <span>Launch Scanner</span>
+              <span>&rarr;</span>
+            </div>
+          </a>
+
+          <!-- Action Card 2: Shelf-Life Prediction -->
+          <a href="dashboard.html?view=shelf-life" class="consumer-action-card" id="action-card-shelf-life" style="text-decoration:none; color:inherit;">
+            <div class="action-card-header">
+              <div class="action-card-icon" style="background: #eff6ff; color: #2563eb;">🧮</div>
+              <span class="action-card-badge" style="background: #dbeafe; color: #1d4ed8;">ARRHENIUS Q₁₀</span>
+            </div>
+            <div>
+              <div class="action-card-title">Shelf-Life Prediction</div>
+              <div class="action-card-desc">Simulate temperature and humidity impact with dynamic Arrhenius kinetic decay modeling.</div>
+            </div>
+            <div class="action-card-footer" style="color: #2563eb;">
+              <span>Simulate Kinetics</span>
+              <span>&rarr;</span>
+            </div>
+          </a>
+
+          <!-- Action Card 3: Storage Recommendations -->
+          <a href="dashboard.html?view=recommendations" class="consumer-action-card" id="action-card-recommendations" style="text-decoration:none; color:inherit;">
+            <div class="action-card-header">
+              <div class="action-card-icon" style="background: #fefce8; color: #ca8a04;">💡</div>
+              <span class="action-card-badge" style="background: #fef08a; color: #854d0e;">PANTRY GUIDE</span>
+            </div>
+            <div>
+              <div class="action-card-title">Storage Guidelines</div>
+              <div class="action-card-desc">Food-specific refrigeration rules, optimal climate bounds, and ethylene segregation tips.</div>
+            </div>
+            <div class="action-card-footer" style="color: #ca8a04;">
+              <span>View Guidelines</span>
+              <span>&rarr;</span>
+            </div>
+          </a>
+
+          <!-- Action Card 4: Expiry and Spoilage Alerts -->
+          <a href="dashboard.html?view=alerts" class="consumer-action-card" id="action-card-alerts" style="text-decoration:none; color:inherit;">
+            <div class="action-card-header">
+              <div class="action-card-icon" style="background: #fef2f2; color: #dc2626;">🚨</div>
+              <span class="action-card-badge" id="action-alerts-badge" style="background: #dcfce7; color: #166534;">0 ALERTS</span>
+            </div>
+            <div>
+              <div class="action-card-title">Expiry & Spoilage Alerts</div>
+              <div class="action-card-desc">Real-time alerts for impending expirations (&le;72h) and actionable spoilage risk indicators.</div>
+            </div>
+            <div class="action-card-footer" style="color: #dc2626;">
+              <span>Inspect Alerts</span>
+              <span>&rarr;</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Active Food Items</h2>
+            <p style="font-size:13px; color:var(--text-muted);" id="inventory-total-count">Loading items...</p>
+          </div>
+        </div>
+
+        <!-- Filter Toolbar -->
+        <div class="toolbar-card">
+          <div class="toolbar-filters">
+            <!-- Search Box -->
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input
+                type="text"
+                id="search-input"
+                class="search-input"
+                placeholder="Search food name, location, or batch..."
+              >
+            </div>
+
+            <!-- Category Filter -->
+            <select id="category-filter" class="filter-select">
+              <option value="all">All Categories</option>
+              <option value="Fruits">🍎 Fruits</option>
+              <option value="Vegetables">🥦 Vegetables</option>
+              <option value="Dairy">🧀 Dairy</option>
+              <option value="Meat">🥩 Meat</option>
+              <option value="Fish">🐟 Fish</option>
+              <option value="Grains">🌾 Grains</option>
+              <option value="Bakery">🍞 Bakery</option>
+              <option value="Packaged Food">🥫 Packaged Food</option>
+              <option value="Other">🥗 Other</option>
+            </select>
+
+            <!-- Expiry Filter -->
+            <select id="expiry-filter" class="filter-select">
+              <option value="all">All Expirations</option>
+              <option value="expiring_soon">⏳ Expiring Soon (&lt; 3 Days)</option>
+              <option value="expired">☣️ Expired / Spoiled</option>
+              <option value="fresh">🌿 Fresh (&gt; 3 Days)</option>
+            </select>
+
+            <!-- Storage Type Filter -->
+            <select id="storage-filter" class="filter-select">
+              <option value="all">All Storage Types</option>
+              <option value="Refrigerated">Refrigerated</option>
+              <option value="Frozen">Frozen</option>
+              <option value="Room Temperature">Room Temperature</option>
+              <option value="Pantry">Pantry</option>
+              <option value="Dry Storage">Dry Storage</option>
+              <option value="Cold Storage">Cold Storage</option>
+              <option value="Controlled Atmosphere">Controlled Atmosphere</option>
+            </select>
+
+            <!-- Sort By -->
+            <select id="sort-filter" class="filter-select">
+              <option value="expiry_date_asc">Sort: Expiry (Soonest First)</option>
+              <option value="expiry_date_desc">Sort: Expiry (Latest First)</option>
+              <option value="purchase_date_desc">Sort: Purchase Date (Newest)</option>
+              <option value="food_name_asc">Sort: Name (A &rarr; Z)</option>
+              <option value="quantity_desc">Sort: Quantity (Highest)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Food Item</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Purchase Date</th>
+                <th>Expiry Date</th>
+                <th>Storage Type</th>
+                <th>Freshness Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 40px;">
+                  <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
+                  <div style="margin-top:10px; color:var(--text-muted);">Loading food inventory...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Quick Edit Modal -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="card-title">Edit Food Item</h3>
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+      </div>
+
+      <form id="edit-food-form">
+        <div class="form-group">
+          <label for="edit-food_name" class="form-label">Food Name</label>
+          <input type="text" id="edit-food_name" class="form-control" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-category" class="form-label">Category</label>
+            <select id="edit-category" class="form-control" required>
+              <option value="Fruits">Fruits</option>
+              <option value="Vegetables">Vegetables</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Meat">Meat</option>
+              <option value="Fish">Fish</option>
+              <option value="Grains">Grains</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Packaged Food">Packaged Food</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-quantity" class="form-label">Quantity</label>
+            <input type="number" id="edit-quantity" class="form-control" step="0.1" min="0.01" required>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-unit" class="form-label">Unit</label>
+            <input type="text" id="edit-unit" class="form-control" placeholder="kg, g, items" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-purchase_date" class="form-label">Purchase Date</label>
+            <input type="date" id="edit-purchase_date" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-expiry_date" class="form-label">Expiry Date</label>
+            <input type="date" id="edit-expiry_date" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-storage_type" class="form-label">Storage Type</label>
+            <select id="edit-storage_type" class="form-control" required>
+              <option value="Refrigerated">Refrigerated</option>
+              <option value="Frozen">Frozen</option>
+              <option value="Room Temperature">Room Temperature</option>
+              <option value="Pantry">Pantry</option>
+              <option value="Dry Storage">Dry Storage</option>
+              <option value="Cold Storage">Cold Storage</option>
+              <option value="Controlled Atmosphere">Controlled Atmosphere</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-storage_temperature" class="form-label">Temperature (°C)</label>
+            <input type="number" id="edit-storage_temperature" class="form-control" step="0.1">
+          </div>
+
+          <div class="form-group">
+            <label for="edit-storage_humidity" class="form-label">Humidity (%)</label>
+            <input type="number" id="edit-storage_humidity" class="form-control" min="0" max="100" step="1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-location" class="form-label">Storage Location</label>
+            <input type="text" id="edit-location" class="form-control" placeholder="e.g. Fridge Crisper">
+          </div>
+
+          <div class="form-group">
+            <label for="edit-batch_number" class="form-label">Batch Number</label>
+            <input type="text" id="edit-batch_number" class="form-control" placeholder="Optional batch identifier">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" id="edit-submit-btn" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/inventory.js"></script>
+</body>
+</html>
