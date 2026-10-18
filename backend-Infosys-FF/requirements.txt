@@ -4,9 +4,9 @@ sqlalchemy
 psycopg2-binary
 python-dotenv
 email-validator
-passlib[bcrypt]
+passlib==1.7.4
 python-jose[cryptography]
-bcrypt
+bcrypt==4.0.1
 numpy
 Pillow
 tensorflow
