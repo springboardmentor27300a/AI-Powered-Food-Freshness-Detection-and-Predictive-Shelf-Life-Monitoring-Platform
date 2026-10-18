@@ -142,36 +142,37 @@ export default function ConsumerDashboard({
     let active = true;
 
     async function load() {
-
       try {
-
-        const [reportData, batchData] =
-          await Promise.all([
+        const [reportResult, batchResult] =
+          await Promise.allSettled([
             getJson("/analysis/my-reports"),
             getJson("/inventory/batches")
           ]);
 
         if (!active) return;
 
-        setReports(
-          Array.isArray(reportData)
-            ? reportData
-            : reportData?.reports || []
-        );
+        if (reportResult.status === "fulfilled") {
+          const reportData = reportResult.value;
+          setReports(
+            Array.isArray(reportData)
+              ? reportData
+              : reportData?.reports || []
+          );
+        }
 
-        setBatches(
-          Array.isArray(batchData)
-            ? batchData
-            : batchData?.batches || []
-        );
-
+        if (batchResult.status === "fulfilled") {
+          const batchData = batchResult.value;
+          setBatches(
+            Array.isArray(batchData)
+              ? batchData
+              : batchData?.batches || []
+          );
+        }
       } catch (error) {
-
         console.error(
           "Consumer dashboard error:",
           error
         );
-
       }
 
     }

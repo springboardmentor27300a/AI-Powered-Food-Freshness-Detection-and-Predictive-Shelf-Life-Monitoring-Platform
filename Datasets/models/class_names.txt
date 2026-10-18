@@ -1,0 +1,4 @@
+fresh
+half_fresh
+rotten
+spoiled

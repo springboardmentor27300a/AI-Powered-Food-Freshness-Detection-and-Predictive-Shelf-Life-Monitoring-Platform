@@ -7,6 +7,7 @@ from fastapi import (
 )
 
 import os
+import sys
 import json
 import tempfile
 import subprocess
@@ -699,7 +700,7 @@ async def analyze_food_image(
         )
 
     # --------------------------------------------------------
-    # FIND PROJECT ROOT
+    # FIND SCRIPT & INTERPRETER PATHS
     # --------------------------------------------------------
 
     backend_root = os.path.dirname(
@@ -710,40 +711,36 @@ async def analyze_food_image(
         backend_root
     )
 
-    # --------------------------------------------------------
-    # ML SCRIPT
-    # --------------------------------------------------------
+    script_candidates = [
+        os.path.join(project_root, "Datasets", "analyze_food.py"),
+        os.path.join(backend_root, "Datasets", "analyze_food.py"),
+        os.path.join(backend_root, "analyze_food.py"),
+        os.path.join(project_root, "analyze_food.py"),
+    ]
 
-    analyze_script = os.path.join(
-        project_root,
-        "Datasets",
-        "analyze_food.py"
+    analyze_script = next(
+        (path for path in script_candidates if os.path.isfile(path)),
+        None
     )
 
-    ml_python = os.path.join(
-        project_root,
-        "ml-venv",
-        "Scripts",
-        "python.exe"
+    if not analyze_script:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Food analysis script not found: {os.path.join(project_root, 'Datasets', 'analyze_food.py')}"
+        )
+
+    python_candidates = [
+        os.path.join(project_root, "ml-venv", "Scripts", "python.exe"),
+        os.path.join(project_root, "ml-venv", "bin", "python"),
+        os.path.join(backend_root, "venv", "Scripts", "python.exe"),
+        os.path.join(backend_root, "venv", "bin", "python"),
+        sys.executable,
+    ]
+
+    ml_python = next(
+        (path for path in python_candidates if path and os.path.isfile(path)),
+        sys.executable
     )
-
-    if not os.path.exists(
-        analyze_script
-    ):
-
-        raise HTTPException(
-            status_code=500,
-            detail=f"Food analysis script not found: {analyze_script}"
-        )
-
-    if not os.path.exists(
-        ml_python
-    ):
-
-        raise HTTPException(
-            status_code=500,
-            detail=f"ML environment not found: {ml_python}"
-        )
 
     # --------------------------------------------------------
     # TEMPORARY IMAGE

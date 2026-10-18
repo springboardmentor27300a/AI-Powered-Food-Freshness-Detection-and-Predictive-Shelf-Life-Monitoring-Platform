@@ -2,7 +2,12 @@
 # ==============================
 # Datasets and test images
 # ==============================
-/Datasets/
+/Datasets/*
+!/Datasets/analyze_food.py
+!/Datasets/models/
+/Datasets/models/*
+!/Datasets/models/food_freshness_model.keras
+!/Datasets/models/class_names.txt
 /test_images/
 
 # ==============================
@@ -81,10 +86,6 @@ backend-Infosys-FF/venv/
 frontend/node_modules/
 frontend/dist/
 
-# Datasets and test images
-/Datasets/
-/test_images/
 
-/ml-venv/
 # Local database backups
 backend-Infosys-FF/backups/
