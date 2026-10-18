@@ -1,1 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+.venv*/
+venv/
+env/
 
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+*.err
+
+# Temporary scripts
+tmp_*.py
+
+# Node
+node_modules/
+**/node_modules/
+
+# Frontend build
+frontend/dist/
+
+# Python generated files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary output
+push-result.txt
+
+# SQLite dev database (runtime file, not for version control)
+*.db
+*.sqlite
+*.sqlite3
+*.zip
+phase6_*.json
+phase6_*.txt
+phase6_*.html
+phase6_*.err
+phase6_*.log
+phase6_*.out
+pytest_*.txt
+
+# Generated test / validation output
+phase6_*.json
+phase6_*.txt
+phase6_*.html
+*.out
+pytest_*.txt
+
+# Generated presentation files inside backend
+backend/*Presentation*.pptx
+backend/*.pptx
+
+# Streamlit local credentials and caches
+**/.streamlit/secrets.toml
+**/.streamlit/credentials.toml
+**/.streamlit/cache/
+
+# Local Modal auth config; never publish credentials.
+deploy/.modal.toml

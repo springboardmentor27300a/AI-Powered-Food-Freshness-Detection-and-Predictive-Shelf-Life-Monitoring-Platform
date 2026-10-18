@@ -1,0 +1,4 @@
+# Install the application dependencies plus tools needed by the backend tests.
+-r requirements.txt
+pytest>=8,<10
+h5py>=3.10,<4

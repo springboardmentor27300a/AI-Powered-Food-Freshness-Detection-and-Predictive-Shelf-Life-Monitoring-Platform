@@ -1,0 +1,47 @@
+{
+  "registry_version": "1.0.0",
+  "purpose": "M2 v2 production model approval registry",
+  "categories": {
+    "Fruits": {
+      "capability_status": "not_yet_supported",
+      "reason": "No production-approved M2 v2 model is available for Fruits.",
+      "model_id": null
+    },
+    "Vegetables": {
+      "capability_status": "not_yet_supported",
+      "reason": "No production-approved M2 v2 model is available for Vegetables.",
+      "model_id": null
+    },
+    "Dairy Products": {
+      "capability_status": "not_yet_supported",
+      "reason": "No production-approved M2 v2 model is available for Dairy Products.",
+      "model_id": null
+    },
+    "Meat & Poultry": {
+      "capability_status": "not_yet_supported",
+      "reason": "No production-approved M2 v2 model is available for Meat & Poultry.",
+      "model_id": null
+    },
+    "Seafood": {
+      "capability_status": "not_yet_supported",
+      "reason": "No production-approved M2 v2 model is available for Seafood.",
+      "model_id": null
+    },
+    "Bakery Products": {
+      "capability_status": "not_yet_supported",
+      "reason": "No production-approved M2 v2 model is available for Bakery Products.",
+      "model_id": null
+    },
+    "Packaged Foods": {
+      "capability_status": "not_yet_supported",
+      "reason": "No production-approved M2 v2 model is available for Packaged Foods.",
+      "model_id": null
+    },
+    "Beverages": {
+      "capability_status": "not_yet_supported",
+      "reason": "No production-approved M2 v2 model is available for Beverages.",
+      "model_id": null
+    }
+  },
+  "models": []
+}

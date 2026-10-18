@@ -1,0 +1,225 @@
+{
+  "vegetables": {
+    "food_category": "vegetables",
+    "data_type": "SYNTHETIC",
+    "model_file": "vegetables_rsl_synthetic.joblib",
+    "model_type": "RandomForestRegressor",
+    "features": [
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "total_rows": 1200,
+    "train_rows": 960,
+    "test_rows": 240,
+    "test_mae": 0.3634,
+    "test_rmse": 0.5374,
+    "test_r2": 0.9719,
+    "cv_strategy": "GroupKFold(n_splits=5)",
+    "cv_mae_mean": 0.3627,
+    "cv_rmse_mean": 0.5389,
+    "cv_r2_mean": 0.9731,
+    "domain": {
+      "temperature_min": 2.0,
+      "temperature_max": 12.0,
+      "humidity_min": 80.0,
+      "humidity_max": 98.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 14.0,
+      "allowed_categories": [
+        "vegetables",
+        "vegetable"
+      ],
+      "allowed_packaging": [
+        "perforated",
+        "sealed",
+        "open"
+      ]
+    },
+    "generation_logic": "base_sl=12.0d at optimal (4\u00b0C, 95% RH), temp_penalty=(T-4)*0.70, rh_penalty=|RH-95|*0.15, packaging modifiers (sealed:+1.0, open:-2.0, perforated:0), RSL = max(0, initial_sl - duration + N(0, 0.45)).",
+    "validation_note": "DEMONSTRATION/EXTENSION ONLY. Trained purely on synthetic data with known simulation equations."
+  },
+  "meat_poultry": {
+    "food_category": "meat_poultry",
+    "data_type": "SYNTHETIC",
+    "model_file": "meat_poultry_rsl_synthetic.joblib",
+    "model_type": "RandomForestRegressor",
+    "features": [
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "total_rows": 1200,
+    "train_rows": 960,
+    "test_rows": 240,
+    "test_mae": 0.2573,
+    "test_rmse": 0.3758,
+    "test_r2": 0.9656,
+    "cv_strategy": "GroupKFold(n_splits=5)",
+    "cv_mae_mean": 0.2684,
+    "cv_rmse_mean": 0.4034,
+    "cv_r2_mean": 0.9624,
+    "domain": {
+      "temperature_min": 0.0,
+      "temperature_max": 8.0,
+      "humidity_min": 65.0,
+      "humidity_max": 85.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 8.0,
+      "allowed_categories": [
+        "meat_poultry",
+        "meat & poultry",
+        "meat",
+        "poultry",
+        "chicken",
+        "beef",
+        "pork"
+      ],
+      "allowed_packaging": [
+        "modified_atmosphere",
+        "vacuum_sealed",
+        "airtight",
+        "open"
+      ]
+    },
+    "generation_logic": "base_sl=7.0d at optimal (1\u00b0C, 75% RH), temp_penalty=(T-1)*0.90, rh_penalty=|RH-75|*0.05, packaging modifiers (vac:+2.0, map:+1.5, airtight:+0.5, open:-1.5), RSL = max(0, initial_sl - duration + N(0, 0.35)).",
+    "validation_note": "DEMONSTRATION/EXTENSION ONLY. Trained purely on synthetic data with known simulation equations."
+  },
+  "bakery": {
+    "food_category": "bakery",
+    "data_type": "SYNTHETIC",
+    "model_file": "bakery_rsl_synthetic.joblib",
+    "model_type": "RandomForestRegressor",
+    "features": [
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "total_rows": 1200,
+    "train_rows": 960,
+    "test_rows": 240,
+    "test_mae": 0.2289,
+    "test_rmse": 0.3882,
+    "test_r2": 0.9508,
+    "cv_strategy": "GroupKFold(n_splits=5)",
+    "cv_mae_mean": 0.2339,
+    "cv_rmse_mean": 0.4029,
+    "cv_r2_mean": 0.9472,
+    "domain": {
+      "temperature_min": 15.0,
+      "temperature_max": 30.0,
+      "humidity_min": 40.0,
+      "humidity_max": 75.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 10.0,
+      "allowed_categories": [
+        "bakery",
+        "bakery products",
+        "bread",
+        "pastry"
+      ],
+      "allowed_packaging": [
+        "paper",
+        "sealed",
+        "airtight",
+        "open"
+      ]
+    },
+    "generation_logic": "base_sl=7.0d at ambient (20\u00b0C, 50% RH), temp_penalty=max(0, T-20)*0.35, rh_penalty=|RH-50|*0.10, packaging modifiers (airtight:+0.8, sealed:+0.5, paper:-0.5, open:-2.0), RSL = max(0, initial_sl - duration + N(0, 0.40)).",
+    "validation_note": "DEMONSTRATION/EXTENSION ONLY. Trained purely on synthetic data with known simulation equations."
+  },
+  "packaged_foods": {
+    "food_category": "packaged_foods",
+    "data_type": "SYNTHETIC",
+    "model_file": "packaged_foods_rsl_synthetic.joblib",
+    "model_type": "RandomForestRegressor",
+    "features": [
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "total_rows": 1200,
+    "train_rows": 960,
+    "test_rows": 240,
+    "test_mae": 0.5982,
+    "test_rmse": 0.7896,
+    "test_r2": 0.9873,
+    "cv_strategy": "GroupKFold(n_splits=5)",
+    "cv_mae_mean": 0.5539,
+    "cv_rmse_mean": 0.7348,
+    "cv_r2_mean": 0.9891,
+    "domain": {
+      "temperature_min": 2.0,
+      "temperature_max": 10.0,
+      "humidity_min": 45.0,
+      "humidity_max": 70.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 25.0,
+      "allowed_categories": [
+        "packaged_foods",
+        "packaged foods",
+        "ready meals",
+        "snacks"
+      ],
+      "allowed_packaging": [
+        "modified_atmosphere",
+        "sealed",
+        "vacuum_sealed"
+      ]
+    },
+    "generation_logic": "base_sl=21.0d at refrigerated optimal (4\u00b0C, 55% RH), temp_penalty=(T-4)*1.10, rh_penalty=|RH-55|*0.04, packaging modifiers (vac:+4.0, map:+3.0, sealed:0), RSL = max(0, initial_sl - duration + N(0, 0.60)).",
+    "validation_note": "DEMONSTRATION/EXTENSION ONLY. Trained purely on synthetic data with known simulation equations."
+  },
+  "beverages": {
+    "food_category": "beverages",
+    "data_type": "SYNTHETIC",
+    "model_file": "beverages_rsl_synthetic.joblib",
+    "model_type": "RandomForestRegressor",
+    "features": [
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "total_rows": 1200,
+    "train_rows": 960,
+    "test_rows": 240,
+    "test_mae": 0.3287,
+    "test_rmse": 0.5011,
+    "test_r2": 0.9832,
+    "cv_strategy": "GroupKFold(n_splits=5)",
+    "cv_mae_mean": 0.3607,
+    "cv_rmse_mean": 0.5467,
+    "cv_r2_mean": 0.9811,
+    "domain": {
+      "temperature_min": 2.0,
+      "temperature_max": 10.0,
+      "humidity_min": 40.0,
+      "humidity_max": 70.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 18.0,
+      "allowed_categories": [
+        "beverages",
+        "juice",
+        "beverage",
+        "milk alternative"
+      ],
+      "allowed_packaging": [
+        "airtight",
+        "sealed",
+        "open"
+      ]
+    },
+    "generation_logic": "base_sl=14.0d at chilled optimal (4\u00b0C, 50% RH), temp_penalty=(T-4)*0.95, rh_penalty=|RH-50|*0.02, packaging modifiers (airtight:+1.0, sealed:0, open:-5.0), RSL = max(0, initial_sl - duration + N(0, 0.50)).",
+    "validation_note": "DEMONSTRATION/EXTENSION ONLY. Trained purely on synthetic data with known simulation equations."
+  }
+}

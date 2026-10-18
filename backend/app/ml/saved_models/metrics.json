@@ -1,0 +1,106 @@
+{
+  "test_accuracy": 0.9976,
+  "test_precision_macro": 0.9978,
+  "test_recall_macro": 0.9976,
+  "test_f1_macro": 0.9977,
+  "per_class_report": {
+    "freshapples": {
+      "precision": 1.0,
+      "recall": 0.9936,
+      "f1_score": 0.9968,
+      "support": 314
+    },
+    "freshbanana": {
+      "precision": 0.9966,
+      "recall": 1.0,
+      "f1_score": 0.9983,
+      "support": 295
+    },
+    "freshoranges": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 279
+    },
+    "rottenapples": {
+      "precision": 0.9932,
+      "recall": 0.9955,
+      "f1_score": 0.9944,
+      "support": 442
+    },
+    "rottenbanana": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 414
+    },
+    "rottenoranges": {
+      "precision": 0.9967,
+      "recall": 0.9967,
+      "f1_score": 0.9967,
+      "support": 301
+    }
+  },
+  "training_history": [
+    {
+      "epoch": 1,
+      "phase": "head",
+      "train_loss": 0.3263,
+      "train_acc": 0.8867,
+      "val_loss": 0.0955,
+      "val_acc": 0.972
+    },
+    {
+      "epoch": 2,
+      "phase": "head",
+      "train_loss": 0.1728,
+      "train_acc": 0.9361,
+      "val_loss": 0.0583,
+      "val_acc": 0.9809
+    },
+    {
+      "epoch": 3,
+      "phase": "head",
+      "train_loss": 0.1533,
+      "train_acc": 0.9453,
+      "val_loss": 0.0555,
+      "val_acc": 0.9804
+    },
+    {
+      "epoch": 4,
+      "phase": "finetune",
+      "train_loss": 0.1072,
+      "train_acc": 0.9639,
+      "val_loss": 0.0174,
+      "val_acc": 0.9946
+    },
+    {
+      "epoch": 5,
+      "phase": "finetune",
+      "train_loss": 0.0532,
+      "train_acc": 0.9817,
+      "val_loss": 0.0109,
+      "val_acc": 0.9971
+    },
+    {
+      "epoch": 6,
+      "phase": "finetune",
+      "train_loss": 0.0275,
+      "train_acc": 0.9908,
+      "val_loss": 0.0062,
+      "val_acc": 0.999
+    }
+  ],
+  "dataset_summary": {
+    "total_classes": 6,
+    "total_images": 13599,
+    "classes": {
+      "freshapples": 2088,
+      "freshbanana": 1962,
+      "freshoranges": 1854,
+      "rottenapples": 2943,
+      "rottenbanana": 2754,
+      "rottenoranges": 1998
+    }
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "tomato": {
+    "food_category": "tomato",
+    "model_file": "tomato_rsl.joblib",
+    "model_type": "RandomForestRegressor",
+    "features": [
+      "nled_level",
+      "bwc_level",
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "training_rows": 1684,
+    "independent_groups": 48,
+    "cv_strategy": "GroupKFold(n_splits=5)",
+    "mae_mean": 0.2507,
+    "mae_std": 0.0396,
+    "rmse_mean": 0.4173,
+    "rmse_std": 0.0574,
+    "r2_mean": 0.9983,
+    "r2_std": 0.0005,
+    "max_absolute_error": 1.1583,
+    "median_absolute_error": 0.081,
+    "negative_predictions_count": 0,
+    "domain": {
+      "temperature_min": 20.0,
+      "temperature_max": 25.0,
+      "humidity_min": 65.0,
+      "humidity_max": 75.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 35.0,
+      "allowed_categories": [
+        "tomato"
+      ],
+      "allowed_packaging": [
+        "uncoated",
+        "beeswax_coated"
+      ]
+    }
+  },
+  "paneer": {
+    "food_category": "paneer",
+    "model_file": "paneer_rsl.joblib",
+    "model_type": "LinearRegression",
+    "features": [
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "training_rows": 50,
+    "independent_groups": 5,
+    "cv_strategy": "GroupKFold(n_splits=5)",
+    "mae_mean": 0.0,
+    "mae_std": 0.0,
+    "rmse_mean": 0.0,
+    "rmse_std": 0.0,
+    "r2_mean": 1.0,
+    "r2_std": 0.0,
+    "max_absolute_error": 0.0,
+    "median_absolute_error": 0.0,
+    "negative_predictions_count": 0,
+    "domain": {
+      "temperature_min": 4.0,
+      "temperature_max": 8.0,
+      "humidity_min": 30.0,
+      "humidity_max": 50.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 15.0,
+      "allowed_categories": [
+        "paneer"
+      ],
+      "allowed_packaging": [
+        "sealed"
+      ]
+    }
+  },
+  "chicken": {
+    "food_category": "chicken",
+    "model_file": "chicken_rsl.joblib",
+    "model_type": "GradientBoostingRegressor",
+    "features": [
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "training_rows": 27,
+    "independent_groups": 2,
+    "cv_strategy": "LeaveOneGroupOut()",
+    "mae_mean": 0.75,
+    "mae_std": 0.75,
+    "rmse_mean": 1.3693,
+    "rmse_std": 1.3693,
+    "r2_mean": -0.2143,
+    "r2_std": 0.2143,
+    "max_absolute_error": 6.0,
+    "median_absolute_error": 0.0,
+    "negative_predictions_count": 0,
+    "domain": {
+      "temperature_min": 4.0,
+      "temperature_max": 15.0,
+      "humidity_min": 70.0,
+      "humidity_max": 80.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 14.0,
+      "allowed_categories": [
+        "chicken"
+      ],
+      "allowed_packaging": [
+        "modified_atmosphere"
+      ]
+    }
+  },
+  "seafood": {
+    "food_category": "seafood",
+    "model_file": "seafood_rsl.joblib",
+    "model_type": "RandomForestRegressor",
+    "features": [
+      "species",
+      "packaging_type",
+      "storage_temperature_c",
+      "humidity_pct",
+      "storage_duration_days"
+    ],
+    "target": "remaining_shelf_life_days",
+    "training_rows": 6959,
+    "independent_groups": 9,
+    "cv_strategy": "GroupKFold(n_splits=5)",
+    "mae_mean": 0.0,
+    "mae_std": 0.0,
+    "rmse_mean": 0.0,
+    "rmse_std": 0.0,
+    "r2_mean": 1.0,
+    "r2_std": 0.0,
+    "max_absolute_error": 0.0,
+    "median_absolute_error": 0.0,
+    "negative_predictions_count": 0,
+    "domain": {
+      "temperature_min": 0.0,
+      "temperature_max": 2.0,
+      "humidity_min": 80.0,
+      "humidity_max": 90.0,
+      "storage_duration_min": 0.0,
+      "storage_duration_max": 3.0,
+      "allowed_species": [
+        "mackerel",
+        "tilapia",
+        "tuna"
+      ],
+      "allowed_packaging": [
+        "open"
+      ]
+    }
+  },
+  "avocado": {
+    "status": "BLOCKED",
+    "reason": "raw dataset unavailable locally"
+  }
+}
