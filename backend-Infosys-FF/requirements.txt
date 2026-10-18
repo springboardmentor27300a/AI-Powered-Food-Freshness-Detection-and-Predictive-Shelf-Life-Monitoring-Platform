@@ -11,3 +11,4 @@ numpy
 Pillow
 tensorflow
 psycopg[binary]
+python-multipart
