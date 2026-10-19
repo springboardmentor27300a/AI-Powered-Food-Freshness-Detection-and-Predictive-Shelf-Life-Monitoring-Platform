@@ -1,5 +1,6 @@
 
 /Datasets/*
+!/Datasets/README.md
 !/Datasets/analyze_food.py
 !/Datasets/prepare_dataset.py
 !/Datasets/train_model.py
