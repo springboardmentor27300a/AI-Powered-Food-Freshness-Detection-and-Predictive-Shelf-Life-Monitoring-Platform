@@ -1,0 +1,15 @@
+
+services:
+  - type: web
+    name: food-freshness-backend
+    runtime: python
+    rootDir: backend-Infosys-FF
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+  - type: web
+    name: food-freshness-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
