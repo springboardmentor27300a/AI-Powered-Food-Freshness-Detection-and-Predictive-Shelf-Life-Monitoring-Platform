@@ -108,10 +108,23 @@ Datasets/models/class_names.txt
 
 - The processed dataset and raw dataset archives are not included in this Git repository.
 - Obtain the required datasets and verify their licences and redistribution permissions before sharing them.
-- The raw dataset source links should be documented here once verified.
+- The original dataset source links are documented in Section 7.
 - The dataset is imbalanced, particularly for the `half_fresh` and `spoiled` classes. Evaluate performance separately for each class.
 - Dataset class order must remain consistent between training, inference, and the saved class-name file.
 
-## 7. Related Project Files
+## 7. Dataset Sources
+
+The following publicly available datasets on Kaggle were used as source datasets for this project:
+
+1. **Freshness44:** https://www.kaggle.com/datasets/siavash93/freshness44
+2. **Fresh and Spoiled Food Image Dataset:** https://www.kaggle.com/datasets/maheen00shahid/fresh-and-spoiled-food-image-dataset
+3. **Freshness Fish Dataset:** https://www.kaggle.com/datasets/atcharachumpol/freshness-fish-dataset
+4. **Meat Freshness Image Dataset:** https://www.kaggle.com/datasets/vinayakshanawad/meat-freshness-image-dataset
+
+Please refer to the original Kaggle pages for dataset descriptions, licences, attribution requirements, and permitted usage.
+
+The processed dataset is not included in this repository because of its large size. The scripts in this directory describe the preparation and training workflow.
+
+## 8. Related Project Files
 
 The project root README contains the overall platform overview, setup instructions, and deployment information.
