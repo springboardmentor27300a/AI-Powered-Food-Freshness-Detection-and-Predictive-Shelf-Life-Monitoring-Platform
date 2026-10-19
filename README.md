@@ -2,6 +2,18 @@
 
 An AI-assisted platform for monitoring food freshness, estimating shelf life, managing inventory, and generating freshness reports.
 
+## Live Demo
+
+The Food Freshness Monitoring Platform is deployed on Render.
+
+- **Frontend:** https://food-freshness-frontend-a337.onrender.com
+- **Backend API:** https://food-freshness-backend-r79i.onrender.com
+- **API Documentation:** https://food-freshness-backend-r79i.onrender.com/docs
+
+### Deployment
+
+The frontend and backend are deployed as separate services on Render. The backend provides API endpoints used by the frontend, and the API documentation is available through FastAPI Swagger UI.
+
 ## Features
 
 - User registration and login
@@ -20,10 +32,10 @@ An AI-assisted platform for monitoring food freshness, estimating shelf life, ma
 
 ## Project Structure
 
-- rontend/ — React application
-- ackend-Infosys-FF/ — FastAPI backend
-- dataset/ — Dataset documentation
-- Datasets/ — Local dataset and model resources
+- rontend/ ï¿½ React application
+- ackend-Infosys-FF/ ï¿½ FastAPI backend
+- dataset/ ï¿½ Dataset documentation
+- Datasets/ ï¿½ Local dataset and model resources
 
 ## Local Setup
 
