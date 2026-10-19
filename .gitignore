@@ -1,14 +1,13 @@
 
-# ==============================
-# Datasets and test images
-# ==============================
 /Datasets/*
 !/Datasets/analyze_food.py
+!/Datasets/prepare_dataset.py
+!/Datasets/train_model.py
 !/Datasets/models/
 /Datasets/models/*
 !/Datasets/models/food_freshness_model.keras
 !/Datasets/models/class_names.txt
-/test_images/
+
 
 # ==============================
 # Python virtual environments
@@ -89,3 +88,5 @@ frontend/dist/
 
 # Local database backups
 backend-Infosys-FF/backups/
+
+/test_images/
