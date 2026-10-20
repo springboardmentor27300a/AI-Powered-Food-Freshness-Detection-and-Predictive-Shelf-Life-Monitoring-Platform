@@ -466,7 +466,7 @@
 
         <div class="nav-section-title">Account</div>
         <a href="profile.html" class="nav-item"><span>👤</span> Profile & Security</a>
-        <a href="#logout" class="nav-item btn-logout" onclick="api.clearSession(); window.location.href='login.html';">
+        <a href="#logout" class="nav-item btn-logout" onclick="event.preventDefault(); api.logout();">
           <span>🚪</span> Logout
         </a>
       </nav>

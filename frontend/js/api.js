@@ -1,27 +1,58 @@
+
 /**
  * Food Freshness Monitoring Platform - Central API Client & Utilities
  * Pure Vanilla JavaScript (Fetch API, JWT, Error Handling, Toasts)
  */
 
+// ============================================================
+// API CONFIGURATION
+// ============================================================
+
 const API_CONFIG = {
   BASE_URL: (() => {
     try {
-      if (typeof window !== "undefined" && window.location.protocol === "file:") {
-        return "http://127.0.0.1:8765/api";
+      if (typeof window !== "undefined") {
+        const proto = window.location.protocol;
+        const port = window.location.port;
+
+        // Opened directly as a local HTML file
+        if (proto === "file:") {
+          return "http://127.0.0.1:9000/api";
+        }
+
+        // Frontend served by FastAPI itself
+        if (port === "9000") {
+          return "/api";
+        }
+
+        // Frontend served separately (Live Server, etc.)
+        return "http://127.0.0.1:9000/api";
       }
-    } catch (e) {}
-    return "/api";
+    } catch (e) {
+      console.error("Could not determine API base URL:", e);
+    }
+
+    return "http://127.0.0.1:9000/api";
   })(),
+
   TOKEN_KEY: "food_freshness_token",
   USER_KEY: "food_freshness_user",
 };
 
+// ============================================================
+// CENTRAL API CLIENT
+// ============================================================
+
 class ApiClient {
   constructor() {
     this.baseUrl = API_CONFIG.BASE_URL;
+    console.info("Food Freshness API URL:", this.baseUrl);
   }
 
-  // Token & Session Storage
+  // ----------------------------------------------------------
+  // Token and Session Storage
+  // ----------------------------------------------------------
+
   getToken() {
     return localStorage.getItem(API_CONFIG.TOKEN_KEY);
   }
@@ -35,6 +66,7 @@ class ApiClient {
       const userStr = localStorage.getItem(API_CONFIG.USER_KEY);
       return userStr ? JSON.parse(userStr) : null;
     } catch (e) {
+      console.error("Unable to read stored user:", e);
       return null;
     }
   }
@@ -44,47 +76,247 @@ class ApiClient {
   }
 
   clearSession() {
-    localStorage.removeItem(API_CONFIG.TOKEN_KEY);
-    localStorage.removeItem(API_CONFIG.USER_KEY);
+    try {
+      localStorage.removeItem(API_CONFIG.TOKEN_KEY);
+      localStorage.removeItem(API_CONFIG.USER_KEY);
+
+      sessionStorage.removeItem(API_CONFIG.TOKEN_KEY);
+      sessionStorage.removeItem(API_CONFIG.USER_KEY);
+      sessionStorage.clear();
+
+      if (typeof document !== "undefined" && document.cookie) {
+        document.cookie.split(";").forEach((cookie) => {
+          document.cookie =
+            cookie.replace(/^ +/, "").replace(/=.*/, "") +
+            "=;expires=" +
+            new Date(0).toUTCString() +
+            ";path=/";
+        });
+      }
+    } catch (e) {
+      console.warn("Error clearing authentication session:", e);
+    }
   }
 
   isAuthenticated() {
     return !!this.getToken();
   }
 
-  requireAuth() {
+  requireAuth(returnUrl = null) {
     if (!this.isAuthenticated()) {
-      window.location.href = "login.html";
+      let target = returnUrl;
+
+      if (!target && typeof window !== "undefined") {
+        const path = window.location.pathname || "";
+        const search = window.location.search || "";
+        const hash = window.location.hash || "";
+        const full = path + search + hash;
+
+        if (
+          !path.includes("login.html") &&
+          !path.includes("register.html") &&
+          path !== "/" &&
+          path !== ""
+        ) {
+          target = full;
+        }
+      }
+
+      if (target) {
+        try {
+          sessionStorage.setItem("food_freshness_return_url", target);
+        } catch (e) {
+          console.warn("Could not save return_url to sessionStorage:", e);
+        }
+      }
+
+      let loginUrl = "login.html";
+
+      if (target) {
+        loginUrl += `?redirect=${encodeURIComponent(target)}`;
+      }
+
+      window.location.href = loginUrl;
       return false;
     }
+
     return true;
+  }
+
+  sanitizeReturnUrl(url) {
+    if (!url || typeof url !== "string") return null;
+    let trimmed = url.trim();
+    if (trimmed.startsWith("//")) return null;
+    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) return null;
+    if (/[\r\n\t]/.test(trimmed)) return null;
+
+    let clean = trimmed.split("?")[0].split("#")[0];
+    if (clean.startsWith("/")) clean = clean.substring(1);
+    if (clean.includes("..")) return null;
+
+    const page = clean.split("/").pop().toLowerCase();
+    if (!page || page === "index.html" || page === "login.html" || page === "register.html") {
+      return null;
+    }
+
+    const validPages = [
+      "inventory.html",
+      "dashboard.html",
+      "retailer-dashboard.html",
+      "warehouse-dashboard.html",
+      "dashboard-inspector.html",
+      "admin-dashboard.html",
+      "executive-dashboard.html",
+      "reports.html",
+      "profile.html",
+      "add-food.html",
+      "food-details.html",
+      "freshness.html",
+    ];
+
+    if (validPages.includes(page) || page.endsWith(".html")) {
+      return trimmed;
+    }
+    return null;
+  }
+
+  isPageAuthorizedForRole(targetUrl, role) {
+    if (!targetUrl) return true;
+    const clean = targetUrl.split("?")[0].split("#")[0].toLowerCase().trim();
+    const page = clean.split("/").pop();
+    const r = (role || "").toLowerCase().trim();
+
+    const isAdmin = (r === "admin" || r === "administrator");
+    if (isAdmin) return true;
+
+    if (page === "admin-dashboard.html" || page === "executive-dashboard.html") {
+      return isAdmin;
+    }
+
+    if (page === "dashboard-inspector.html") {
+      return r.includes("inspector");
+    }
+
+    if (page === "retailer-dashboard.html") {
+      return r.includes("retailer");
+    }
+
+    if (page === "warehouse-dashboard.html") {
+      return (
+        r.includes("warehouse") ||
+        r.includes("supply chain") ||
+        r.includes("manufacturer")
+      );
+    }
+
+    if (page === "dashboard.html") {
+      return r.includes("consumer") || r === "";
+    }
+
+    // Shared authenticated pages
+    return true;
+  }
+
+  getSavedReturnUrl() {
+    let target = null;
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      target = params.get("redirect") || params.get("returnUrl") || params.get("return_url");
+      if (!target) {
+        try {
+          target = sessionStorage.getItem("food_freshness_return_url");
+        } catch (e) {}
+      }
+    }
+    return this.sanitizeReturnUrl(target);
+  }
+
+  clearReturnUrl() {
+    try {
+      sessionStorage.removeItem("food_freshness_return_url");
+    } catch (e) {}
   }
 
   getDashboardUrlForRole(role) {
     if (!role) return "dashboard.html";
+
     const r = role.trim();
+
     if (r === "Retailer") return "retailer-dashboard.html";
-    if (r === "Food Quality Inspector" || r === "Quality Inspector") return "dashboard-inspector.html";
-    if (r === "Admin") return "admin-dashboard.html";
-    if (r === "Warehouse Operator" || r === "Warehouse Manager" || r === "Supply Chain Operator") return "warehouse-dashboard.html";
-    return "dashboard.html"; // Consumer default
+
+    if (
+      r === "Food Quality Inspector" ||
+      r === "Quality Inspector"
+    ) {
+      return "dashboard-inspector.html";
+    }
+
+    if (r === "Admin" || r === "Administrator" || r.toLowerCase().includes("admin")) {
+      return "admin-dashboard.html";
+    }
+
+    if (
+      r === "Warehouse Operator" ||
+      r === "Warehouse Manager" ||
+      r === "Supply Chain Operator" ||
+      r === "Food Manufacturer"
+    ) {
+      return "warehouse-dashboard.html";
+    }
+
+    return "dashboard.html";
   }
 
   enforceRoleAccess(allowedRoles = []) {
     if (!this.requireAuth()) return false;
+
     const user = this.getUser();
     if (!user) return false;
 
-    const normAllowed = allowedRoles.map(r => r.toLowerCase().trim());
+    const normalizedAllowed = allowedRoles.map((role) =>
+      role.toLowerCase().trim()
+    );
+
     const userRole = (user.role || "").toLowerCase().trim();
 
-    const isMatch = normAllowed.some(allowed => {
+    const isMatch = normalizedAllowed.some((allowed) => {
       if (allowed === userRole) return true;
-      if (allowed.includes("warehouse") && userRole.includes("warehouse")) return true;
-      if (allowed.includes("inspector") && userRole.includes("inspector")) return true;
-      if (allowed.includes("admin") && userRole.includes("admin")) return true;
-      if (allowed.includes("consumer") && userRole.includes("consumer")) return true;
-      if (allowed.includes("retailer") && userRole.includes("retailer")) return true;
+
+      if (
+        (allowed.includes("warehouse") || allowed.includes("manufacturer") || allowed.includes("supply chain")) &&
+        (userRole.includes("warehouse") || userRole.includes("manufacturer") || userRole.includes("supply chain"))
+      ) {
+        return true;
+      }
+
+      if (
+        allowed.includes("inspector") &&
+        userRole.includes("inspector")
+      ) {
+        return true;
+      }
+
+      if (
+        allowed.includes("admin") &&
+        userRole.includes("admin")
+      ) {
+        return true;
+      }
+
+      if (
+        allowed.includes("consumer") &&
+        userRole.includes("consumer")
+      ) {
+        return true;
+      }
+
+      if (
+        allowed.includes("retailer") &&
+        userRole.includes("retailer")
+      ) {
+        return true;
+      }
+
       return false;
     });
 
@@ -93,23 +325,34 @@ class ApiClient {
         "access_restricted_alert",
         `Access Restricted: Your account role (${user.role}) is assigned to your dedicated dashboard.`
       );
+
       const targetUrl = this.getDashboardUrlForRole(user.role);
       window.location.replace(targetUrl);
+
       return false;
     }
+
     return true;
   }
 
+  // ----------------------------------------------------------
   // Core HTTP Request Method
+  // ----------------------------------------------------------
+
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint}`;
     const token = this.getToken();
 
-    const headers = options.headers || {};
+    const headers = { ...(options.headers || {}) };
 
-    // Don't set Content-Type if sending FormData (browser handles boundary)
-    if (!(options.body instanceof FormData)) {
+    // Let the browser set the multipart boundary for FormData.
+    if (
+      typeof FormData === "undefined" ||
+      !(options.body instanceof FormData)
+    ) {
       headers["Content-Type"] = "application/json";
+    } else {
+      delete headers["Content-Type"];
     }
 
     if (token) {
@@ -124,43 +367,79 @@ class ApiClient {
     try {
       const response = await fetch(url, config);
 
-      // Handle Unauthorized Session Expiration
       if (response.status === 401) {
         this.clearSession();
-        // Avoid redirect loop if already on login/register page
+
         const path = window.location.pathname;
-        if (!path.includes("login.html") && !path.includes("register.html") && path !== "/") {
-          window.location.href = "login.html";
+
+        if (
+          !path.includes("login.html") &&
+          !path.includes("register.html") &&
+          path !== "/"
+        ) {
+          const target = encodeURIComponent(
+            path + window.location.search + window.location.hash
+          );
+
+          window.location.href =
+            `login.html?expired=true&redirect=${target}`;
         }
+
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Session expired. Please log in again.");
+
+        throw new Error(
+          errorData.detail || "Session expired. Please log in again."
+        );
       }
 
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        let errorMsg = "An unexpected error occurred.";
+        let errorMessage = "An unexpected error occurred.";
+
         if (data.detail) {
           if (Array.isArray(data.detail)) {
-            // Pydantic validation error array
-            errorMsg = data.detail.map((err) => `${err.loc ? err.loc.join('.') + ': ' : ''}${err.msg}`).join(", ");
+            errorMessage = data.detail
+              .map((error) => {
+                const location = error.loc
+                  ? error.loc.join(".") + ": "
+                  : "";
+
+                return `${location}${error.msg}`;
+              })
+              .join(", ");
           } else {
-            errorMsg = data.detail;
+            errorMessage = data.detail;
           }
         } else if (data.message) {
-          errorMsg = data.message;
+          errorMessage = data.message;
         }
-        throw new Error(errorMsg);
+
+        throw new Error(errorMessage);
       }
 
       return data;
     } catch (error) {
-      console.error(`API Error on [${options.method || "GET"}] ${endpoint}:`, error);
+      console.error(
+        `API Error [${options.method || "GET"}] ${url}:`,
+        error
+      );
+
+      if (error instanceof TypeError) {
+        throw new Error(
+          `Cannot connect to the backend at ${this.baseUrl}. ` +
+          "Check that FastAPI is running and CORS allows this frontend."
+        );
+      }
+
       throw error;
     }
   }
 
+  // ----------------------------------------------------------
   // Authentication Endpoints
+  // ----------------------------------------------------------
+
   async register(userData) {
     return this.request("/auth/register", {
       method: "POST",
@@ -176,8 +455,12 @@ class ApiClient {
 
     if (result.access_token) {
       this.setToken(result.access_token);
-      this.setUser(result.user);
+
+      if (result.user) {
+        this.setUser(result.user);
+      }
     }
+
     return result;
   }
 
@@ -188,19 +471,48 @@ class ApiClient {
   }
 
   logout() {
+    try {
+      const token = this.getToken();
+
+      if (token) {
+        fetch(`${this.baseUrl}/auth/logout`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn("Logout request could not be sent:", e);
+    }
+
     this.clearSession();
-    window.location.href = "login.html";
+    window.location.href = "login.html?logged_out=true";
   }
 
+  // ----------------------------------------------------------
   // Inventory Endpoints
+  // ----------------------------------------------------------
+
   async getInventory(params = {}) {
     const query = new URLSearchParams();
-    Object.entries(params).forEach(([key, val]) => {
-      if (val !== undefined && val !== null && val !== "" && val !== "all") {
-        query.append(key, val);
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (
+        value !== undefined &&
+        value !== null &&
+        value !== "" &&
+        value !== "all"
+      ) {
+        query.append(key, value);
       }
     });
-    const queryString = query.toString() ? `?${query.toString()}` : "";
+
+    const queryString = query.toString()
+      ? `?${query.toString()}`
+      : "";
+
     return this.request(`/inventory${queryString}`);
   }
 
@@ -237,23 +549,27 @@ class ApiClient {
   async uploadImage(file) {
     const formData = new FormData();
     formData.append("file", file);
+
     return this.request("/inventory/upload-image", {
       method: "POST",
       body: formData,
     });
   }
 
-  // Alias for food image upload
   async uploadFoodImage(file) {
     return this.uploadImage(file);
   }
 
-  // Freshness Computer Vision & Arrhenius Inference
+  // ----------------------------------------------------------
+  // Freshness Analysis and Shelf Life
+  // ----------------------------------------------------------
+
   async analyzeFreshness(data) {
     const payload = {
       inventory_id: data.inventory_id || data.item_id,
       image_url: data.image_url || undefined,
     };
+
     return this.request("/freshness/analyze", {
       method: "POST",
       body: JSON.stringify(payload),
@@ -263,24 +579,35 @@ class ApiClient {
   async quickScanFood(formData) {
     const token = this.getToken();
     const headers = {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const res = await fetch(`${this.baseUrl}/freshness/quick-scan`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
-
-    const resData = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(resData.detail || "AI Quick Scan failed.");
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
-    return resData;
+
+    const response = await fetch(
+      `${this.baseUrl}/freshness/quick-scan`,
+      {
+        method: "POST",
+        headers,
+        body: formData,
+      }
+    );
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.detail || "AI Quick Scan failed.");
+    }
+
+    return data;
   }
 
   async getFreshnessHistory(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/freshness/history${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/freshness/history${query ? `?${query}` : ""}`
+    );
   }
 
   async getFreshnessRecord(recordId) {
@@ -302,26 +629,32 @@ class ApiClient {
     return this.request("/shelf-life/commodities");
   }
 
-  // Dashboard Statistics
+  // ----------------------------------------------------------
+  // Dashboard Statistics and User Management
+  // ----------------------------------------------------------
+
   async getDashboardStats() {
     return this.request("/dashboard/stats");
   }
 
-  // User Management (Admin)
   async getUsers() {
     return this.request("/users");
   }
 
-  // ============================================================================
-  // Retailer API Methods
-  // ============================================================================
+  // ----------------------------------------------------------
+  // Retailer API
+  // ----------------------------------------------------------
+
   async getRetailerDashboard() {
     return this.request("/retailer/dashboard");
   }
 
   async getRetailerInventory(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/retailer/inventory${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/retailer/inventory${query ? `?${query}` : ""}`
+    );
   }
 
   async createRetailerProduct(data) {
@@ -352,7 +685,10 @@ class ApiClient {
   async archiveRetailerProduct(id, isArchived, reason = "") {
     return this.request(`/retailer/inventory/${id}/archive`, {
       method: "PATCH",
-      body: JSON.stringify({ is_archived: isArchived, reason }),
+      body: JSON.stringify({
+        is_archived: isArchived,
+        reason,
+      }),
     });
   }
 
@@ -370,7 +706,9 @@ class ApiClient {
   }
 
   async getRetailerExpiry(thresholdDays = 7) {
-    return this.request(`/retailer/expiry?threshold_days=${thresholdDays}`);
+    return this.request(
+      `/retailer/expiry?threshold_days=${thresholdDays}`
+    );
   }
 
   async getRetailerShelfLife() {
@@ -378,7 +716,9 @@ class ApiClient {
   }
 
   async getRetailerAlerts(statusFilter = "Active") {
-    return this.request(`/retailer/alerts?status_filter=${statusFilter}`);
+    return this.request(
+      `/retailer/alerts?status_filter=${encodeURIComponent(statusFilter)}`
+    );
   }
 
   async acknowledgeRetailerAlert(alertId, note = "") {
@@ -402,7 +742,10 @@ class ApiClient {
 
   async getRetailerReports(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/retailer/reports${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/retailer/reports${query ? `?${query}` : ""}`
+    );
   }
 
   async getRetailerNotifications() {
@@ -421,54 +764,66 @@ class ApiClient {
     });
   }
 
-  // ============================================================================
-  // Food Quality Inspector API Methods
-  // ============================================================================
+  // ----------------------------------------------------------
+  // Food Quality Inspector API
+  // ----------------------------------------------------------
+
   async getInspectorDashboard() {
     return this.request("/inspector/dashboard");
   }
 
   async getInspectorInspections(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/inspector/inspections${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/inspector/inspections${query ? `?${query}` : ""}`
+    );
   }
 
   async createInspectorInspection(formData) {
     const token = this.getToken();
     const headers = {};
+
     if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+      headers.Authorization = `Bearer ${token}`;
     }
 
-    let body = formData;
     if (!(formData instanceof FormData)) {
-      headers["Content-Type"] = "application/json";
-      body = JSON.stringify(formData);
       return this.request("/inspector/inspections/json", {
         method: "POST",
-        headers,
-        body,
+        headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
     }
 
-    const response = await fetch(`${this.baseUrl}/inspector/inspections`, {
-      method: "POST",
-      headers,
-      body,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/inspector/inspections`,
+      {
+        method: "POST",
+        headers,
+        body: formData,
+      }
+    );
 
     if (response.status === 401) {
       this.clearSession();
       window.location.href = "login.html?expired=true";
+
       throw new Error("Session expired. Please log in again.");
     }
 
-    const resData = await response.json().catch(() => ({}));
+    const data = await response.json().catch(() => ({}));
+
     if (!response.ok) {
-      const msg = resData.detail || "Inspection creation failed.";
-      throw new Error(msg);
+      throw new Error(
+        data.detail || "Inspection creation failed."
+      );
     }
-    return resData;
+
+    return data;
   }
 
   async getInspectorInspection(id) {
@@ -491,7 +846,10 @@ class ApiClient {
 
   async getInspectorHistory(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/inspector/inspection-history${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/inspector/inspection-history${query ? `?${query}` : ""}`
+    );
   }
 
   async getInspectorQualityAnalytics() {
@@ -499,7 +857,9 @@ class ApiClient {
   }
 
   async getInspectorAlerts(status = "all") {
-    return this.request(`/inspector/alerts?status=${encodeURIComponent(status)}`);
+    return this.request(
+      `/inspector/alerts?status=${encodeURIComponent(status)}`
+    );
   }
 
   async resolveInspectorAlert(id, data) {
@@ -509,23 +869,39 @@ class ApiClient {
     });
   }
 
-  async getInspectorStorageReview(category, temp = null, humidity = null) {
-    let url = `/inspector/storage-review?category=${encodeURIComponent(category)}`;
-    if (temp !== null && temp !== undefined) url += `&temperature=${encodeURIComponent(temp)}`;
-    if (humidity !== null && humidity !== undefined) url += `&humidity=${encodeURIComponent(humidity)}`;
+  async getInspectorStorageReview(
+    category,
+    temp = null,
+    humidity = null
+  ) {
+    let url =
+      `/inspector/storage-review?category=${encodeURIComponent(category)}`;
+
+    if (temp !== null && temp !== undefined) {
+      url += `&temperature=${encodeURIComponent(temp)}`;
+    }
+
+    if (humidity !== null && humidity !== undefined) {
+      url += `&humidity=${encodeURIComponent(humidity)}`;
+    }
+
     return this.request(url);
   }
 
-  // ============================================================================
-  // Platform Administrator API Methods
-  // ============================================================================
+  // ----------------------------------------------------------
+  // Platform Administrator API
+  // ----------------------------------------------------------
+
   async getAdminDashboard() {
     return this.request("/admin/dashboard");
   }
 
   async getAdminUsers(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/admin/users${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/admin/users${query ? `?${query}` : ""}`
+    );
   }
 
   async getAdminUser(userId) {
@@ -559,7 +935,10 @@ class ApiClient {
 
   async getAdminAuditLogs(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/admin/audit-logs${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/admin/audit-logs${query ? `?${query}` : ""}`
+    );
   }
 
   async getAdminStorageRules() {
@@ -608,26 +987,42 @@ class ApiClient {
   async downloadUsersCsv() {
     const token = this.getToken();
     const headers = {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const res = await fetch(`${this.baseUrl}/admin/reports/export-csv`, { headers });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || "Failed to download users CSV export.");
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
-    const blob = await res.blob();
+
+    const response = await fetch(
+      `${this.baseUrl}/admin/reports/export-csv`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+
+      throw new Error(
+        data.detail || "Failed to download users CSV export."
+      );
+    }
+
+    const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `users_export_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download =
+      `users_export_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
     window.URL.revokeObjectURL(url);
   }
 
-  // ==========================================
-  // Warehouse & Cold-Chain Logistics API
-  // ==========================================
+  // ----------------------------------------------------------
+  // Warehouse and Cold-Chain Logistics API
+  // ----------------------------------------------------------
+
   async getWarehouseDashboard() {
     return this.request("/warehouse/dashboard");
   }
@@ -645,57 +1040,80 @@ class ApiClient {
   }
 
   async getWarehouseZoneHistory(zoneId, hours = 24) {
-    return this.request(`/warehouse/zones/${zoneId}/temperature/history?hours=${hours}`);
+    return this.request(
+      `/warehouse/zones/${zoneId}/temperature/history?hours=${hours}`
+    );
   }
 
-  async submitWarehouseTemperatureCommand(zoneId, requestedTemperature, reason, forceOverride = false) {
-    return this.request(`/warehouse/zones/${zoneId}/temperature/commands`, {
-      method: "POST",
-      body: JSON.stringify({
-        requested_temperature: parseFloat(requestedTemperature),
-        reason: reason,
-        force_override: forceOverride,
-      }),
-    });
+  async submitWarehouseTemperatureCommand(
+    zoneId,
+    requestedTemperature,
+    reason,
+    forceOverride = false
+  ) {
+    return this.request(
+      `/warehouse/zones/${zoneId}/temperature/commands`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          requested_temperature: parseFloat(requestedTemperature),
+          reason,
+          force_override: forceOverride,
+        }),
+      }
+    );
   }
 
   async getWarehouseCommandStatus(commandId) {
-    return this.request(`/warehouse/temperature/commands/${commandId}`);
+    return this.request(
+      `/warehouse/temperature/commands/${commandId}`
+    );
   }
 
   async getWarehouseAlerts(zoneId = null, severity = null) {
     const params = new URLSearchParams();
+
     if (zoneId) params.append("zone_id", zoneId);
     if (severity) params.append("severity", severity);
-    const qs = params.toString();
-    return this.request(`/warehouse/alerts${qs ? '?' + qs : ''}`);
+
+    const query = params.toString();
+
+    return this.request(
+      `/warehouse/alerts${query ? `?${query}` : ""}`
+    );
   }
 
   async getWarehouseAuditLogs(limit = 50) {
     return this.request(`/warehouse/audit-logs?limit=${limit}`);
   }
 
-  // ==========================================
-  // User Profile Management API
-  // ==========================================
+  // ----------------------------------------------------------
+  // User Profile Management
+  // ----------------------------------------------------------
+
   async getExtendedProfile() {
     return this.request("/users/profile/me");
   }
 
   async updateProfile(data) {
-    const res = await this.request("/users/profile", {
+    const response = await this.request("/users/profile", {
       method: "PUT",
       body: JSON.stringify(data),
     });
-    // Update local storage user
-    if (res.user) {
+
+    if (response.user) {
       const existing = this.getUser() || {};
-      this.setUser({ ...existing, ...res.user });
+      this.setUser({ ...existing, ...response.user });
     }
-    return res;
+
+    return response;
   }
 
-  async changePassword(currentPassword, newPassword, confirmNewPassword) {
+  async changePassword(
+    currentPassword,
+    newPassword,
+    confirmNewPassword
+  ) {
     return this.request("/users/change-password", {
       method: "POST",
       body: JSON.stringify({
@@ -706,35 +1124,50 @@ class ApiClient {
     });
   }
 
-  // ============================================================================
-  // Specialized Reports & Export System (Module 11)
-  // ============================================================================
+  // ----------------------------------------------------------
+  // Reports and Exports
+  // ----------------------------------------------------------
+
   async getFreshnessReport(category = null) {
-    return this.request(`/reports/freshness${category ? '?category=' + encodeURIComponent(category) : ''}`);
+    return this.request(
+      `/reports/freshness${category ? `?category=${encodeURIComponent(category)}` : ""}`
+    );
   }
 
   async getShelfLifeReport(category = null) {
-    return this.request(`/reports/shelf-life${category ? '?category=' + encodeURIComponent(category) : ''}`);
+    return this.request(
+      `/reports/shelf-life${category ? `?category=${encodeURIComponent(category)}` : ""}`
+    );
   }
 
   async getInventoryQualityReport(category = null) {
-    return this.request(`/reports/inventory-quality${category ? '?category=' + encodeURIComponent(category) : ''}`);
+    return this.request(
+      `/reports/inventory-quality${category ? `?category=${encodeURIComponent(category)}` : ""}`
+    );
   }
 
   async getWasteReductionReport(category = null) {
-    return this.request(`/reports/waste-reduction${category ? '?category=' + encodeURIComponent(category) : ''}`);
+    return this.request(
+      `/reports/waste-reduction${category ? `?category=${encodeURIComponent(category)}` : ""}`
+    );
   }
 
   async getStorageComplianceReport(category = null) {
-    return this.request(`/reports/storage-compliance${category ? '?category=' + encodeURIComponent(category) : ''}`);
+    return this.request(
+      `/reports/storage-compliance${category ? `?category=${encodeURIComponent(category)}` : ""}`
+    );
   }
 
-  // ============================================================================
-  // Unified Notification & Alert System (Module 10)
-  // ============================================================================
+  // ----------------------------------------------------------
+  // Notifications and Unified Alerts
+  // ----------------------------------------------------------
+
   async getNotifications(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/notifications${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/notifications${query ? `?${query}` : ""}`
+    );
   }
 
   async getUnreadNotificationsCount() {
@@ -742,16 +1175,23 @@ class ApiClient {
   }
 
   async markNotificationRead(id) {
-    return this.request(`/notifications/${id}/read`, { method: "POST" });
+    return this.request(`/notifications/${id}/read`, {
+      method: "POST",
+    });
   }
 
   async markAllNotificationsRead() {
-    return this.request("/notifications/read-all", { method: "POST" });
+    return this.request("/notifications/read-all", {
+      method: "POST",
+    });
   }
 
   async getUnifiedAlerts(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return this.request(`/alerts${query ? '?' + query : ''}`);
+
+    return this.request(
+      `/alerts${query ? `?${query}` : ""}`
+    );
   }
 
   async getAlertsSummary() {
@@ -759,18 +1199,25 @@ class ApiClient {
   }
 
   async acknowledgeUnifiedAlert(id) {
-    return this.request(`/alerts/${id}/acknowledge`, { method: "POST" });
+    return this.request(`/alerts/${id}/acknowledge`, {
+      method: "POST",
+    });
   }
 }
 
+// ============================================================
+// GLOBAL API INSTANCE
+// ============================================================
 
-
-// Global API instance
 const api = new ApiClient();
 
-// UI Notification Toast System
+// ============================================================
+// UI NOTIFICATION TOAST SYSTEM
+// ============================================================
+
 function showToast(message, type = "info") {
   let container = document.getElementById("toast-container");
+
   if (!container) {
     container = document.createElement("div");
     container.id = "toast-container";
@@ -779,40 +1226,55 @@ function showToast(message, type = "info") {
 
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
+
   toast.innerHTML = `
     <div class="toast-message">${escapeHtml(message)}</div>
-    <button style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;" onclick="this.parentElement.remove()">&times;</button>
+    <button
+      style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;"
+      aria-label="Close notification"
+      onclick="this.parentElement.remove()"
+    >&times;</button>
   `;
 
   container.appendChild(toast);
 
-  // Trigger animation
   setTimeout(() => toast.classList.add("show"), 10);
 
-  // Auto remove after 4.5 seconds
   setTimeout(() => {
     toast.classList.remove("show");
     setTimeout(() => toast.remove(), 300);
   }, 4500);
 }
 
-// Button loading state helper
+// ============================================================
+// BUTTON LOADING STATE
+// ============================================================
+
 function setButtonLoading(button, isLoading, originalHtml) {
   if (!button) return;
+
   if (isLoading) {
     button.disabled = true;
     button.dataset.original = button.innerHTML;
-    button.innerHTML = `<span class="spinner"></span> <span>Processing...</span>`;
+    button.innerHTML =
+      '<span class="spinner"></span> <span>Processing...</span>';
   } else {
     button.disabled = false;
-    button.innerHTML = button.dataset.original || originalHtml || "Submit";
+    button.innerHTML =
+      button.dataset.original || originalHtml || "Submit";
   }
 }
 
-// Helper to escape HTML and prevent XSS
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str)
+// ============================================================
+// HTML ESCAPING
+// ============================================================
+
+function escapeHtml(value) {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
+
+  return String(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -820,7 +1282,10 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-// Professional SVG Icon Dictionary
+// ============================================================
+// PROFESSIONAL SVG ICON DICTIONARY
+// ============================================================
+
 const SVG_ICONS = {
   "🌱": `<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`,
   "📊": `<svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>`,
@@ -848,45 +1313,80 @@ const SVG_ICONS = {
   "📉": `<svg viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>`
 };
 
+// ============================================================
+// REPLACE EMOJIS WITH SVG ICONS
+// ============================================================
+
 function replaceEmojisWithSvg(rootNode = document.body) {
   if (!rootNode) return;
-  const elements = rootNode.querySelectorAll(".stat-icon, .nav-item span, .brand-icon, .action-pill-btn span, .quick-action-btn span, .telemetry-label span");
-  elements.forEach((el) => {
-    const text = el.textContent.trim();
-    if (SVG_ICONS[text]) {
-      el.innerHTML = `<span class="svg-icon">${SVG_ICONS[text]}</span>`;
+
+  const elements = rootNode.querySelectorAll(
+    ".stat-icon, .nav-item span, .brand-icon, " +
+    ".action-pill-btn span, .quick-action-btn span, " +
+    ".telemetry-label span"
+  );
+
+  elements.forEach((element) => {
+    const value = element.textContent.trim();
+
+    if (SVG_ICONS[value]) {
+      element.innerHTML =
+        `<span class="svg-icon">${SVG_ICONS[value]}</span>`;
     }
   });
 }
 
-// Smooth animated number counter utility
-function animateCounter(el, target, duration = 800) {
-  if (!el) return;
+// ============================================================
+// ANIMATED NUMBER COUNTER
+// ============================================================
+
+function animateCounter(element, target, duration = 800) {
+  if (!element) return;
+
   const targetNum = parseFloat(target);
-  if (isNaN(targetNum)) {
-    el.textContent = target;
+
+  if (Number.isNaN(targetNum)) {
+    element.textContent = target;
     return;
   }
+
   const isFloat = String(target).includes(".");
   const startTime = performance.now();
+
   function update(currentTime) {
     const elapsed = currentTime - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-    const current = progress * targetNum;
-    el.textContent = isFloat ? (ease * targetNum).toFixed(1) : Math.round(ease * targetNum);
+
+    const ease =
+      progress === 1
+        ? 1
+        : 1 - Math.pow(2, -10 * progress);
+
+    const current = ease * targetNum;
+
+    element.textContent = isFloat
+      ? current.toFixed(1)
+      : Math.round(current);
+
     if (progress < 1) {
       requestAnimationFrame(update);
     } else {
-      el.textContent = isFloat ? targetNum.toFixed(1) : targetNum;
+      element.textContent = isFloat
+        ? targetNum.toFixed(1)
+        : String(targetNum);
     }
   }
+
   requestAnimationFrame(update);
 }
 
-// Filter navigation links to strictly isolate user role workspaces
+// ============================================================
+// ROLE-BASED NAVIGATION
+// ============================================================
+
 function filterNavigationByRole(userRole) {
   if (!userRole) return;
+
   const role = userRole.trim();
   const allowedDashboard = api.getDashboardUrlForRole(role);
 
@@ -899,107 +1399,149 @@ function filterNavigationByRole(userRole) {
     "executive-dashboard.html",
   ];
 
-  // Filter all anchor links pointing to any dashboard
-  const links = document.querySelectorAll("a[href]");
-  links.forEach((link) => {
+  document.querySelectorAll("a[href]").forEach((link) => {
     const rawHref = link.getAttribute("href") || "";
     const cleanHref = rawHref.split("?")[0].split("#")[0].trim();
 
     const matchedFile = roleDashboardFiles.find(
-      (f) => cleanHref === f || cleanHref.endsWith("/" + f)
+      (file) =>
+        cleanHref === file ||
+        cleanHref.endsWith("/" + file)
     );
 
-    if (matchedFile) {
-      const isAllowed =
-        matchedFile === allowedDashboard ||
-        (role === "Admin" && matchedFile === "executive-dashboard.html");
+    if (!matchedFile) return;
 
-      if (isAllowed) {
-        link.style.display = "";
-      } else if (
-        matchedFile === "dashboard.html" &&
-        (link.textContent.toLowerCase().includes("overview") ||
-          link.textContent.toLowerCase().includes("dashboard") ||
-          link.classList.contains("nav-dashboard-link"))
-      ) {
-        link.setAttribute("href", allowedDashboard);
+    const isAdmin =
+      role.toLowerCase() === "admin" ||
+      role.toLowerCase() === "administrator";
+
+    const isAllowed =
+      matchedFile === allowedDashboard ||
+      (isAdmin && matchedFile === "executive-dashboard.html");
+
+    if (isAllowed) {
+      link.style.display = "";
+    } else if (
+      matchedFile === "dashboard.html" &&
+      (
+        link.textContent.toLowerCase().includes("overview") ||
+        link.textContent.toLowerCase().includes("dashboard") ||
+        link.classList.contains("nav-dashboard-link")
+      )
+    ) {
+      link.setAttribute("href", allowedDashboard);
+    } else {
+      const parentLi = link.closest("li");
+
+      if (parentLi) {
+        parentLi.remove();
       } else {
-        const parentLi = link.closest("li");
-        if (parentLi) {
-          parentLi.remove();
-        } else {
-          link.remove();
-        }
+        link.remove();
       }
     }
   });
 
-  // Clean up any empty navigation section headers whose child links were all removed
-  document.querySelectorAll(".nav-section-title, .sidebar-section-title").forEach((title) => {
-    let nextEl = title.nextElementSibling;
-    let hasItems = false;
-    while (nextEl && !nextEl.matches(".nav-section-title, .sidebar-section-title")) {
-      if (nextEl.matches("a, li, div.nav-item") && nextEl.style.display !== "none") {
-        hasItems = true;
-        break;
+  document
+    .querySelectorAll(".nav-section-title, .sidebar-section-title")
+    .forEach((title) => {
+      let nextElement = title.nextElementSibling;
+      let hasItems = false;
+
+      while (
+        nextElement &&
+        !nextElement.matches(
+          ".nav-section-title, .sidebar-section-title"
+        )
+      ) {
+        if (
+          nextElement.matches("a, li, div.nav-item") &&
+          nextElement.style.display !== "none"
+        ) {
+          hasItems = true;
+          break;
+        }
+
+        nextElement = nextElement.nextElementSibling;
       }
-      nextEl = nextEl.nextElementSibling;
-    }
-    if (!hasItems) {
-      title.style.display = "none";
-    }
-  });
+
+      if (!hasItems) {
+        title.style.display = "none";
+      }
+    });
 }
 
-// Common Topbar / Sidebar UI initializer
+// ============================================================
+// COMMON LAYOUT INITIALIZER
+// ============================================================
+
 function initCommonLayout() {
   const currentUser = api.getUser();
-  if (currentUser) {
-    const userNameElements = document.querySelectorAll(".user-display-name, #sidebar-user-name, #topbar-user-name");
-    const userRoleElements = document.querySelectorAll(".user-role-badge, #operator-role-pill, #topbar-role-badge");
-    const userAvatarElements = document.querySelectorAll(".user-avatar, #sidebar-user-avatar, #topbar-avatar");
 
-    userNameElements.forEach((el) => (el.textContent = currentUser.name || "User"));
-    userRoleElements.forEach((el) => (el.textContent = currentUser.role || "Consumer"));
-    userAvatarElements.forEach((el) => {
-      const initial = (currentUser.name || "U").charAt(0).toUpperCase();
-      el.textContent = initial;
+  if (currentUser) {
+    const userNameElements = document.querySelectorAll(
+      ".user-display-name, #sidebar-user-name, #topbar-user-name"
+    );
+
+    const userRoleElements = document.querySelectorAll(
+      ".user-role-badge, #operator-role-pill, #topbar-role-badge"
+    );
+
+    const userAvatarElements = document.querySelectorAll(
+      ".user-avatar, #sidebar-user-avatar, #topbar-avatar"
+    );
+
+    userNameElements.forEach((element) => {
+      element.textContent = currentUser.name || "User";
     });
 
-    // Enforce strict navigation isolation across all sidebars and menus
+    userRoleElements.forEach((element) => {
+      element.textContent = currentUser.role || "Consumer";
+    });
+
+    userAvatarElements.forEach((element) => {
+      element.textContent =
+        (currentUser.name || "U").charAt(0).toUpperCase();
+    });
+
     filterNavigationByRole(currentUser.role);
   }
 
-  // Check for deferred access restriction alert
-  const alertMsg = sessionStorage.getItem("access_restricted_alert");
-  if (alertMsg) {
+  const alertMessage = sessionStorage.getItem(
+    "access_restricted_alert"
+  );
+
+  if (alertMessage) {
     sessionStorage.removeItem("access_restricted_alert");
+
     if (typeof showToast === "function") {
-      showToast(alertMsg, "warning");
+      showToast(alertMessage, "warning");
     }
   }
 
-  // Mobile menu toggle
-  const mobileBtn = document.querySelector(".mobile-menu-btn");
+  const mobileButton = document.querySelector(".mobile-menu-btn");
   const sidebar = document.querySelector(".sidebar");
-  if (mobileBtn && sidebar) {
-    mobileBtn.addEventListener("click", () => {
+
+  if (mobileButton && sidebar) {
+    mobileButton.addEventListener("click", () => {
       sidebar.classList.toggle("open");
     });
   }
 
-  // Logout triggers
-  const logoutButtons = document.querySelectorAll(".btn-logout, a[href='#logout']");
-  logoutButtons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      api.logout();
+  document
+    .querySelectorAll(".btn-logout, a[href='#logout']")
+    .forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        api.logout();
+      });
     });
-  });
 
-  // Convert emojis to crisp SVGs
   replaceEmojisWithSvg();
 }
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
 
 function bootApiCommon() {
   if (api.isAuthenticated()) {

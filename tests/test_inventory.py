@@ -140,3 +140,48 @@ def test_seed_dataset_inventory_endpoint():
     assert inv_res.status_code == 200
     items = inv_res.json()
     assert any("DS-VEG-CAP" in (item.get("batch_number") or "") for item in items)
+
+
+def test_seed_dataset_deduplication():
+    headers = get_consumer_headers()
+    # 1. Subsequent seed call
+    res_second = client.post("/api/inventory/seed-dataset", headers=headers)
+    assert res_second.status_code == 200
+    data = res_second.json()
+    assert data["success"] is True
+    assert data["inserted"] == 0
+    assert data["skipped"] >= 30
+    assert "already present" in data["message"].lower() or "already loaded" in data["message"].lower()
+
+
+def test_inventory_name_field_interoperability():
+    headers = get_consumer_headers()
+    today = date.today()
+    payload = {
+        "name": "Interoperable Golden Pear",
+        "category": "Fruits",
+        "quantity": 2.0,
+        "unit": "kg",
+        "purchase_date": today.strftime("%Y-%m-%d"),
+        "expiry_date": (today + timedelta(days=10)).strftime("%Y-%m-%d"),
+        "storage_type": "refrigerator",  # tests lowercase normalization
+    }
+    res = client.post("/api/inventory", json=payload, headers=headers)
+    assert res.status_code == 201
+    item = res.json()
+    assert item["food_name"] == "Interoperable Golden Pear"
+    assert item["name"] == "Interoperable Golden Pear"
+    assert item["storage_type"] == "Refrigerated"
+
+    # Cleanup
+    client.delete(f"/api/inventory/{item['id']}", headers=headers)
+
+
+def test_inventory_sorting_options():
+    headers = get_consumer_headers()
+    for sort_param in ["expiry_date", "purchase_date", "food_name", "quantity"]:
+        res_asc = client.get(f"/api/inventory?sort_by={sort_param}&sort_order=asc", headers=headers)
+        assert res_asc.status_code == 200
+        res_desc = client.get(f"/api/inventory?sort_by={sort_param}&sort_order=desc", headers=headers)
+        assert res_desc.status_code == 200
+

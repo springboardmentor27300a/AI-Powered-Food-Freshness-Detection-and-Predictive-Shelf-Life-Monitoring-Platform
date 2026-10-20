@@ -37,6 +37,17 @@
     .landing-nav-links a:hover {
       color: var(--primary);
     }
+    .landing-account {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .landing-account-name {
+      color: var(--forest-900);
+      font-size: 13px;
+      font-weight: 700;
+    }
 
     /* Hero Section */
     .landing-hero {
@@ -623,6 +634,12 @@
       <a href="login.html" class="btn btn-secondary btn-sm">Sign In</a>
       <a href="register.html" class="btn btn-primary btn-sm">Create Account</a>
     </nav>
+    <div id="landing-account" class="landing-account" aria-live="polite">
+      <span id="landing-account-name" class="landing-account-name"></span>
+      <a id="landing-dashboard-link" href="dashboard.html" class="btn btn-primary btn-sm">My Dashboard</a>
+      <a href="profile.html" class="btn btn-secondary btn-sm">Account</a>
+      <button id="landing-signout" type="button" class="btn btn-secondary btn-sm">Sign out</button>
+    </div>
   </header>
 
   <!-- Hero Section -->
@@ -1306,6 +1323,24 @@
   </footer>
 
   <script src="js/api.js"></script>
+  <script>
+    (() => {
+      const user = api.getUser();
+      if (!api.isAuthenticated() || !user) return;
+
+      const account = document.getElementById("landing-account");
+      const nav = document.querySelector(".landing-nav-links");
+      if (!account || !nav) return;
+
+      account.style.display = "flex";
+      document.getElementById("landing-account-name").textContent = user.name || user.email || "My account";
+      document.getElementById("landing-dashboard-link").href = api.getDashboardUrlForRole(user.role);
+      nav.querySelectorAll('a[href="login.html"], a[href="register.html"]').forEach((link) => {
+        link.style.display = "none";
+      });
+      document.getElementById("landing-signout").addEventListener("click", () => api.logout());
+    })();
+  </script>
   <script>
     // =========================================================================
     // AI Food Scanner Interaction Logic & Presets

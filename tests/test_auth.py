@@ -109,3 +109,65 @@ def test_auth_me_protected_route():
     # Malformed token
     res_bad = client.get("/api/auth/me", headers={"Authorization": "Bearer invalid.jwt.token"})
     assert res_bad.status_code == 401
+
+
+def test_logout_endpoint():
+    # 1. Authenticated logout
+    res_login = client.post("/api/auth/login", json={
+        "email": "consumer@foodfresh.com",
+        "password": "ConsumerPass123!"
+    })
+    token = res_login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    res_logout = client.post("/api/auth/logout", headers=headers)
+    assert res_logout.status_code == 200
+    assert res_logout.json()["success"] is True
+
+    # 2. Unauthenticated logout (safe best-effort)
+    res_logout_anon = client.post("/api/auth/logout")
+    assert res_logout_anon.status_code == 200
+    assert res_logout_anon.json()["success"] is True
+
+
+def test_register_administrator_role_and_access():
+    """Verify that registering with role='Administrator' gives access to Administrator endpoints."""
+    admin_email = f"registered_admin_{uuid.uuid4().hex[:8]}@example.com"
+    pwd = "AdminSecurePass123!"
+
+    # 1. Register with 'Administrator'
+    res_reg = client.post("/api/auth/register", json={
+        "name": "New Platform Administrator",
+        "email": admin_email,
+        "password": pwd,
+        "confirm_password": pwd,
+        "role": "Administrator"
+    })
+    assert res_reg.status_code == 201
+    reg_data = res_reg.json()
+    assert reg_data["role"] == "Admin"
+    assert reg_data["is_active"] is True
+
+    # 2. Login as the newly created Administrator
+    res_login = client.post("/api/auth/login", json={
+        "email": admin_email,
+        "password": pwd
+    })
+    assert res_login.status_code == 200
+    login_data = res_login.json()
+    assert "access_token" in login_data
+    assert login_data["user"]["role"] == "Admin"
+
+    token = login_data["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 3. Access current profile /api/auth/me
+    res_me = client.get("/api/auth/me", headers=headers)
+    assert res_me.status_code == 200
+    assert res_me.json()["role"] == "Admin"
+
+    # 4. Access admin protected endpoint /api/admin/dashboard
+    res_admin = client.get("/api/admin/dashboard", headers=headers)
+    assert res_admin.status_code == 200
+    assert "total_users" in res_admin.json()
+

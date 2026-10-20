@@ -25,11 +25,70 @@
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .kpi-grid-5 {
+    .kpi-grid-5,
+    .kpi-grid-6 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
+    }
+    .quick-actions-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .overview-two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .modal-box-wide {
+      max-width: 760px;
+    }
+    .scanner-camera-box {
+      background: #0f172a;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+      text-align: center;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+      display: none;
+    }
+    .scanner-camera-box video {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      display: block;
+    }
+    .camera-controls-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      z-index: 10;
+    }
+    .scan-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .product-thumb-sm {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+      vertical-align: middle;
+      margin-right: 8px;
     }
     .badge-urgent {
       background: #fee2e2;
@@ -243,12 +302,25 @@
              1. OVERVIEW PANEL
              =================================================================== -->
         <section id="panel-overview" class="retail-section active">
-          <!-- 5 Summary KPI Cards -->
-          <div class="kpi-grid-5">
+          <!-- Quick Action Buttons -->
+          <div class="quick-actions-bar">
+            <button class="btn btn-primary" onclick="retailerApp.switchTab('add-product')">
+              <span>➕</span> Add New Product
+            </button>
+            <button class="btn btn-secondary" onclick="retailerApp.switchTab('ai-freshness')">
+              <span>🔬</span> Scan Food Sample
+            </button>
+            <button class="btn btn-secondary" onclick="retailerApp.switchTab('expiry-tracking')">
+              <span>⏳</span> View Expiry Alerts
+            </button>
+          </div>
+
+          <!-- 6 Summary KPI Cards -->
+          <div class="kpi-grid-6">
             <div class="stat-card">
               <div class="stat-info">
-                <span class="stat-label">Total Inventory</span>
-                <span class="stat-value" id="kpi-total-items">0</span>
+                <span class="stat-label">Total Products</span>
+                <span class="stat-value" id="kpi-total-products">0</span>
                 <span class="stat-subtext" id="kpi-total-qty">0.0 units in stock</span>
               </div>
               <div class="stat-icon primary">📦</div>
@@ -256,38 +328,47 @@
 
             <div class="stat-card">
               <div class="stat-info">
-                <span class="stat-label">Expiring Soon (≤3d)</span>
-                <span class="stat-value" id="kpi-expiring-soon" style="color:#d97706;">0</span>
-                <span class="stat-subtext">Requires FEFO prioritization</span>
+                <span class="stat-label">Fresh Products</span>
+                <span class="stat-value" id="kpi-fresh-products" style="color:#059669;">0</span>
+                <span class="stat-subtext">Peak organoleptic quality</span>
+              </div>
+              <div class="stat-icon primary">🍏</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">At-Risk Products</span>
+                <span class="stat-value" id="kpi-at-risk-products" style="color:#d97706;">0</span>
+                <span class="stat-subtext">Moderate or nearing decay</span>
+              </div>
+              <div class="stat-icon warning">⚠️</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">Spoiled Products</span>
+                <span class="stat-value" id="kpi-spoiled-products" style="color:#dc2626;">0</span>
+                <span class="stat-subtext">Immediate disposal required</span>
+              </div>
+              <div class="stat-icon danger">☣️</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-info">
+                <span class="stat-label">Products Nearing Expiry</span>
+                <span class="stat-value" id="kpi-nearing-expiry" style="color:#b45309;">0</span>
+                <span class="stat-subtext">Expiring within ≤3 days</span>
               </div>
               <div class="stat-icon warning">⏳</div>
             </div>
 
             <div class="stat-card">
               <div class="stat-info">
-                <span class="stat-label">Spoilage & Storage Alerts</span>
-                <span class="stat-value" id="kpi-alerts-count" style="color:#dc2626;">0</span>
-                <span class="stat-subtext">Active attention flags</span>
+                <span class="stat-label">Total Food Waste</span>
+                <span class="stat-value" id="kpi-food-waste" style="color:#991b1b;">0.0</span>
+                <span class="stat-subtext" id="kpi-food-waste-sub">units spoiled/expired</span>
               </div>
-              <div class="stat-icon danger">⚠️</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-info">
-                <span class="stat-label">Low Stock Products</span>
-                <span class="stat-value" id="kpi-low-stock" style="color:#b45309;">0</span>
-                <span class="stat-subtext">Below threshold</span>
-              </div>
-              <div class="stat-icon warning">📉</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-info">
-                <span class="stat-label">Avg Quality Score</span>
-                <span class="stat-value" id="kpi-avg-score" style="color:#059669;">0.0%</span>
-                <span class="stat-subtext">AI composite grade</span>
-              </div>
-              <div class="stat-icon primary">⭐</div>
+              <div class="stat-icon danger">🗑️</div>
             </div>
           </div>
 
@@ -334,10 +415,10 @@
             </div>
           </div>
 
-          <!-- Recent Inventory Table -->
-          <div class="card">
+          <!-- Recent Inventory Activity Table -->
+          <div class="card" style="margin-bottom: 24px;">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-              <h2 class="card-title">📋 Recent Store Inventory</h2>
+              <h2 class="card-title">📋 Recent Inventory Activity</h2>
               <button class="btn btn-secondary btn-sm" onclick="retailerApp.switchTab('inventory')">View All Products &rarr;</button>
             </div>
             <div class="table-container">
@@ -361,6 +442,56 @@
               </table>
             </div>
           </div>
+
+          <!-- Recent Freshness Scans and Recent Alerts Two-Column Grid -->
+          <div class="overview-two-col">
+            <div class="card">
+              <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="card-title">🔬 Recent Freshness Scans</h2>
+                <button class="btn btn-secondary btn-sm" onclick="retailerApp.switchTab('ai-freshness')">Open AI Scanner &rarr;</button>
+              </div>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Sample</th>
+                      <th>Specimen</th>
+                      <th>Freshness</th>
+                      <th>Score</th>
+                      <th>Confidence</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overview-recent-scans-body">
+                    <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">Loading recent scans...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="card-title">⚠️ Priority Store Alerts</h2>
+                <button class="btn btn-secondary btn-sm" onclick="retailerApp.switchTab('alerts')">View All Alerts &rarr;</button>
+              </div>
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Severity</th>
+                      <th>Product</th>
+                      <th>Observation</th>
+                      <th>Directive</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overview-recent-alerts-body">
+                    <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">Loading active alerts...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- ===================================================================
@@ -369,8 +500,8 @@
         <section id="panel-inventory" class="retail-section">
           <div class="filter-panel">
             <div class="filter-inputs">
-              <input type="text" id="inv-filter-search" class="form-control" placeholder="🔍 Search product or batch..." style="max-width:220px;">
-              <select id="inv-filter-category" class="form-control" style="max-width:160px;">
+              <input type="text" id="inv-filter-search" class="form-control" placeholder="🔍 Search name, product ID, or batch..." style="max-width:240px;">
+              <select id="inv-filter-category" class="form-control" style="max-width:150px;">
                 <option value="all">All Categories</option>
                 <option value="Fruits">Fruits</option>
                 <option value="Vegetables">Vegetables</option>
@@ -380,25 +511,36 @@
                 <option value="Bakery">Bakery</option>
                 <option value="Grains">Grains</option>
                 <option value="Packaged Food">Packaged Food</option>
+                <option value="Other">Other</option>
               </select>
-              <select id="inv-filter-freshness" class="form-control" style="max-width:160px;">
+              <select id="inv-filter-freshness" class="form-control" style="max-width:150px;">
                 <option value="all">All Freshness</option>
                 <option value="Fresh">Fresh</option>
-                <option value="Moderate">Moderate</option>
+                <option value="Moderate">Moderate / At Risk</option>
                 <option value="Spoiled">Spoiled</option>
                 <option value="Not Analyzed">Not Analyzed</option>
               </select>
               <select id="inv-filter-expiry" class="form-control" style="max-width:160px;">
                 <option value="all">All Expiry Statuses</option>
-                <option value="safe">Safe</option>
+                <option value="safe">Safe (>3d)</option>
                 <option value="approaching_expiry">Expiring Soon (≤3d)</option>
                 <option value="expired">Expired</option>
               </select>
+              <select id="inv-sort-by" class="form-control" style="max-width:150px;">
+                <option value="expiry_date">Sort: Expiry Date</option>
+                <option value="food_name">Sort: Product Name</option>
+                <option value="quantity">Sort: Quantity</option>
+                <option value="freshness_score">Sort: Freshness Score</option>
+              </select>
+              <select id="inv-sort-order" class="form-control" style="max-width:110px;">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
               <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-                <input type="checkbox" id="inv-filter-lowstock"> Low Stock Only
+                <input type="checkbox" id="inv-filter-lowstock"> Low Stock
               </label>
               <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-                <input type="checkbox" id="inv-filter-archived"> Show Archived
+                <input type="checkbox" id="inv-filter-archived"> Archived
               </label>
             </div>
             <div>
@@ -410,15 +552,15 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Product</th>
+                  <th>Product & ID</th>
                   <th>Category</th>
                   <th>Stock Quantity</th>
                   <th>Recorded Expiry</th>
                   <th>Countdown</th>
                   <th>Freshness Status</th>
                   <th>Quality Score</th>
-                  <th>Predicted Shelf Life</th>
-                  <th>Storage Location</th>
+                  <th>Shelf Life</th>
+                  <th>Location</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -545,38 +687,102 @@
           <div class="card" style="margin-bottom: 24px;">
             <div class="card-header">
               <h2 class="card-title">🔬 Automated Computer Vision Freshness Inspection</h2>
-              <p class="card-subtitle">Run multi-spectral color degradation, browning, texture roughness, and Arrhenius shelf life diagnostics</p>
+              <p class="card-subtitle">Multi-spectral color degradation, browning, texture roughness, and Arrhenius shelf life diagnostics</p>
             </div>
             <div style="padding: 24px;">
-              <div style="display:grid;grid-template-columns: 1fr 1fr;gap:20px;align-items:start;">
+              <div style="display:grid;grid-template-columns: 1fr 1fr;gap:24px;align-items:start;">
                 <div>
                   <div class="form-group">
-                    <label class="form-label" for="scan-item-select">Select Inventory Product to Inspect *</label>
-                    <select id="scan-item-select" class="form-control">
-                      <option value="">-- Choose a Product --</option>
+                    <label class="form-label" for="scan-item-select">Associate with Inventory Product (Optional)</label>
+                    <select id="scan-item-select" class="form-control" onchange="retailerApp.handleScanItemSelectChange()">
+                      <option value="">-- Standalone Scan (New Food Item) --</option>
                     </select>
+                    <small style="color:var(--text-muted);font-size:11px;">Select an existing item to update its freshness score, or scan standalone to test any food specimen.</small>
                   </div>
-                  <div class="form-group">
-                    <label class="form-label">Upload New Photo or Use Existing Image</label>
-                    <div style="border:2px dashed var(--border-color);border-radius:var(--radius-lg);padding:24px;text-align:center;cursor:pointer;" onclick="document.getElementById('scan-image-file').click()">
-                      <div style="font-size:36px;margin-bottom:8px;">📷</div>
-                      <div style="font-weight:600;font-size:14px;">Upload inspection sample photo</div>
-                      <input type="file" id="scan-image-file" style="display:none;" accept="image/jpeg,image/png,image/webp">
-                      <div id="scan-image-preview" style="margin-top:10px;"></div>
+
+                  <!-- Standalone food details (visible when scan-item-select is empty) -->
+                  <div id="standalone-scan-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div>
+                      <label class="form-label" for="scan-food-name">Food Specimen Name</label>
+                      <input type="text" id="scan-food-name" class="form-control" placeholder="e.g. Honeycrisp Apple">
+                    </div>
+                    <div>
+                      <label class="form-label" for="scan-category">Food Category</label>
+                      <select id="scan-category" class="form-control">
+                        <option value="Fruits">Fruits</option>
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Dairy">Dairy</option>
+                        <option value="Meat">Meat</option>
+                        <option value="Fish">Fish</option>
+                        <option value="Bakery">Bakery</option>
+                        <option value="Packaged Food">Packaged Food</option>
+                        <option value="Other">Other</option>
+                      </select>
                     </div>
                   </div>
-                  <button id="btn-run-ai-scan" class="btn btn-primary" style="width:100%;padding:12px;font-size:15px;">⚡ Run AI Freshness Diagnostic</button>
+
+                  <!-- Image Input Method Selector -->
+                  <div class="form-group">
+                    <label class="form-label">Food Sample Inspection Photo *</label>
+                    <div style="display:flex;gap:10px;margin-bottom:10px;">
+                      <button type="button" id="btn-upload-mode" class="btn btn-primary btn-sm" onclick="retailerApp.setScanInputMode('upload')">
+                        📁 File Upload
+                      </button>
+                      <button type="button" id="btn-camera-mode" class="btn btn-secondary btn-sm" onclick="retailerApp.setScanInputMode('camera')">
+                        📷 Device Camera
+                      </button>
+                    </div>
+
+                    <!-- Mode 1: File Drop / Pick -->
+                    <div id="scan-upload-area" style="border:2px dashed var(--border-color);border-radius:var(--radius-lg);padding:24px;text-align:center;cursor:pointer;" onclick="document.getElementById('scan-image-file').click()">
+                      <div style="font-size:36px;margin-bottom:6px;">📸</div>
+                      <div style="font-weight:600;font-size:14px;">Click or Drag sample photo here</div>
+                      <div style="font-size:12px;color:var(--text-muted);">Supports JPG, PNG, WEBP up to 10MB</div>
+                      <input type="file" id="scan-image-file" style="display:none;" accept="image/jpeg,image/png,image/webp">
+                    </div>
+
+                    <!-- Mode 2: Live Webcam Camera View -->
+                    <div id="scanner-camera-box" class="scanner-camera-box">
+                      <video id="scanner-video" autoplay playsinline muted></video>
+                      <canvas id="scanner-canvas" style="display:none;"></canvas>
+                      <div class="camera-controls-bar">
+                        <button type="button" id="btn-snap-photo" class="btn btn-primary btn-sm" onclick="retailerApp.captureCameraPhoto()">📸 Capture Photo</button>
+                        <button type="button" id="btn-close-camera" class="btn btn-secondary btn-sm" onclick="retailerApp.stopCamera()">✖ Close Camera</button>
+                      </div>
+                    </div>
+
+                    <!-- Image Preview & Action Controls -->
+                    <div id="scan-image-preview-container" style="display:none;margin-top:12px;background:#f8fafc;padding:12px;border-radius:var(--radius-lg);border:1px solid var(--border-color);text-align:center;">
+                      <img id="scan-preview-img" src="" alt="Selected Inspection Sample" style="max-height:200px;max-width:100%;border-radius:var(--radius-md);object-fit:contain;margin-bottom:8px;border:1px solid var(--border-color);">
+                      <div style="display:flex;justify-content:center;gap:10px;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="retailerApp.triggerReplaceScanImage()">🔄 Replace Image</button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="retailerApp.removeScanImage()">❌ Remove Image</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button id="btn-run-ai-scan" class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;margin-top:12px;">⚡ Run AI Freshness Analysis</button>
                 </div>
 
+                <!-- Results Interface -->
                 <div id="ai-scan-results-card" style="background:#f8fafc;border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:24px;display:none;">
-                  <h3 style="font-size:16px;font-weight:700;margin-bottom:14px;">Diagnostic Findings</h3>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                    <h3 style="font-size:16px;font-weight:700;margin:0;">Diagnostic Findings</h3>
+                    <span id="scan-res-timestamp" style="font-size:12px;color:var(--text-muted);">--</span>
+                  </div>
+
+                  <!-- Specimen & Score Banner -->
                   <div class="scorecard-banner">
-                    <div>
-                      <div style="font-size:12px;font-weight:700;color:#15803d;text-transform:uppercase;">Composite Quality Score</div>
-                      <div id="scan-res-score" style="font-size:36px;font-weight:800;color:#166534;">--</div>
+                    <div style="display:flex;align-items:center;gap:14px;">
+                      <img id="scan-res-image" src="" alt="Specimen" style="width:68px;height:68px;border-radius:var(--radius-md);object-fit:cover;border:1px solid var(--border-color);display:none;">
+                      <div>
+                        <div style="font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;">Composite Freshness Score</div>
+                        <div id="scan-res-score" style="font-size:36px;font-weight:800;color:#166534;">--</div>
+                      </div>
                     </div>
-                    <div>
-                      <span id="scan-res-badge" class="badge badge-safe" style="font-size:14px;padding:6px 14px;">Fresh</span>
+                    <div style="text-align:right;">
+                      <span id="scan-res-badge" class="badge badge-safe" style="font-size:14px;padding:6px 14px;display:inline-block;margin-bottom:4px;">Fresh</span>
+                      <div id="scan-res-confidence" style="font-size:12px;color:var(--text-muted);font-weight:600;">Confidence: --%</div>
                     </div>
                   </div>
 
@@ -590,7 +796,7 @@
                       <div id="scan-res-texture" style="font-size:18px;font-weight:700;">--</div>
                     </div>
                     <div style="background:white;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-color);">
-                      <div style="font-size:11px;color:var(--text-muted);font-weight:700;">Mold Detected?</div>
+                      <div style="font-size:11px;color:var(--text-muted);font-weight:700;">Mold / Defect Detected?</div>
                       <div id="scan-res-mold" style="font-size:18px;font-weight:700;">--</div>
                     </div>
                     <div style="background:white;padding:12px;border-radius:var(--radius-md);border:1px solid var(--border-color);">
@@ -599,10 +805,22 @@
                     </div>
                   </div>
 
-                  <div style="background:white;padding:14px;border-radius:var(--radius-md);border:1px solid var(--border-color);">
-                    <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">Prescriptive Actions & Markdown:</div>
+                  <div style="background:white;padding:14px;border-radius:var(--radius-md);border:1px solid var(--border-color);margin-bottom:18px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">Prescriptive Storage & Handling Directives:</div>
                     <ul id="scan-res-recommendations" style="padding-left:18px;font-size:13px;color:var(--text-main);margin:0;">
                     </ul>
+                  </div>
+
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-secondary" onclick="retailerApp.switchTab('inventory')">
+                      🔙 Return to Inventory
+                    </button>
+                    <button type="button" id="btn-scan-to-inventory" class="btn btn-primary" onclick="retailerApp.prefillIntakeFromScan()">
+                      ➕ Add Specimen to Inventory
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="retailerApp.resetScanner()">
+                      🔬 Scan Another Food
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1010,6 +1228,188 @@
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
           <button type="button" class="btn btn-secondary" onclick="retailerApp.closeModals()">Cancel</button>
           <button type="submit" class="btn btn-primary">Mark Acknowledged</button>
+        </div>
+      </form>
+    </div>
+  <!-- Product Details Modal -->
+  <div id="details-modal" class="modal-overlay">
+    <div class="modal-box modal-box-wide">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <h3 id="details-modal-title" style="font-size:20px;font-weight:700;margin:0 0 4px 0;">Product Details</h3>
+          <span id="details-modal-category" class="badge" style="background:#e0f2fe;color:#0369a1;font-weight:600;">Category</span>
+          <span id="details-modal-id-badge" style="font-size:11px;color:var(--text-muted);margin-left:8px;font-family:monospace;">ID: --</span>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="retailerApp.closeModals()">✕</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:180px 1fr;gap:20px;margin-bottom:20px;align-items:start;">
+        <div style="text-align:center;">
+          <img id="details-modal-image" src="" alt="Product Photo" style="width:100%;height:160px;object-fit:cover;border-radius:var(--radius-lg);border:1px solid var(--border-color);background:#f1f5f9;">
+        </div>
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div style="background:#f8fafc;padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--border-color);">
+              <div style="font-size:11px;color:var(--text-muted);font-weight:700;">Stock Quantity</div>
+              <div id="details-modal-qty" style="font-size:18px;font-weight:800;color:var(--text-main);">--</div>
+            </div>
+            <div style="background:#f8fafc;padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--border-color);">
+              <div style="font-size:11px;color:var(--text-muted);font-weight:700;">Freshness Grade</div>
+              <div id="details-modal-freshness" style="font-size:18px;font-weight:800;">--</div>
+            </div>
+            <div style="background:#f8fafc;padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--border-color);">
+              <div style="font-size:11px;color:var(--text-muted);font-weight:700;">Expiry Date</div>
+              <div id="details-modal-expiry" style="font-size:15px;font-weight:700;">--</div>
+            </div>
+            <div style="background:#f8fafc;padding:10px 14px;border-radius:var(--radius-md);border:1px solid var(--border-color);">
+              <div style="font-size:11px;color:var(--text-muted);font-weight:700;">Predicted Shelf Life</div>
+              <div id="details-modal-shelflife" style="font-size:15px;font-weight:700;color:#0284c7;">--</div>
+            </div>
+          </div>
+
+          <div style="font-size:13px;color:var(--text-main);line-height:1.7;">
+            <div><strong>Storage Location:</strong> <span id="details-modal-location">--</span></div>
+            <div><strong>Storage Conditions:</strong> <span id="details-modal-storage">--</span></div>
+            <div><strong>Batch / Lot:</strong> <span id="details-modal-batch">--</span></div>
+            <div><strong>Arrival / Purchase Date:</strong> <span id="details-modal-purchase">--</span></div>
+            <div><strong>Registered:</strong> <span id="details-modal-created">--</span> &bull; <strong>Updated:</strong> <span id="details-modal-updated">--</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock History Audit Log -->
+      <div style="margin-top:16px;">
+        <h4 style="font-size:14px;font-weight:700;margin-bottom:8px;">Recent Stock Adjustments</h4>
+        <div class="table-container" style="max-height:140px;overflow-y:auto;">
+          <table class="data-table" style="font-size:12px;">
+            <thead>
+              <tr>
+                <th>Date / Time</th>
+                <th>Type</th>
+                <th>Old Qty</th>
+                <th>New Qty</th>
+                <th>Reason</th>
+                <th>User</th>
+              </tr>
+            </thead>
+            <tbody id="details-modal-history-body">
+              <tr><td colspan="6" style="text-align:center;padding:12px;color:var(--text-muted);">No stock adjustments recorded.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:20px;gap:10px;flex-wrap:wrap;">
+        <div style="display:flex;gap:8px;">
+          <button type="button" id="btn-details-to-edit" class="btn btn-secondary btn-sm">✏️ Edit Product</button>
+          <button type="button" id="btn-details-to-stock" class="btn btn-secondary btn-sm">⚖️ Adjust Stock</button>
+          <button type="button" id="btn-details-to-scan" class="btn btn-secondary btn-sm">🔬 Run AI Scan</button>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" onclick="retailerApp.closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Product Modal -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-box modal-box-wide">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <h3 style="font-size:18px;font-weight:700;margin:0 0 4px 0;">Edit Food Product</h3>
+          <p style="font-size:13px;color:var(--text-muted);margin:0;">Update product attributes, stock limits, or storage location</p>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="retailerApp.closeModals()">✕</button>
+      </div>
+
+      <form id="retailer-edit-form">
+        <input type="hidden" id="edit-item-id">
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-food-name">Product Name *</label>
+            <input type="text" id="edit-food-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-category">Food Category *</label>
+            <select id="edit-category" class="form-control" required>
+              <option value="Fruits">Fruits</option>
+              <option value="Vegetables">Vegetables</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Meat">Meat</option>
+              <option value="Fish">Fish</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Grains">Grains</option>
+              <option value="Packaged Food">Packaged Food</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-quantity">Stock Quantity *</label>
+            <input type="number" id="edit-quantity" class="form-control" step="0.1" min="0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-unit">Unit *</label>
+            <input type="text" id="edit-unit" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-threshold">Low Stock Warning Threshold</label>
+            <input type="number" id="edit-threshold" class="form-control" step="1" min="0" required>
+          </div>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-purchase-date">Purchase / Harvest Date *</label>
+            <input type="date" id="edit-purchase-date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-expiry-date">Recorded Expiration Date *</label>
+            <input type="date" id="edit-expiry-date" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-storage-type">Storage Type *</label>
+            <select id="edit-storage-type" class="form-control" required>
+              <option value="Refrigerated">Refrigerated</option>
+              <option value="Frozen">Frozen</option>
+              <option value="Room Temperature">Room Temperature</option>
+              <option value="Cold Storage">Cold Storage</option>
+              <option value="Controlled Atmosphere">Controlled Atmosphere</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-storage-temp">Storage Temperature (°C)</label>
+            <input type="number" id="edit-storage-temp" class="form-control" step="0.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-storage-humidity">Relative Humidity (% RH)</label>
+            <input type="number" id="edit-storage-humidity" class="form-control" step="1" min="0" max="100">
+          </div>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label" for="edit-location">Store Display Location / Aisle</label>
+            <input type="text" id="edit-location" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-batch">Batch / Lot Number</label>
+            <input type="text" id="edit-batch" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-image-url">Image URL</label>
+          <input type="text" id="edit-image-url" class="form-control" placeholder="Optional image link or path">
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="retailerApp.closeModals()">Cancel</button>
+          <button type="submit" id="btn-submit-edit-product" class="btn btn-primary">Save Changes</button>
         </div>
       </form>
     </div>

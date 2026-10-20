@@ -1,19 +1,90 @@
 import os
-import re
 from pathlib import Path
-from dotenv import load_dotenv
+from urllib.parse import quote_plus, urlsplit
 
-# Base paths
+from dotenv import load_dotenv, dotenv_values
+
+# ============================================================
+# BASE PATHS
+# ============================================================
+
 APP_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = APP_DIR.parent
 PROJECT_ROOT = BACKEND_DIR.parent
 
-# Load .env file from root and backend directories
-if (PROJECT_ROOT / ".env").exists():
-    load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
-if (BACKEND_DIR / ".env").exists():
-    load_dotenv(dotenv_path=BACKEND_DIR / ".env", override=True)
+# ============================================================
+# ENVIRONMENT CONFIGURATION
+# Use backend/.env as the primary configuration file.
+# ============================================================
 
+ENV_FILE = BACKEND_DIR / ".env"
+
+if not ENV_FILE.exists():
+    raise FileNotFoundError(
+        f"Backend environment file not found: {ENV_FILE}"
+    )
+
+# Load backend/.env and override previously defined variables.
+load_dotenv(dotenv_path=ENV_FILE, override=True)
+
+# Read the file's values directly when configuration-source
+# accuracy matters, especially for the MongoDB connection URI.
+_env_values = dotenv_values(ENV_FILE)
+
+
+def _get_env(name: str, default: str = "") -> str:
+    """Read a setting from backend/.env, then fall back to the process environment."""
+    value = _env_values.get(name)
+
+    if value is None or not str(value).strip():
+        value = os.getenv(name, default)
+
+    return str(value).strip().strip("\"'")
+
+
+# ============================================================
+# MONGODB URI VALIDATION
+# ============================================================
+
+def _get_mongo_uri() -> str:
+    """Load MongoDB URI directly from backend/.env."""
+
+    env_file = BACKEND_DIR / ".env"
+    env_values = dotenv_values(env_file)
+
+    uri = env_values.get("MONGO_URI")
+
+    if not uri:
+        raise ValueError(
+            f"MONGO_URI is missing from {env_file}"
+        )
+
+    uri = str(uri).strip().strip("\"'")
+
+    if uri.startswith("MONGO_URI="):
+        uri = uri[len("MONGO_URI="):].strip().strip("\"'")
+
+    if "<" in uri or ">" in uri:
+        raise ValueError(
+            "The MONGO_URI in backend/.env still contains "
+            "placeholder brackets. Edit and save that file, "
+            "replacing placeholder credentials with actual values."
+        )
+
+    if uri.count("@") != 1:
+        raise ValueError(
+            "MONGO_URI must contain exactly one '@' separator. "
+            "Check the connection string in backend/.env."
+        )
+
+    if not uri.startswith(("mongodb://", "mongodb+srv://")):
+        raise ValueError("Invalid MongoDB URI scheme.")
+
+    return uri
+
+# ============================================================
+# APPLICATION SETTINGS
+# ============================================================
 
 class Settings:
     PROJECT_NAME: str = "Food Freshness Monitoring Platform"
@@ -21,32 +92,33 @@ class Settings:
     API_V1_PREFIX: str = "/api"
 
     # Environment
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
-    DEBUG: bool = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
+    ENVIRONMENT: str = _get_env("ENVIRONMENT", "development")
+    DEBUG: bool = _get_env("DEBUG", "True").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
 
-    # Server configuration
-    HOST: str = os.getenv("HOST", "0.0.0.0")
-    PORT: int = int(os.getenv("PORT", "8000"))
+    # Server
+    HOST: str = _get_env("HOST", "127.0.0.1")
+    PORT: int = int(_get_env("PORT", "9000"))
 
-    # MongoDB configuration
-    _raw_mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/").strip()
-    if _raw_mongo_uri.startswith("MONGO_URI="):
-        _raw_mongo_uri = _raw_mongo_uri[len("MONGO_URI="):].strip()
-    _raw_mongo_uri = _raw_mongo_uri.strip("\"'")
-    # Automatically strip accidental placeholder brackets like <username> or <password>
-    _raw_mongo_uri = re.sub(r':<([^>@]+)>@', r':\1@', _raw_mongo_uri)
-    _raw_mongo_uri = re.sub(r'//<([^>@:]+)>:', r'//\1:', _raw_mongo_uri)
-    MONGO_URI: str = _raw_mongo_uri
-    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "food_freshness_db").strip().strip("\"'")
+    # MongoDB
+    MONGO_URI: str = _get_mongo_uri()
+    DATABASE_NAME: str = _get_env(
+        "DATABASE_NAME",
+        "food_freshness_db",
+    )
 
     # JWT Authentication
-    JWT_SECRET: str = os.getenv(
-        "JWT_SECRET", "super_secret_jwt_key_food_freshness_platform_2026_change_in_production"
+    JWT_SECRET: str = _get_env(
+        "JWT_SECRET",
+        "change_this_secret_in_backend_env",
     )
-    JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
+    JWT_ALGORITHM: str = _get_env("JWT_ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
-        os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440")
-    )  # 24 hours
+        _get_env("ACCESS_TOKEN_EXPIRE_MINUTES", "1440")
+    )
 
     # Paths
     UPLOAD_DIR: Path = PROJECT_ROOT / "uploads"
@@ -54,8 +126,12 @@ class Settings:
     DATASETS_DIR: Path = PROJECT_ROOT / "datasets"
 
 
+# ============================================================
+# INITIALIZE SETTINGS
+# ============================================================
+
 settings = Settings()
 
-# Ensure directories exist
+# Ensure required directories exist.
 settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 settings.DATASETS_DIR.mkdir(parents=True, exist_ok=True)

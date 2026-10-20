@@ -26,7 +26,7 @@ class UserRegisterRequest(BaseModel):
         v_clean = v.strip().lower()
         if v_clean in ["quality inspector", "food quality inspector"]:
             v = UserRole.FOOD_QUALITY_INSPECTOR.value
-        elif v_clean in ["admin", "administrator"]:
+        elif v_clean in ["admin", "administrator"] or "admin" in v_clean:
             v = UserRole.ADMIN.value
 
         all_roles = UserRole.list()

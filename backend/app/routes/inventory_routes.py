@@ -158,12 +158,26 @@ async def seed_dataset_inventory(
 ):
     """
     Explicitly populate standard dataset items (derived from platform datasets in datasets/)
-    into the active user's inventory.
+    into the active user's inventory without duplicates.
     """
     user_id = current_user.get("id")
-    count = InventoryService.seed_dataset_items_for_user(user_id)
+    result = InventoryService.seed_dataset_items_for_user(user_id)
+    inserted = result.get("inserted", 0)
+    skipped = result.get("skipped", 0)
+    total = result.get("total", 0)
+
+    if inserted > 0 and skipped > 0:
+        msg = f"Successfully loaded {inserted} dataset food items into your inventory ({skipped} already present)."
+    elif inserted > 0:
+        msg = f"Successfully loaded {inserted} dataset food items into your inventory."
+    else:
+        msg = f"All {skipped} dataset food items are already present in your inventory."
+
     return {
         "success": True,
-        "message": f"Successfully loaded {count} dataset food items into your inventory.",
-        "count": count
+        "message": msg,
+        "count": total,
+        "inserted": inserted,
+        "skipped": skipped,
+        "total": total,
     }

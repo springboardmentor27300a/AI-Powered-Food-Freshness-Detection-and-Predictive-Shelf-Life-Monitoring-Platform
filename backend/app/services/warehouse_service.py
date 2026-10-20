@@ -275,7 +275,12 @@ class WarehouseService:
         # Find rules matching category
         cat_rules = list(rules_col.find({"category": category})) if rules_col is not None else []
         if not cat_rules and "dairy" in category.lower():
-            cat_rules = list(rules_col.find({"category": "Dairy"}))
+            cat_rules = list(rules_col.find({"category": "Dairy"})) if rules_col is not None else []
+        if not cat_rules:
+            cat_rules = [
+                r for r in DEFAULT_TEMPERATURE_RULES
+                if r.get("category") == category or ("dairy" in category.lower() and r.get("category") == "Dairy")
+            ]
 
         products = []
         for r in cat_rules:

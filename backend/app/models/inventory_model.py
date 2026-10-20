@@ -94,10 +94,12 @@ def inventory_helper(item: Dict[str, Any]) -> Dict[str, Any]:
     """Helper to convert MongoDB inventory document into a serializable dict."""
     if not item:
         return {}
+    name = item.get("food_name") or item.get("name") or "Food Item"
     return {
         "id": str(item.get("_id")),
         "user_id": str(item.get("user_id")),
-        "food_name": item.get("food_name"),
+        "food_name": name,
+        "name": name,
         "category": item.get("category"),
         "quantity": item.get("quantity"),
         "unit": item.get("unit"),

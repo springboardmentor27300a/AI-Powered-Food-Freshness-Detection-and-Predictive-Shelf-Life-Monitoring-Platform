@@ -67,67 +67,181 @@ function initInventoryTable() {
   }
 }
 
+let isInventoryLoading = false;
+
+function normalizeInventoryResponse(response) {
+  // Support the common response formats used by FastAPI and API wrappers:
+  // [ ... ], { items: [...] }, { data: [...] }, { inventory: [...] }, etc.
+  let value = response;
+
+  for (let depth = 0; depth < 5; depth += 1) {
+    if (Array.isArray(value)) {
+      return value
+        .filter((item) => item && typeof item === "object")
+        .map((item) => ({
+          ...item,
+          id: item.id ?? item._id ?? item.inventory_id ?? item.item_id,
+          food_name: item.food_name ?? item.name ?? item.foodName ?? "Food Item",
+          category: item.category ?? item.food_category ?? "Other",
+          quantity: item.quantity ?? item.amount ?? 0,
+          unit: item.unit ?? item.quantity_unit ?? "kg",
+          purchase_date: item.purchase_date ?? item.purchaseDate ?? null,
+          expiry_date: item.expiry_date ?? item.expiration_date ?? item.expiryDate ?? null,
+          storage_type: item.storage_type ?? item.storageType ?? "Room Temperature",
+          freshness_status: item.freshness_status ?? item.status ?? item.freshness_label ?? "",
+          freshness_score: item.freshness_score ?? item.freshnessScore ?? item.visual_score ?? null,
+          image_url: item.image_url ?? item.imageUrl ?? null,
+        }));
+    }
+
+    if (!value || typeof value !== "object") {
+      return [];
+    }
+
+    const possibleArrays = [
+      value.items,
+      value.inventory,
+      value.results,
+      value.foods,
+      value.records,
+      value.data,
+    ];
+
+    const next = possibleArrays.find(
+      (candidate) => Array.isArray(candidate) ||
+        (candidate && typeof candidate === "object")
+    );
+
+    if (next === undefined) {
+      return [];
+    }
+
+    value = next;
+  }
+
+  return [];
+}
+
 async function loadInventory() {
   const tableBody = document.getElementById("inventory-table-body");
+  const totalCountEl = document.getElementById("inventory-total-count");
   if (!tableBody) return;
+
+  isInventoryLoading = true;
+  if (totalCountEl) totalCountEl.textContent = "Loading items...";
 
   tableBody.innerHTML = `
     <tr>
-      <td colspan="8" style="text-align:center; padding: 40px;">
-        <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent;"></span>
-        <div style="margin-top:10px; color:var(--text-muted);">Fetching food inventory...</div>
+      <td colspan="8" style="text-align:center; padding: 48px 20px;">
+        <span class="spinner" style="display:inline-block; border-color:#0d9488; border-top-color:transparent; width:28px; height:28px; border-width:3px;"></span>
+        <div style="margin-top:12px; color:var(--text-muted); font-size:14px; font-weight:500;">Fetching food inventory from database...</div>
       </td>
     </tr>
   `;
 
-  const search = document.getElementById("search-input")?.value.trim();
-  const category = document.getElementById("category-filter")?.value;
-  const expiry_status = document.getElementById("expiry-filter")?.value;
-  const storage_type = document.getElementById("storage-filter")?.value;
+  const searchValue = document.getElementById("search-input")?.value?.trim() || "";
+  const categoryValue = document.getElementById("category-filter")?.value || "";
+  const expiryValue = document.getElementById("expiry-filter")?.value || "";
+  const storageValue = document.getElementById("storage-filter")?.value || "";
   const sortByVal = document.getElementById("sort-filter")?.value || "expiry_date_asc";
 
-  const [sort_by, sort_order] = sortByVal.split("_");
+  let sort_by = "expiry_date";
+  let sort_order = "asc";
+  if (sortByVal.endsWith("_desc")) {
+    sort_by = sortByVal.replace(/_desc$/, "");
+    sort_order = "desc";
+  } else if (sortByVal.endsWith("_asc")) {
+    sort_by = sortByVal.replace(/_asc$/, "");
+    sort_order = "asc";
+  } else if (sortByVal) {
+    sort_by = sortByVal;
+  }
+
+  // Do not send placeholder filter values such as "all" to the API.
+  const isRealFilter = (value) =>
+    value && !["all", "any", "none", "all_categories", "all_statuses", "all_storage"].includes(
+      String(value).trim().toLowerCase()
+    );
+
+  const params = {
+    sort_by,
+    sort_order,
+  };
+  if (searchValue) params.search = searchValue;
+  if (isRealFilter(categoryValue)) params.category = categoryValue;
+  if (isRealFilter(expiryValue)) params.expiry_status = expiryValue;
+  if (isRealFilter(storageValue)) params.storage_type = storageValue;
 
   try {
-    const items = await api.getInventory({
-      search,
-      category,
-      expiry_status,
-      storage_type,
-      sort_by,
-      sort_order: sort_order || "asc",
-    });
+    const rawData = await api.getInventory(params);
+    let items = normalizeInventoryResponse(rawData);
 
+    // If no filters are active and the API wrapper returned an unfamiliar
+    // empty shape, make one unfiltered request before showing an empty state.
+    if (
+      items.length === 0 &&
+      !searchValue &&
+      !isRealFilter(categoryValue) &&
+      !isRealFilter(expiryValue) &&
+      !isRealFilter(storageValue)
+    ) {
+      console.warn("[Inventory] No items extracted from the first response. Retrying with default parameters.", rawData);
+      const fallbackData = await api.getInventory({});
+      items = normalizeInventoryResponse(fallbackData);
+    }
+
+    console.log(`[Inventory] Loaded ${items.length} item(s).`, items);
     renderInventoryTable(items);
   } catch (error) {
-    console.error("Error loading inventory:", error);
+    console.error("[Inventory] Error retrieving food inventory:", error);
+    if (totalCountEl) totalCountEl.textContent = "Failed to load inventory";
+
     tableBody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align:center; padding: 30px; color:#ef4444;">
-          Failed to load inventory: ${escapeHtml(error.message)}
+        <td colspan="8" style="text-align:center; padding: 40px 20px; color:var(--text-main);">
+          <div style="font-size:36px; margin-bottom:12px;">⚠️</div>
+          <div style="font-weight:700; color:#ef4444; font-size:17px; margin-bottom:8px;">Unable to Connect to Food Inventory</div>
+          <div style="color:var(--text-muted); font-size:14px; max-width:500px; margin:0 auto 18px auto; line-height:1.5;">
+            ${escapeHtml(error.message || "Failed to reach backend server or MongoDB service. Please verify your connection.")}
+          </div>
+          <div style="display:flex; gap:10px; justify-content:center; align-items:center;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="loadInventory()">
+              🔄 Retry Loading
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="seedDatasetItems()">
+              🌱 Load Dataset Items
+            </button>
+          </div>
         </td>
       </tr>
     `;
-    showToast("Error loading inventory: " + error.message, "error");
+    showToast("Error loading inventory: " + (error.message || "Failed to fetch items"), "error");
+  } finally {
+    isInventoryLoading = false;
   }
 }
-
 function renderInventoryTable(items) {
   const tableBody = document.getElementById("inventory-table-body");
   const totalCountEl = document.getElementById("inventory-total-count");
   if (!tableBody) return;
 
-  if (totalCountEl) totalCountEl.textContent = `${items.length} items`;
+  const count = (items || []).length;
+  if (totalCountEl) {
+    totalCountEl.textContent = count === 0
+      ? "0 active food items"
+      : `${count} active food ${count === 1 ? "item" : "items"}`;
+  }
 
   // Update badge for Action Card & Sidebar if present
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const alertCount = (items || []).filter(item => {
+    const alertCount = (items || []).filter((item) => {
       if (!item.expiry_date) return false;
       const exp = new Date(item.expiry_date);
       const diff = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
-      return diff <= 3 || item.freshness_status === "Spoiled";
+      const statusLower = (item.freshness_status || "").toLowerCase();
+      return diff <= 3 || statusLower === "spoiled";
     }).length;
 
     const actionBadge = document.getElementById("action-alerts-badge");
@@ -154,17 +268,17 @@ function renderInventoryTable(items) {
   if (!items || items.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="8" class="empty-state" style="padding: 40px 20px; text-align: center;">
-          <div class="empty-icon" style="font-size: 36px; margin-bottom: 8px;">📦</div>
-          <div class="empty-title" style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Food Inventory is Empty</div>
-          <div class="empty-subtitle" style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">
-            Load sample produce & food items directly from our AI freshness datasets, or add custom items manually.
+        <td colspan="8" class="empty-state" style="padding: 48px 20px; text-align: center;">
+          <div class="empty-icon" style="font-size: 42px; margin-bottom: 10px;">📦</div>
+          <div class="empty-title" style="font-size: 19px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Food Inventory is Empty</div>
+          <div class="empty-subtitle" style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+            No food items found matching your criteria. Populate sample produce directly from our AI freshness datasets or add custom food items.
           </div>
           <div style="display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;">
-            <button type="button" class="btn btn-primary btn-sm" onclick="seedDatasetItems()">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-seed-empty" onclick="seedDatasetItems()">
               🌱 Load Dataset Items
             </button>
-            <a href="add-food.html" class="btn btn-secondary btn-sm">+ Add New Food</a>
+            <a href="add-food.html" class="btn btn-secondary btn-sm">+ Add Food Item</a>
           </div>
         </td>
       </tr>
@@ -172,59 +286,81 @@ function renderInventoryTable(items) {
     return;
   }
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const in3Days = new Date();
-  in3Days.setDate(in3Days.getDate() + 3);
-  const in3DaysStr = in3Days.toISOString().split("T")[0];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   tableBody.innerHTML = items
     .map((item) => {
+      const foodName = item.food_name || item.name || "Food Item";
+      const category = item.category || "Other";
+      const quantity = item.quantity ?? 0;
+      const unit = item.unit || "kg";
+      const purchaseDate = item.purchase_date || "—";
+      const expiryDate = item.expiry_date || "—";
+      const storageType = item.storage_type || "Room Temperature";
+
       // Expiry calculation
-      let expiryBadge = `<span class="badge badge-fresh">${item.expiry_date}</span>`;
-      if (item.expiry_date < todayStr) {
-        expiryBadge = `<span class="badge badge-danger">${item.expiry_date} (Expired)</span>`;
-      } else if (item.expiry_date <= in3DaysStr) {
-        expiryBadge = `<span class="badge badge-warning">${item.expiry_date} (Soon)</span>`;
+      let expiryBadge = `<span class="badge badge-fresh">${escapeHtml(expiryDate)}</span>`;
+      if (item.expiry_date) {
+        const exp = new Date(item.expiry_date);
+        const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) {
+          expiryBadge = `<span class="badge badge-danger">${escapeHtml(expiryDate)} (Expired)</span>`;
+        } else if (diffDays === 0) {
+          expiryBadge = `<span class="badge badge-danger">${escapeHtml(expiryDate)} (Expires Today)</span>`;
+        } else if (diffDays <= 3) {
+          expiryBadge = `<span class="badge badge-warning">${escapeHtml(expiryDate)} (${diffDays}d left)</span>`;
+        } else {
+          expiryBadge = `<span class="badge badge-fresh">${escapeHtml(expiryDate)} (${diffDays}d left)</span>`;
+        }
       }
 
       // Freshness Status badge
+      const statusLower = (item.freshness_status || "").toLowerCase().trim();
       let statusBadge = `<span class="badge badge-pending">Not Analyzed</span>`;
-      if (item.freshness_status === "Fresh") {
-        statusBadge = `<span class="badge badge-fresh">Fresh</span>`;
-      } else if (item.freshness_status === "Spoiled") {
+      if (statusLower === "fresh" || statusLower === "good" || statusLower === "acceptable") {
+        statusBadge = `<span class="badge badge-fresh">${escapeHtml(item.freshness_status)}</span>`;
+      } else if (statusLower === "spoiled") {
         statusBadge = `<span class="badge badge-danger">Spoiled</span>`;
-      } else if (item.freshness_status === "Expiring Soon") {
+      } else if (statusLower.includes("soon") || statusLower.includes("near")) {
         statusBadge = `<span class="badge badge-warning">Expiring Soon</span>`;
       }
+
+      const scoreHtml = item.freshness_score != null
+        ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Score: ${Math.round(item.freshness_score)}%</div>`
+        : "";
 
       return `
       <tr>
         <td>
           <div class="food-cell">
             <div class="food-avatar">
-              ${item.image_url ? `<img src="${item.image_url}" alt="${escapeHtml(item.food_name)}">` : getCategoryEmoji(item.category)}
+              ${item.image_url ? `<img src="${item.image_url}" alt="${escapeHtml(foodName)}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">` : getCategoryEmoji(category)}
             </div>
             <div>
-              <div class="food-title">${escapeHtml(item.food_name)}</div>
-              <div class="food-batch">${escapeHtml(item.batch_number ? `Batch: ${item.batch_number}` : (item.location || 'Storage'))}</div>
+              <div class="food-title">${escapeHtml(foodName)}</div>
+              <div class="food-batch">${escapeHtml(item.batch_number ? `Batch: ${item.batch_number}` : (item.location || 'Main Storage'))}</div>
             </div>
           </div>
         </td>
-        <td><span class="badge" style="background:#f1f5f9;color:#334155;">${escapeHtml(item.category)}</span></td>
-        <td><strong>${item.quantity}</strong> ${escapeHtml(item.unit)}</td>
-        <td><small class="text-muted">${escapeHtml(item.purchase_date)}</small></td>
+        <td><span class="badge" style="background:#f1f5f9;color:#334155;">${escapeHtml(category)}</span></td>
+        <td><strong>${quantity}</strong> ${escapeHtml(unit)}</td>
+        <td><small class="text-muted">${escapeHtml(purchaseDate)}</small></td>
         <td>${expiryBadge}</td>
-        <td><small>${escapeHtml(item.storage_type)}</small></td>
-        <td>${statusBadge}</td>
+        <td><small>${escapeHtml(storageType)}</small></td>
+        <td>
+          ${statusBadge}
+          ${scoreHtml}
+        </td>
         <td>
           <div class="actions-cell">
             <a href="food-details.html?id=${item.id}" class="btn btn-secondary btn-sm" title="Inspect Details">
               View
             </a>
             <button class="btn btn-secondary btn-sm" onclick="openEditModal('${item.id}')" title="Edit Item">
-              Edit
+                      Edit
             </button>
-            <button class="btn btn-danger btn-sm" onclick="confirmDeleteItem('${item.id}', '${escapeHtml(item.food_name)}')" title="Delete Item">
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteItem('${item.id}', '${escapeHtml(foodName)}')" title="Delete Item">
               Delete
             </button>
           </div>
@@ -402,7 +538,7 @@ async function initFoodDetails() {
     showToast("No food item ID specified in URL.", "error");
     window.location.href = "inventory.html";
     return;
-  }
+    }
 
   try {
     const item = await api.getInventoryItem(itemId);
@@ -560,6 +696,7 @@ async function runLiveAIDiagnostic(itemId, btn) {
   } finally {
     setButtonLoading(btn, false, "Run Live AI Diagnostic");
   }
+}
 
 /* ==========================================================================
    4. Edit Modal & Delete Helpers
@@ -700,17 +837,26 @@ function getCategoryEmoji(category) {
 
 async function seedDatasetItems() {
   const btn = document.getElementById("btn-seed-dataset");
+  const emptyBtn = document.getElementById("btn-seed-empty");
   try {
     if (btn) setButtonLoading(btn, true, "Loading...");
+    if (emptyBtn) setButtonLoading(emptyBtn, true, "Loading...");
     const res = await api.seedDatasetInventory();
-    showToast(res.message || "Loaded food items from datasets successfully!", "success");
+    const msg = res.message || "Loaded food items from datasets successfully!";
+    showToast(msg, "success");
     await loadInventory();
   } catch (err) {
+    console.error("[Inventory] Failed to seed dataset items:", err);
     showToast("Failed to load dataset items: " + (err.message || err), "error");
   } finally {
     if (btn) setButtonLoading(btn, false, "🌱 Load Dataset Items");
+    if (emptyBtn) setButtonLoading(emptyBtn, false, "🌱 Load Dataset Items");
   }
 }
 
-window.getCategoryEmoji = getCategoryEmoji;
+window.loadInventory = loadInventory;
 window.seedDatasetItems = seedDatasetItems;
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.confirmDeleteItem = confirmDeleteItem;
+window.getCategoryEmoji = getCategoryEmoji;

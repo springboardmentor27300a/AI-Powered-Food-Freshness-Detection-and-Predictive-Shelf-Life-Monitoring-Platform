@@ -9,6 +9,11 @@ class RetailerApp {
     this.charts = {};
     this.cachedInventory = [];
     this.selectedScanItemId = null;
+    this.selectedScanFile = null;
+    this.activeCameraStream = null;
+    this.lastScanResult = null;
+    this.selectedEditItemId = null;
+    this.selectedDetailsItemId = null;
     this.activeAlertId = null;
   }
 
@@ -63,9 +68,7 @@ class RetailerApp {
     logoutBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
-        api.clearSession();
-        showToast("Logged out successfully.", "info");
-        setTimeout(() => { window.location.href = "login.html"; }, 500);
+        api.logout();
       });
     });
   }
@@ -171,32 +174,107 @@ class RetailerApp {
       if (!data) return;
 
       const kpis = data.kpis || {};
-      if (typeof animateCounter === "function") {
-        animateCounter(document.getElementById("kpi-total-items"), kpis.total_inventory_items || 0);
-        animateCounter(document.getElementById("kpi-expiring-soon"), kpis.approaching_expiry_count || 0);
-        animateCounter(document.getElementById("kpi-alerts-count"), (data.active_alerts || []).length);
-        animateCounter(document.getElementById("kpi-low-stock"), kpis.low_stock_count || 0);
-        animateCounter(document.getElementById("kpi-avg-score"), kpis.average_quality_score || 0);
-      } else {
-        document.getElementById("kpi-total-items").textContent = kpis.total_inventory_items || 0;
-        document.getElementById("kpi-expiring-soon").textContent = kpis.approaching_expiry_count || 0;
-        document.getElementById("kpi-alerts-count").textContent = (data.active_alerts || []).length;
-        document.getElementById("kpi-low-stock").textContent = kpis.low_stock_count || 0;
-        document.getElementById("kpi-avg-score").textContent = `${kpis.average_quality_score || 0}%`;
-      }
-      document.getElementById("kpi-total-qty").textContent = `${kpis.total_stock_quantity || 0} units in stock`;
+      const totalProds = kpis.total_products !== undefined ? kpis.total_products : (kpis.total_inventory_items || 0);
+      const freshProds = kpis.fresh_products !== undefined ? kpis.fresh_products : (kpis.fresh_count || 0);
+      const atRiskProds = kpis.at_risk_products !== undefined ? kpis.at_risk_products : (kpis.at_risk_count || kpis.moderate_count || 0);
+      const spoiledProds = kpis.spoiled_products !== undefined ? kpis.spoiled_products : (kpis.spoiled_count || 0);
+      const nearingExpiry = kpis.products_nearing_expiry !== undefined ? kpis.products_nearing_expiry : (kpis.approaching_expiry_count || 0);
+      const foodWaste = kpis.total_food_waste !== undefined ? kpis.total_food_waste : 0.0;
+      const foodWasteItems = kpis.total_food_waste_items !== undefined ? kpis.total_food_waste_items : 0;
+
+      const updateCard = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      updateCard("kpi-total-products", totalProds);
+      updateCard("kpi-total-items", totalProds);
+      updateCard("kpi-total-qty", `${kpis.total_stock_quantity || 0} units in stock`);
+      updateCard("kpi-fresh-products", freshProds);
+      updateCard("kpi-at-risk-products", atRiskProds);
+      updateCard("kpi-spoiled-products", spoiledProds);
+      updateCard("kpi-nearing-expiry", nearingExpiry);
+      updateCard("kpi-expiring-soon", nearingExpiry);
+      updateCard("kpi-food-waste", `${foodWaste} units`);
+      updateCard("kpi-food-waste-sub", `${foodWasteItems} items spoiled / expired`);
 
       // Priority Action Items Table
       this.renderPriorityTable(data.priority_items || []);
 
-      // Recent Inventory Table
+      // Recent Inventory Activity Table
       this.renderRecentInventoryTable(data.recent_inventory || []);
+
+      // Recent Freshness Scans Table
+      this.renderRecentScans(data.recent_scans || []);
+
+      // Recent Alerts Table
+      this.renderRecentAlerts(data.active_alerts || []);
 
       // Charts Preview
       this.renderOverviewCharts(data.charts || {});
     } catch (err) {
       showToast("Error loading retailer dashboard overview: " + err.message, "error");
     }
+  }
+
+  renderRecentScans(scans) {
+    const tbody = document.getElementById("overview-recent-scans-body");
+    if (!tbody) return;
+
+    if (!scans || scans.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">No recent scans recorded yet. Click 'Scan Food Sample' to run an inspection.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = scans.slice(0, 5).map(s => {
+      const score = s.freshness_score !== null && s.freshness_score !== undefined ? `${Math.round(s.freshness_score)}%` : "--";
+      const label = s.freshness_label || "Fresh";
+      let badgeClass = "badge-safe";
+      if (label === "Spoiled") badgeClass = "badge-urgent";
+      else if (label.includes("Moderate") || label.includes("Risk")) badgeClass = "badge-clearance";
+
+      const conf = s.confidence ? `${Math.round(s.confidence * 100)}%` : "95%";
+      const imgHtml = s.image_url ? `<img src="${escapeHtml(s.image_url)}" class="scan-thumb" alt="Specimen">` : `<span style="font-size:24px;">🍏</span>`;
+
+      return `
+        <tr>
+          <td>${imgHtml}</td>
+          <td><strong>${escapeHtml(s.food_name)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(s.category)}</small></td>
+          <td><span class="badge ${badgeClass}">${escapeHtml(label)}</span></td>
+          <td><strong>${score}</strong></td>
+          <td>${conf}</td>
+          <td><small style="color:var(--text-muted);">${escapeHtml(s.analysis_date || '--')}</small></td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  renderRecentAlerts(alerts) {
+    const tbody = document.getElementById("overview-recent-alerts-body");
+    if (!tbody) return;
+
+    if (!alerts || alerts.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">✅ No active alerts. Storage and shelf-life conditions optimal.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = alerts.slice(0, 5).map(a => {
+      let sevBadge = "badge-safe";
+      if (a.severity === "Critical") sevBadge = "badge-urgent";
+      else if (a.severity === "Warning") sevBadge = "badge-clearance";
+
+      return `
+        <tr>
+          <td><span class="badge ${sevBadge}">${escapeHtml(a.severity || 'Info')}</span></td>
+          <td><strong>${escapeHtml(a.product_name)}</strong></td>
+          <td style="font-size:12px;color:var(--text-muted);">${escapeHtml(a.reason)}</td>
+          <td style="font-size:12px;color:#0369a1;font-weight:600;">${escapeHtml(a.action || 'Inspect')}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="retailerApp.openAlertModal('${a.id}', '${escapeHtml(a.product_name)}')">Review</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
   }
 
   renderPriorityTable(items) {
@@ -257,7 +335,10 @@ class RetailerApp {
           <td>${item.shelf_life_days !== null ? item.shelf_life_days + 'd' : '--'}</td>
           <td>${escapeHtml(item.location || 'Main Display')}</td>
           <td>
-            <button class="btn btn-secondary btn-sm" onclick="retailerApp.openScanForItem('${item.id}')">🔬 Scan</button>
+            <div class="action-btn-group">
+              <button class="btn btn-secondary btn-sm" title="View Details" onclick="retailerApp.openDetailsModal('${item.id}')">👁️</button>
+              <button class="btn btn-secondary btn-sm" title="AI Inspection" onclick="retailerApp.openScanForItem('${item.id}')">🔬</button>
+            </div>
           </td>
         </tr>
       `;
@@ -324,6 +405,13 @@ class RetailerApp {
       const expiry = document.getElementById("inv-filter-expiry")?.value || "all";
       const lowStock = document.getElementById("inv-filter-lowstock")?.checked || false;
       const isArchived = document.getElementById("inv-filter-archived")?.checked || false;
+      const sortBy = document.getElementById("inv-sort-by")?.value || "expiry_date";
+      const sortOrder = document.getElementById("inv-sort-order")?.value || "asc";
+
+      const tbody = document.getElementById("inventory-full-table-body");
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:28px;color:var(--text-muted);"><span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #0284c7;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;"></span> Loading inventory records...</td></tr>`;
+      }
 
       const params = {
         search,
@@ -332,6 +420,8 @@ class RetailerApp {
         expiry_status: expiry,
         low_stock_only: lowStock,
         is_archived: isArchived,
+        sort_by: sortBy,
+        sort_order: sortOrder,
       };
 
       const items = await api.getRetailerInventory(params);
@@ -347,7 +437,16 @@ class RetailerApp {
     if (!tbody) return;
 
     if (!items || items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--text-muted);">No products match your filter criteria.</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="10" style="text-align:center;padding:48px 20px;color:var(--text-muted);">
+            <div style="font-size:36px;margin-bottom:8px;">📦</div>
+            <div style="font-size:16px;font-weight:700;color:var(--text-main);margin-bottom:6px;">No inventory products match criteria</div>
+            <div style="font-size:13px;margin-bottom:16px;">Try adjusting your filters, search term, or enroll new food items.</div>
+            <button class="btn btn-primary btn-sm" onclick="retailerApp.switchTab('add-product')">➕ Add New Food Product</button>
+          </td>
+        </tr>
+      `;
       return;
     }
 
@@ -360,26 +459,38 @@ class RetailerApp {
       const freshness = item.freshness_status || "Not Analyzed";
       let fBadge = "badge-safe";
       if (freshness === "Spoiled") fBadge = "badge-urgent";
-      else if (freshness.includes("Moderate")) fBadge = "badge-clearance";
+      else if (freshness.includes("Moderate") || freshness.includes("Risk")) fBadge = "badge-clearance";
+
+      const thumbHtml = item.image_url 
+        ? `<img src="${escapeHtml(item.image_url)}" class="product-thumb-sm" alt="Product" onerror="this.onerror=null;this.parentElement.innerHTML='🍎';">` 
+        : `<span style="font-size:22px;display:inline-block;width:38px;text-align:center;">🍎</span>`;
 
       return `
         <tr style="${item.is_archived ? 'opacity:0.65;background:#f8fafc;' : ''}">
           <td>
-            <strong>${escapeHtml(item.food_name)}</strong>
-            ${item.is_low_stock ? `<span class="badge badge-urgent" style="font-size:10px;margin-left:4px;">Low Stock</span>` : ''}
-            ${item.is_archived ? `<span class="badge" style="background:#cbd5e1;font-size:10px;margin-left:4px;">Archived</span>` : ''}
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${thumbHtml}
+              <div>
+                <strong>${escapeHtml(item.food_name)}</strong>
+                ${item.is_low_stock ? `<span class="badge badge-urgent" style="font-size:10px;margin-left:4px;">Low Stock</span>` : ''}
+                ${item.is_archived ? `<span class="badge" style="background:#cbd5e1;font-size:10px;margin-left:4px;">Archived</span>` : ''}
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">ID: <code>${escapeHtml(item.id.slice(-6))}</code></div>
+              </div>
+            </div>
           </td>
           <td><span class="badge" style="background:#f1f5f9;color:#475569;">${escapeHtml(item.category)}</span></td>
           <td><strong>${item.quantity}</strong> ${escapeHtml(item.unit)}</td>
           <td>${escapeHtml(item.expiry_date)}</td>
           <td><span class="badge ${expBadge}">${days !== null ? (days < 0 ? `${Math.abs(days)}d Overdue` : `${days}d left`) : '--'}</span></td>
           <td><span class="badge ${fBadge}">${escapeHtml(freshness)}</span></td>
-          <td><strong>${item.freshness_score !== null ? item.freshness_score + '%' : '--'}</strong></td>
-          <td>${item.shelf_life_days !== null ? item.shelf_life_days + 'd' : '--'}</td>
+          <td><strong>${item.freshness_score !== null && item.freshness_score !== undefined ? Math.round(item.freshness_score) + '%' : '--'}</strong></td>
+          <td>${item.shelf_life_days !== null && item.shelf_life_days !== undefined ? item.shelf_life_days + 'd' : '--'}</td>
           <td><small>${escapeHtml(item.location || 'Display')}</small></td>
           <td>
             <div class="action-btn-group">
-              <button class="btn btn-secondary btn-sm" title="Adjust Stock" onclick="retailerApp.openStockModal('${item.id}', '${escapeHtml(item.food_name)}', ${item.quantity})">✏️ Stock</button>
+              <button class="btn btn-secondary btn-sm" title="View Full Details" onclick="retailerApp.openDetailsModal('${item.id}')">👁️ View</button>
+              <button class="btn btn-secondary btn-sm" title="Edit Product" onclick="retailerApp.openEditModal('${item.id}')">✏️ Edit</button>
+              <button class="btn btn-secondary btn-sm" title="Adjust Stock" onclick="retailerApp.openStockModal('${item.id}', '${escapeHtml(item.food_name)}', ${item.quantity})">⚖️ Stock</button>
               <button class="btn btn-secondary btn-sm" title="AI Inspection" onclick="retailerApp.openScanForItem('${item.id}')">🔬 Scan</button>
               <button class="btn btn-secondary btn-sm" title="${item.is_archived ? 'Restore' : 'Archive'}" onclick="retailerApp.toggleArchive('${item.id}', ${item.is_archived})">
                 ${item.is_archived ? '🔄 Unarchive' : '📦 Archive'}
@@ -390,6 +501,219 @@ class RetailerApp {
         </tr>
       `;
     }).join("");
+  }
+
+  // View Product Details Modal
+  async openDetailsModal(itemId) {
+    this.selectedDetailsItemId = itemId;
+    let item = this.cachedInventory.find(i => i.id === itemId);
+    
+    try {
+      const fetched = await api.getRetailerProduct(itemId);
+      if (fetched) item = fetched;
+    } catch (e) {
+      // Use cached if fetch fails
+    }
+
+    if (!item) {
+      showToast("Could not find product details.", "error");
+      return;
+    }
+
+    const setText = (id, txt) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = txt;
+    };
+
+    setText("details-modal-title", item.food_name || "Food Product");
+    setText("details-modal-category", item.category || "General");
+    setText("details-modal-id-badge", `ID: ${item.id}`);
+
+    const imgEl = document.getElementById("details-modal-image");
+    if (imgEl) {
+      if (item.image_url) {
+        imgEl.src = item.image_url;
+        imgEl.style.display = "block";
+      } else {
+        imgEl.style.display = "none";
+      }
+    }
+
+    setText("details-modal-qty", `${item.quantity} ${item.unit || 'units'}`);
+    const scoreText = item.freshness_score !== null && item.freshness_score !== undefined ? `${Math.round(item.freshness_score)}%` : "--";
+    setText("details-modal-freshness", `${scoreText} (${item.freshness_status || 'Not Analyzed'})`);
+
+    const days = item.days_to_expiry;
+    const expSub = days !== null && days !== undefined ? (days < 0 ? ` (${Math.abs(days)}d Overdue)` : ` (${days}d left)`) : "";
+    setText("details-modal-expiry", `${item.expiry_date || '--'}${expSub}`);
+    setText("details-modal-shelflife", item.shelf_life_days !== null && item.shelf_life_days !== undefined ? `${item.shelf_life_days} days` : "--");
+
+    setText("details-modal-location", item.location || "Store Display");
+    const tempStr = item.storage_temperature !== null && item.storage_temperature !== undefined ? `${item.storage_temperature}°C` : "N/A";
+    const humStr = item.storage_humidity !== null && item.storage_humidity !== undefined ? `${item.storage_humidity}% RH` : "N/A";
+    setText("details-modal-storage", `${item.storage_type || 'Standard'} (Temp: ${tempStr}, Humidity: ${humStr})`);
+    setText("details-modal-batch", item.batch_number || "None / Untracked");
+    setText("details-modal-purchase", item.purchase_date || "--");
+    setText("details-modal-created", item.created_at ? new Date(item.created_at).toLocaleString() : "--");
+    setText("details-modal-updated", item.updated_at ? new Date(item.updated_at).toLocaleString() : "--");
+
+    // Stock Audit History
+    const historyTbody = document.getElementById("details-modal-history-body");
+    if (historyTbody) {
+      const history = item.stock_history || [];
+      if (history.length === 0) {
+        historyTbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:12px;color:var(--text-muted);">No stock adjustments recorded.</td></tr>`;
+      } else {
+        historyTbody.innerHTML = history.slice().reverse().map(h => `
+          <tr>
+            <td>${h.timestamp ? new Date(h.timestamp).toLocaleString() : '--'}</td>
+            <td><span class="badge" style="background:#e0f2fe;color:#0369a1;">${escapeHtml(h.adjustment_type || 'set')}</span></td>
+            <td>${h.old_quantity ?? '--'}</td>
+            <td><strong>${h.new_quantity ?? '--'}</strong></td>
+            <td>${escapeHtml(h.reason || 'Inventory recount')}</td>
+            <td><small>${escapeHtml(h.adjusted_by || 'Store Manager')}</small></td>
+          </tr>
+        `).join("");
+      }
+    }
+
+    // Modal Action Buttons
+    const editBtn = document.getElementById("btn-details-to-edit");
+    if (editBtn) {
+      editBtn.onclick = () => {
+        this.closeModals();
+        this.openEditModal(item.id);
+      };
+    }
+
+    const stockBtn = document.getElementById("btn-details-to-stock");
+    if (stockBtn) {
+      stockBtn.onclick = () => {
+        this.closeModals();
+        this.openStockModal(item.id, item.food_name, item.quantity);
+      };
+    }
+
+    const scanBtn = document.getElementById("btn-details-to-scan");
+    if (scanBtn) {
+      scanBtn.onclick = () => {
+        this.closeModals();
+        this.openScanForItem(item.id);
+      };
+    }
+
+    document.getElementById("details-modal")?.classList.add("active");
+  }
+
+  // Edit Product Modal
+  async openEditModal(itemId) {
+    this.selectedEditItemId = itemId;
+    let item = this.cachedInventory.find(i => i.id === itemId);
+
+    try {
+      const fetched = await api.getRetailerProduct(itemId);
+      if (fetched) item = fetched;
+    } catch (e) {}
+
+    if (!item) {
+      showToast("Could not load product for editing.", "error");
+      return;
+    }
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val !== undefined && val !== null ? val : "";
+    };
+
+    setVal("edit-item-id", item.id);
+    setVal("edit-food-name", item.food_name);
+    setVal("edit-category", item.category || "Fruits");
+    setVal("edit-quantity", item.quantity);
+    setVal("edit-unit", item.unit || "kg");
+    setVal("edit-threshold", item.low_stock_threshold || 5);
+    setVal("edit-purchase-date", item.purchase_date);
+    setVal("edit-expiry-date", item.expiry_date);
+    setVal("edit-storage-type", item.storage_type || "Refrigerated");
+    setVal("edit-storage-temp", item.storage_temperature);
+    setVal("edit-storage-humidity", item.storage_humidity);
+    setVal("edit-location", item.location);
+    setVal("edit-batch", item.batch_number);
+    setVal("edit-image-url", item.image_url);
+
+    document.getElementById("edit-modal")?.classList.add("active");
+  }
+
+  async handleEditSubmit(e) {
+    e.preventDefault();
+    const itemId = document.getElementById("edit-item-id")?.value || this.selectedEditItemId;
+    if (!itemId) {
+      showToast("Missing product identifier.", "error");
+      return;
+    }
+
+    const submitBtn = document.getElementById("btn-submit-edit-product");
+    setButtonLoading(submitBtn, true, "Save Changes");
+
+    const foodName = document.getElementById("edit-food-name").value.trim();
+    const category = document.getElementById("edit-category").value;
+    const quantity = parseFloat(document.getElementById("edit-quantity").value);
+    const unit = document.getElementById("edit-unit").value.trim();
+    const threshold = parseFloat(document.getElementById("edit-threshold").value) || 5.0;
+    const purchaseDate = document.getElementById("edit-purchase-date").value;
+    const expiryDate = document.getElementById("edit-expiry-date").value;
+    const storageType = document.getElementById("edit-storage-type").value;
+    const tempVal = document.getElementById("edit-storage-temp").value;
+    const storageTemp = tempVal !== "" ? parseFloat(tempVal) : null;
+    const humVal = document.getElementById("edit-storage-humidity").value;
+    const storageHumidity = humVal !== "" ? parseFloat(humVal) : null;
+    const location = document.getElementById("edit-location").value.trim();
+    const batchNumber = document.getElementById("edit-batch").value.trim();
+    const imageUrl = document.getElementById("edit-image-url").value.trim() || null;
+
+    if (!foodName) {
+      showToast("Product name is required.", "error");
+      setButtonLoading(submitBtn, false, "Save Changes");
+      return;
+    }
+
+    if (isNaN(quantity) || quantity < 0) {
+      showToast("Stock quantity must be a non-negative number.", "error");
+      setButtonLoading(submitBtn, false, "Save Changes");
+      return;
+    }
+
+    if (purchaseDate && expiryDate && expiryDate < purchaseDate) {
+      showToast("Expiry date cannot be earlier than purchase date.", "error");
+      setButtonLoading(submitBtn, false, "Save Changes");
+      return;
+    }
+
+    try {
+      await api.updateRetailerProduct(itemId, {
+        food_name: foodName,
+        category,
+        quantity,
+        unit,
+        low_stock_threshold: threshold,
+        purchase_date: purchaseDate,
+        expiry_date: expiryDate,
+        storage_type: storageType,
+        storage_temperature: storageTemp,
+        storage_humidity: storageHumidity,
+        location,
+        batch_number: batchNumber,
+        image_url: imageUrl,
+      });
+
+      showToast(`Product '${foodName}' updated successfully!`, "success");
+      this.closeModals();
+      await this.loadInventory();
+      await this.loadOverview();
+    } catch (err) {
+      showToast(err.message || "Failed to update product.", "error");
+    } finally {
+      setButtonLoading(submitBtn, false, "Save Changes");
+    }
   }
 
   // Stock update modal
@@ -516,59 +840,214 @@ class RetailerApp {
     const select = document.getElementById("scan-item-select");
     if (!select) return;
 
-    select.innerHTML = `<option value="">-- Choose a Product --</option>` +
+    select.innerHTML = `<option value="">-- Standalone Scan (New Food Item) --</option>` +
       this.cachedInventory.map(item => `
         <option value="${item.id}" ${this.selectedScanItemId === item.id ? 'selected' : ''}>
           ${escapeHtml(item.food_name)} (${escapeHtml(item.category)}) - Exp: ${item.expiry_date}
         </option>
       `).join("");
+
+    this.handleScanItemSelectChange();
+  }
+
+  handleScanItemSelectChange() {
+    const select = document.getElementById("scan-item-select");
+    const standaloneFields = document.getElementById("standalone-scan-fields");
+    if (select && standaloneFields) {
+      if (select.value) {
+        standaloneFields.style.display = "none";
+      } else {
+        standaloneFields.style.display = "grid";
+      }
+    }
   }
 
   openScanForItem(itemId) {
     this.selectedScanItemId = itemId;
     this.switchTab("ai-freshness");
     const select = document.getElementById("scan-item-select");
-    if (select) select.value = itemId;
+    if (select) {
+      select.value = itemId;
+      this.handleScanItemSelectChange();
+    }
+  }
+
+  setScanInputMode(mode) {
+    const btnUpload = document.getElementById("btn-upload-mode");
+    const btnCamera = document.getElementById("btn-camera-mode");
+    const uploadArea = document.getElementById("scan-upload-area");
+    const cameraBox = document.getElementById("scanner-camera-box");
+
+    if (mode === "camera") {
+      if (btnUpload) btnUpload.className = "btn btn-secondary btn-sm";
+      if (btnCamera) btnCamera.className = "btn btn-primary btn-sm";
+      if (uploadArea) uploadArea.style.display = "none";
+      if (cameraBox) cameraBox.style.display = "block";
+      this.startCamera();
+    } else {
+      if (btnUpload) btnUpload.className = "btn btn-primary btn-sm";
+      if (btnCamera) btnCamera.className = "btn btn-secondary btn-sm";
+      if (cameraBox) cameraBox.style.display = "none";
+      const previewContainer = document.getElementById("scan-image-preview-container");
+      if (uploadArea && (!previewContainer || previewContainer.style.display === "none")) {
+        uploadArea.style.display = "block";
+      }
+      this.stopCamera();
+    }
+  }
+
+  async startCamera() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        this.activeCameraStream = stream;
+        const video = document.getElementById("scanner-video");
+        if (video) {
+          video.srcObject = stream;
+          video.play();
+        }
+      } catch (err) {
+        showToast("Webcam access denied or unavailable: " + err.message, "error");
+        this.setScanInputMode("upload");
+      }
+    } else {
+      showToast("Camera capture is not supported by your browser.", "error");
+      this.setScanInputMode("upload");
+    }
+  }
+
+  stopCamera() {
+    if (this.activeCameraStream) {
+      this.activeCameraStream.getTracks().forEach(track => track.stop());
+      this.activeCameraStream = null;
+    }
+    const video = document.getElementById("scanner-video");
+    if (video) video.srcObject = null;
+    const box = document.getElementById("scanner-camera-box");
+    if (box) box.style.display = "none";
+  }
+
+  captureCameraPhoto() {
+    const video = document.getElementById("scanner-video");
+    const canvas = document.getElementById("scanner-canvas");
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], `scan_capture_${Date.now()}.jpg`, { type: "image/jpeg" });
+      this.selectedScanFile = file;
+      this.displayScanImagePreview(URL.createObjectURL(blob));
+      this.stopCamera();
+      const btnUpload = document.getElementById("btn-upload-mode");
+      const btnCamera = document.getElementById("btn-camera-mode");
+      if (btnUpload) btnUpload.className = "btn btn-primary btn-sm";
+      if (btnCamera) btnCamera.className = "btn btn-secondary btn-sm";
+      showToast("Camera frame captured successfully!", "success");
+    }, "image/jpeg", 0.92);
+  }
+
+  displayScanImagePreview(src) {
+    const container = document.getElementById("scan-image-preview-container");
+    const img = document.getElementById("scan-preview-img");
+    const uploadArea = document.getElementById("scan-upload-area");
+    if (container && img) {
+      img.src = src;
+      container.style.display = "block";
+    }
+    if (uploadArea) {
+      uploadArea.style.display = "none";
+    }
+  }
+
+  triggerReplaceScanImage() {
+    this.removeScanImage();
+    const fileInput = document.getElementById("scan-image-file");
+    if (fileInput) fileInput.click();
+  }
+
+  removeScanImage() {
+    this.selectedScanFile = null;
+    const fileInput = document.getElementById("scan-image-file");
+    if (fileInput) fileInput.value = "";
+    const container = document.getElementById("scan-image-preview-container");
+    if (container) container.style.display = "none";
+    const uploadArea = document.getElementById("scan-upload-area");
+    if (uploadArea) uploadArea.style.display = "block";
   }
 
   async handleRunAiScan() {
     const select = document.getElementById("scan-item-select");
     const itemId = select?.value;
 
-    if (!itemId) {
-      showToast("Please select a product to analyze.", "error");
-      return;
-    }
-
     const btn = document.getElementById("btn-run-ai-scan");
-    setButtonLoading(btn, true, "⚡ Analyzing Image & Kinetics...");
+    setButtonLoading(btn, true, "⚡ Analyzing Image & Degradation...");
 
     try {
-      // Check if image file selected
-      const fileInput = document.getElementById("scan-image-file");
-      let uploadedUrl = null;
+      let scanResult = null;
 
-      if (fileInput && fileInput.files.length > 0) {
+      if (itemId) {
+        // Associated scan on existing product
+        let uploadedUrl = null;
+        if (this.selectedScanFile) {
+          const formData = new FormData();
+          formData.append("file", this.selectedScanFile);
+          const uploadRes = await api.request("/inventory/upload-image", {
+            method: "POST",
+            body: formData,
+          });
+          uploadedUrl = uploadRes.image_url;
+        }
+
+        const res = await api.analyzeRetailerProduct(itemId, uploadedUrl);
+        scanResult = {
+          ...res,
+          food_name: res.product?.food_name || "Food Product",
+          category: res.product?.category || "General",
+          image_url: uploadedUrl || res.product?.image_url,
+        };
+      } else {
+        // Standalone food scan
+        const foodName = document.getElementById("scan-food-name")?.value.trim() || "Food Specimen";
+        const category = document.getElementById("scan-category")?.value || "Fruits";
+
+        if (!this.selectedScanFile) {
+          showToast("Please attach or capture an inspection photo to run AI diagnostic.", "error");
+          setButtonLoading(btn, false, "⚡ Run AI Freshness Analysis");
+          return;
+        }
+
         const formData = new FormData();
-        formData.append("file", fileInput.files[0]);
-        const uploadRes = await api.request("/inventory/upload-image", {
-          method: "POST",
-          body: formData,
-        });
-        uploadedUrl = uploadRes.image_url;
+        formData.append("file", this.selectedScanFile);
+        formData.append("food_name", foodName);
+        formData.append("category", category);
+
+        const res = await api.quickScanFood(formData);
+        scanResult = {
+          ...res,
+          food_name: foodName,
+          category: category,
+          image_url: res.image_url || res.image_reference,
+        };
       }
 
-      const res = await api.analyzeRetailerProduct(itemId, uploadedUrl);
-      this.renderScanResults(res);
-      showToast("AI Diagnostic completed successfully!", "success");
+      this.lastScanResult = scanResult;
+      this.renderScanResults(scanResult);
+      showToast("AI Freshness Inspection completed successfully!", "success");
 
-      // Refresh background datasets
+      // Refresh overview and inventory counts in the background
       await this.loadInventory();
       await this.loadOverview();
     } catch (err) {
       showToast("AI Inspection Error: " + err.message, "error");
     } finally {
-      setButtonLoading(btn, false, "⚡ Run AI Freshness Diagnostic");
+      setButtonLoading(btn, false, "⚡ Run AI Freshness Analysis");
     }
   }
 
@@ -581,36 +1060,141 @@ class RetailerApp {
     const shelfLife = data.shelf_life_prediction || {};
     const recs = data.prescriptive_recommendations || {};
 
-    const score = analysis.visual_score !== undefined ? analysis.visual_score : 85.0;
-    const label = analysis.freshness_label || "Fresh";
-    const browning = analysis.browning_index !== undefined ? analysis.browning_index : 5.0;
-    const texture = analysis.roughness_index !== undefined ? analysis.roughness_index : 20.0;
-    const mold = analysis.mold_detected ? "Detected (Rot Alert)" : "None";
-    const rsl = shelfLife.predicted_remaining_days !== undefined ? `${shelfLife.predicted_remaining_days} days` : "7.0 days";
+    const score = data.freshness_score !== undefined ? data.freshness_score : (analysis.visual_score !== undefined ? analysis.visual_score : 85.0);
+    const label = data.freshness_label || analysis.freshness_label || "Fresh";
+    const confVal = data.confidence_score !== undefined ? data.confidence_score : (data.confidence !== undefined ? data.confidence : (analysis.confidence_score !== undefined ? analysis.confidence_score : 0.95));
+    const browning = data.browning_index !== undefined ? data.browning_index : (analysis.browning_index !== undefined ? analysis.browning_index : 5.0);
+    const texture = data.roughness_index !== undefined ? data.roughness_index : (analysis.roughness_index !== undefined ? analysis.roughness_index : 20.0);
+    const isMold = data.mold_detected || analysis.mold_detected;
+    const mold = isMold ? "Detected (Rot Alert)" : "None";
+    const rsl = data.estimated_shelf_life_days !== undefined ? `${data.estimated_shelf_life_days} days` : (shelfLife.predicted_remaining_days !== undefined ? `${shelfLife.predicted_remaining_days} days` : "7.0 days");
 
-    document.getElementById("scan-res-score").textContent = `${score}%`;
-    const badge = document.getElementById("scan-res-badge");
-    badge.textContent = label;
-    badge.className = `badge ${label === 'Spoiled' ? 'badge-urgent' : (label.includes('Moderate') ? 'badge-clearance' : 'badge-safe')}`;
+    // Timestamp
+    const tsEl = document.getElementById("scan-res-timestamp");
+    if (tsEl) tsEl.textContent = new Date().toLocaleTimeString();
 
-    document.getElementById("scan-res-browning").textContent = `${browning}`;
-    document.getElementById("scan-res-texture").textContent = `${texture}`;
-    document.getElementById("scan-res-mold").textContent = mold;
-    document.getElementById("scan-res-shelflife").textContent = rsl;
-
-    // Recommendations list
-    const recList = document.getElementById("scan-res-recommendations");
-    const allRecs = [
-      ...(recs.rotation_recommendations || []),
-      ...(recs.storage_recommendations || []),
-      ...(recs.waste_reduction_recommendations || [])
-    ];
-
-    if (allRecs.length > 0) {
-      recList.innerHTML = allRecs.map(r => `<li>${escapeHtml(r)}</li>`).join("");
-    } else {
-      recList.innerHTML = `<li>Product in stable condition. Maintain standard FEFO storage protocol.</li>`;
+    // Score & Badge
+    const scoreEl = document.getElementById("scan-res-score");
+    if (scoreEl) {
+      scoreEl.textContent = `${Math.round(score)}%`;
+      scoreEl.style.color = score >= 75 ? "#166534" : (score >= 50 ? "#b45309" : "#991b1b");
     }
+
+    const badge = document.getElementById("scan-res-badge");
+    if (badge) {
+      badge.textContent = label;
+      badge.className = `badge ${label === 'Spoiled' ? 'badge-urgent' : (label.includes('Moderate') || label.includes('Risk') ? 'badge-clearance' : 'badge-safe')}`;
+    }
+
+    // Confidence
+    const confEl = document.getElementById("scan-res-confidence");
+    if (confEl) {
+      confEl.textContent = `Confidence: ${Math.round(confVal * 100)}%`;
+    }
+
+    // Specimen image
+    const imgEl = document.getElementById("scan-res-image");
+    const specimenImg = data.image_url || data.image_reference || data.product?.image_url;
+    if (imgEl) {
+      if (specimenImg) {
+        imgEl.src = specimenImg;
+        imgEl.style.display = "block";
+      } else {
+        imgEl.style.display = "none";
+      }
+    }
+
+    // Degradation indicators
+    const brownEl = document.getElementById("scan-res-browning");
+    if (brownEl) brownEl.textContent = `${browning}`;
+
+    const textEl = document.getElementById("scan-res-texture");
+    if (textEl) textEl.textContent = `${texture}`;
+
+    const moldEl = document.getElementById("scan-res-mold");
+    if (moldEl) {
+      moldEl.textContent = mold;
+      moldEl.style.color = isMold ? "#dc2626" : "var(--text-main)";
+    }
+
+    const slEl = document.getElementById("scan-res-shelflife");
+    if (slEl) slEl.textContent = rsl;
+
+    // Prescriptive Recommendations list
+    const recList = document.getElementById("scan-res-recommendations");
+    if (recList) {
+      const allRecs = [
+        ...(recs.rotation_recommendations || []),
+        ...(recs.storage_recommendations || []),
+        ...(recs.waste_reduction_recommendations || [])
+      ];
+
+      if (allRecs.length > 0) {
+        recList.innerHTML = allRecs.map(r => `<li>${escapeHtml(r)}</li>`).join("");
+      } else if (label === "Spoiled" || isMold) {
+        recList.innerHTML = `
+          <li style="color:#dc2626;font-weight:700;">Immediate stock write-off: Remove item from customer-facing shelves.</li>
+          <li>Sanitize shelf area to eliminate microbial contamination risks.</li>
+          <li>Log item in store waste registry under spoilage losses.</li>
+        `;
+      } else if (label.includes("Moderate") || label.includes("Risk") || score < 70) {
+        recList.innerHTML = `
+          <li style="color:#d97706;font-weight:700;">Initiate dynamic 30%–50% FEFO discount markdown today.</li>
+          <li>Relocate to high-visibility front endcap for rapid retail throughput.</li>
+          <li>Maintain display chiller between 2°C and 4°C to decelerate kinetic breakdown.</li>
+        `;
+      } else {
+        recList.innerHTML = `
+          <li>Optimal retail freshness condition verified.</li>
+          <li>Adhere to First-Expired, First-Out (FEFO) store merchandising rotation.</li>
+          <li>Maintain category-standard temperature and humidity controls.</li>
+        `;
+      }
+    }
+
+    // Scroll smoothly to results card
+    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  prefillIntakeFromScan() {
+    if (!this.lastScanResult) {
+      showToast("No active scan findings available.", "info");
+      return;
+    }
+
+    const res = this.lastScanResult;
+    this.switchTab("add-product");
+
+    const nameInput = document.getElementById("add-food-name");
+    if (nameInput && res.food_name) nameInput.value = res.food_name;
+
+    const catSelect = document.getElementById("add-category");
+    if (catSelect && res.category) catSelect.value = res.category;
+
+    const imgUrl = res.image_url || res.image_reference;
+    if (imgUrl) {
+      const urlInput = document.getElementById("add-image-url");
+      if (urlInput) urlInput.value = imgUrl;
+      const previewTxt = document.getElementById("add-image-preview-text");
+      if (previewTxt) previewTxt.textContent = "✓ Scanned inspection photo attached";
+    }
+
+    showToast("Scanned specimen details prefilled into product intake form.", "success");
+  }
+
+  resetScanner() {
+    this.removeScanImage();
+    this.stopCamera();
+    this.lastScanResult = null;
+    const nameEl = document.getElementById("scan-food-name");
+    if (nameEl) nameEl.value = "";
+    const select = document.getElementById("scan-item-select");
+    if (select) {
+      select.value = "";
+      this.handleScanItemSelectChange();
+    }
+    const card = document.getElementById("ai-scan-results-card");
+    if (card) card.style.display = "none";
   }
 
   // ============================================================================
@@ -1163,6 +1747,12 @@ class RetailerApp {
       });
     }
 
+    // Edit Product Form
+    const editForm = document.getElementById("retailer-edit-form");
+    if (editForm) {
+      editForm.addEventListener("submit", (e) => this.handleEditSubmit(e));
+    }
+
     // Stock Adjust Form
     const stockForm = document.getElementById("stock-adjust-form");
     if (stockForm) {
@@ -1181,18 +1771,54 @@ class RetailerApp {
       runScanBtn.addEventListener("click", () => this.handleRunAiScan());
     }
 
-    // Scan Image preview
+    // Scan Image File Selection & Preview
     const scanFileInput = document.getElementById("scan-image-file");
     if (scanFileInput) {
       scanFileInput.addEventListener("change", (e) => {
         if (e.target.files.length > 0) {
-          document.getElementById("scan-image-preview").textContent = `Attached: ${e.target.files[0].name}`;
+          const file = e.target.files[0];
+          this.selectedScanFile = file;
+          this.displayScanImagePreview(URL.createObjectURL(file));
         }
       });
     }
 
-    // Inventory Filters
-    ["inv-filter-search", "inv-filter-category", "inv-filter-freshness", "inv-filter-expiry", "inv-filter-lowstock", "inv-filter-archived"].forEach(id => {
+    // Scan Area Drag-and-Drop
+    const scanDropArea = document.getElementById("scan-upload-area");
+    if (scanDropArea) {
+      scanDropArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        scanDropArea.style.borderColor = "var(--primary)";
+        scanDropArea.style.background = "#eff6ff";
+      });
+      scanDropArea.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        scanDropArea.style.borderColor = "var(--border-color)";
+        scanDropArea.style.background = "";
+      });
+      scanDropArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        scanDropArea.style.borderColor = "var(--border-color)";
+        scanDropArea.style.background = "";
+        if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+          const file = e.dataTransfer.files[0];
+          this.selectedScanFile = file;
+          this.displayScanImagePreview(URL.createObjectURL(file));
+        }
+      });
+    }
+
+    // Inventory Filters & Sorters
+    [
+      "inv-filter-search",
+      "inv-filter-category",
+      "inv-filter-freshness",
+      "inv-filter-expiry",
+      "inv-sort-by",
+      "inv-sort-order",
+      "inv-filter-lowstock",
+      "inv-filter-archived"
+    ].forEach(id => {
       const el = document.getElementById(id);
       if (el) {
         el.addEventListener("change", () => this.loadInventory());

@@ -168,6 +168,7 @@ class RetailerItemResponse(BaseModel):
     days_to_expiry: Optional[int] = None
     expiry_category: str = "Safe"  # Expired, Approaching Expiry, Safe
     is_low_stock: bool = False
+    stock_history: List[Dict[str, Any]] = Field(default_factory=list)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

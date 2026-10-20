@@ -1,11 +1,12 @@
 from datetime import datetime, date
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field, field_validator, model_validator
-from backend.app.models.inventory_model import FoodCategory, StorageType, FreshnessStatus
+from backend.app.models.inventory_model import FoodCategory, StorageType, FreshnessStatus, normalize_food_category
 
 
 class InventoryCreateRequest(BaseModel):
-    food_name: str = Field(..., min_length=1, max_length=100, description="Name of the food item")
+    food_name: Optional[str] = Field(None, min_length=1, max_length=100, description="Name of the food item")
+    name: Optional[str] = Field(None, min_length=1, max_length=100, description="Alternative food name")
     category: str = Field(..., description="Food Category")
     quantity: float = Field(..., gt=0, description="Quantity (must be greater than 0)")
     unit: str = Field(default="kg", min_length=1, max_length=20, description="Unit of measurement (e.g., kg, g, items)")
@@ -18,29 +19,60 @@ class InventoryCreateRequest(BaseModel):
     batch_number: Optional[str] = Field(None, max_length=50, description="Batch / Lot identifier")
     image_url: Optional[str] = Field(None, description="Image URL or uploaded file reference")
 
+    @model_validator(mode="before")
+    @classmethod
+    def populate_food_name(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if not data.get("food_name") and data.get("name"):
+                data["food_name"] = data["name"]
+            elif not data.get("name") and data.get("food_name"):
+                data["name"] = data["food_name"]
+        return data
+
     @field_validator("food_name")
     @classmethod
-    def validate_food_name(cls, v: str) -> str:
-        trimmed = v.strip()
-        if not trimmed:
+    def validate_food_name(cls, v: Optional[str]) -> str:
+        if not v or not v.strip():
             raise ValueError("Food name cannot be empty")
-        return trimmed
+        return v.strip()
 
     @field_validator("category")
     @classmethod
     def validate_category(cls, v: str) -> str:
         cats = FoodCategory.list()
-        if v not in cats:
-            raise ValueError(f"Invalid category '{v}'. Allowed: {', '.join(cats)}")
-        return v
+        if v in cats:
+            return v
+        norm = normalize_food_category(v, use_official_spec=False)
+        if norm in cats:
+            return norm
+        norm_spec = normalize_food_category(v, use_official_spec=True)
+        if norm_spec in cats:
+            return norm_spec
+        raise ValueError(f"Invalid category '{v}'. Allowed: {', '.join(cats)}")
 
     @field_validator("storage_type")
     @classmethod
     def validate_storage_type(cls, v: str) -> str:
         types = StorageType.list()
-        if v not in types:
-            raise ValueError(f"Invalid storage type '{v}'. Allowed: {', '.join(types)}")
-        return v
+        for t in types:
+            if v.strip().lower() == t.lower():
+                return t
+        c = v.strip().lower().replace("_", " ")
+        if "refrig" in c or "fridge" in c:
+            return StorageType.REFRIGERATED.value
+        if "freez" in c:
+            return StorageType.FROZEN.value
+        if "room" in c or "ambient" in c:
+            return StorageType.ROOM_TEMPERATURE.value
+        if "pantry" in c:
+            return StorageType.PANTRY.value
+        if "dry" in c:
+            return StorageType.DRY_STORAGE.value
+        if "cold" in c:
+            return StorageType.COLD_STORAGE.value
+        if "atmosphere" in c or "ca" in c:
+            return StorageType.CONTROLLED_ATMOSPHERE.value
+        raise ValueError(f"Invalid storage type '{v}'. Allowed: {', '.join(types)}")
 
     @field_validator("storage_humidity")
     @classmethod
@@ -65,6 +97,7 @@ class InventoryCreateRequest(BaseModel):
 
 class InventoryUpdateRequest(BaseModel):
     food_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
     category: Optional[str] = None
     quantity: Optional[float] = Field(None, gt=0)
     unit: Optional[str] = Field(None, min_length=1, max_length=20)
@@ -77,19 +110,57 @@ class InventoryUpdateRequest(BaseModel):
     batch_number: Optional[str] = None
     image_url: Optional[str] = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def populate_food_name(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if not data.get("food_name") and data.get("name"):
+                data["food_name"] = data["name"]
+            elif not data.get("name") and data.get("food_name"):
+                data["name"] = data["food_name"]
+        return data
+
     @field_validator("category")
     @classmethod
     def validate_category(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and v not in FoodCategory.list():
-            raise ValueError(f"Invalid category '{v}'.")
-        return v
+        if v is None:
+            return v
+        cats = FoodCategory.list()
+        if v in cats:
+            return v
+        norm = normalize_food_category(v, use_official_spec=False)
+        if norm in cats:
+            return norm
+        norm_spec = normalize_food_category(v, use_official_spec=True)
+        if norm_spec in cats:
+            return norm_spec
+        raise ValueError(f"Invalid category '{v}'.")
 
     @field_validator("storage_type")
     @classmethod
     def validate_storage_type(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and v not in StorageType.list():
-            raise ValueError(f"Invalid storage type '{v}'.")
-        return v
+        if v is None:
+            return v
+        types = StorageType.list()
+        for t in types:
+            if v.strip().lower() == t.lower():
+                return t
+        c = v.strip().lower().replace("_", " ")
+        if "refrig" in c or "fridge" in c:
+            return StorageType.REFRIGERATED.value
+        if "freez" in c:
+            return StorageType.FROZEN.value
+        if "room" in c or "ambient" in c:
+            return StorageType.ROOM_TEMPERATURE.value
+        if "pantry" in c:
+            return StorageType.PANTRY.value
+        if "dry" in c:
+            return StorageType.DRY_STORAGE.value
+        if "cold" in c:
+            return StorageType.COLD_STORAGE.value
+        if "atmosphere" in c or "ca" in c:
+            return StorageType.CONTROLLED_ATMOSPHERE.value
+        raise ValueError(f"Invalid storage type '{v}'.")
 
     @model_validator(mode="after")
     def validate_dates(self):
@@ -110,6 +181,7 @@ class InventoryResponse(BaseModel):
     id: str
     user_id: str
     food_name: str
+    name: Optional[str] = None
     category: str
     quantity: float
     unit: str

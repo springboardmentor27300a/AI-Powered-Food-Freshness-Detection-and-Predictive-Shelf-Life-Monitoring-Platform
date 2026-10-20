@@ -3,24 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register | Food Freshness Monitoring Platform</title>
+  <title>Register | FreshGuard Food Freshness Intelligence</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/auth.css">
 </head>
 <body class="auth-page">
 
+  <!-- Ambient Floating Cybernetic Light Orbs -->
+  <div class="ambient-glow-orb orb-1"></div>
+  <div class="ambient-glow-orb orb-2"></div>
+  <div class="ambient-glow-orb orb-3"></div>
+
   <div class="auth-container">
     <div class="auth-card">
-      <div class="auth-header">
-        <a href="index.html" class="auth-brand">
-          <div class="brand-icon">🌱</div>
+      <div class="auth-header" style="text-align: center;">
+        <a href="index.html" class="auth-brand" style="justify-content: center;">
+          <div class="brand-icon-wrapper">
+            <div class="brand-glow-ring"></div>
+            <span>🌱</span>
+          </div>
           <div style="text-align: left;">
-            <div style="font-weight: 800; font-size: 19px; color: var(--text-main);">FreshGuard</div>
-            <div style="font-size: 10px; font-weight: 700; color: var(--primary); text-transform: uppercase;">Food Intelligence</div>
+            <div style="font-weight: 900; font-size: 21px; color: #ffffff; line-height: 1.15; letter-spacing: -0.02em;">FreshGuard</div>
+            <div style="font-size: 10px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.06em;">Food Intelligence</div>
           </div>
         </a>
-        <h1 class="auth-title">Create an Account</h1>
-        <p class="auth-subtitle">Join the intelligent food freshness monitoring network</p>
+        <h1 class="auth-title" style="color: #ffffff; margin-top: 10px;">Create an Account</h1>
+        <p class="auth-subtitle" style="color: #94a3b8;">Join the intelligent perishable freshness monitoring network</p>
       </div>
 
       <!-- Error / Feedback Alert -->
@@ -29,51 +37,58 @@
       <!-- Registration Form -->
       <form id="register-form">
         <div class="form-group">
-          <label for="name" class="form-label">Full Name / Organization</label>
-          <input
-            type="text"
-            id="name"
-            class="form-control"
-            placeholder="e.g. Sarah Jenkins or Fresh Market"
-            required
-            minlength="2"
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="email" class="form-label">Email Address</label>
-          <input
-            type="email"
-            id="email"
-            class="form-control"
-            placeholder="name@example.com"
-            required
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="role" class="form-label">Platform Role</label>
-          <select id="role" class="form-control" required>
-            <option value="Consumer" selected>Consumer (Personal & Household)</option>
-            <option value="Retailer">Retailer (Grocery Store / Supermarket)</option>
-            <option value="Warehouse Manager">Warehouse Manager (Cold Storage & Depots)</option>
-            <option value="Food Manufacturer">Food Manufacturer (Processing & Packaging)</option>
-            <option value="Supply Chain Operator">Supply Chain Operator (Logistics & Fleet)</option>
-            <option value="Food Quality Inspector">Food Quality Inspector (QA / QC Compliance)</option>
-            <option value="Admin">Administrator (System & Platform Governance)</option>
-          </select>
-          <div class="form-text">
-            Select your role to access your dedicated workspace and role-specific dashboard.
+          <label for="name" class="form-label" style="color: #cbd5e1;">Full Name / Organization</label>
+          <div class="input-with-icon">
+            <span class="input-icon-prefix">👤</span>
+            <input
+              type="text"
+              id="name"
+              class="form-control-modern"
+              placeholder="e.g. Sarah Jenkins or Fresh Market"
+              required
+              minlength="2"
+            >
           </div>
         </div>
 
-        <div class="form-row">
+        <div class="form-group">
+          <label for="email" class="form-label" style="color: #cbd5e1;">Email Address</label>
+          <div class="input-with-icon">
+            <span class="input-icon-prefix">✉️</span>
+            <input
+              type="email"
+              id="email"
+              class="form-control-modern"
+              placeholder="name@example.com"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="role" class="form-label" style="color: #cbd5e1;">Platform Role</label>
+          <select id="role" class="form-control-modern" style="padding-left: 14px;" required>
+            <option value="Consumer" selected>🏡 Consumer (Personal & Household)</option>
+            <option value="Retailer">🏪 Retailer (Grocery Store / Supermarket)</option>
+            <option value="Warehouse Manager">🏢 Warehouse Manager (Cold Storage & Depots)</option>
+            <option value="Food Manufacturer">🏭 Food Manufacturer (Processing & Packaging)</option>
+            <option value="Supply Chain Operator">🚚 Supply Chain Operator (Logistics & Fleet)</option>
+            <option value="Food Quality Inspector">🔬 Food Quality Inspector (QA / QC Compliance)</option>
+            <option value="Admin">🛡️ Administrator (System Governance & Security)</option>
+          </select>
+          <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">
+            * Select your primary platform role to receive access to your authorized workspace and dashboard.
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
-            <label for="password" class="form-label">Password</label>
+            <label for="password" class="form-label" style="color: #cbd5e1;">Password</label>
             <input
               type="password"
               id="password"
-              class="form-control"
+              class="form-control-modern"
+              style="padding-left: 14px;"
               placeholder="At least 6 chars"
               required
               minlength="6"
@@ -81,24 +96,26 @@
           </div>
 
           <div class="form-group">
-            <label for="confirm_password" class="form-label">Confirm Password</label>
+            <label for="confirm_password" class="form-label" style="color: #cbd5e1;">Confirm Password</label>
             <input
               type="password"
               id="confirm_password"
-              class="form-control"
+              class="form-control-modern"
+              style="padding-left: 14px;"
               placeholder="Re-enter password"
               required
             >
           </div>
         </div>
 
-        <button type="submit" id="register-submit-btn" class="btn btn-primary auth-submit-btn">
-          Create Account
+        <button type="submit" id="register-submit-btn" class="auth-submit-btn-glow" style="margin-top: 10px;">
+          <span>Create Free Account</span>
+          <span style="font-size: 16px;">&rarr;</span>
         </button>
       </form>
 
-      <div class="auth-footer">
-        Already registered? <a href="login.html">Sign In Here</a>
+      <div class="auth-footer" style="color: #94a3b8; border-top-color: rgba(255, 255, 255, 0.1);">
+        Already registered? <a href="login.html" style="color: #34d399;">Sign In Here</a>
       </div>
     </div>
   </div>

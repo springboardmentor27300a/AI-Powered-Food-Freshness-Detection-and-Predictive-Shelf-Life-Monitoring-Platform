@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from fastapi import APIRouter, Depends, status
 from backend.app.schemas.user_schema import (
     UserRegisterRequest,
@@ -9,7 +9,8 @@ from backend.app.schemas.user_schema import (
 )
 
 from backend.app.services.auth_service import AuthService
-from backend.app.utils.dependencies import get_current_user
+from backend.app.services.audit_service import AuditService
+from backend.app.utils.dependencies import get_current_user, get_current_user_optional
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -100,5 +101,27 @@ async def get_role_dashboard_access(
         "assigned_dashboard": assigned,
         "allowed_dashboards": [assigned],
     }
+
+
+@router.post(
+    "/logout",
+    summary="Invalidate user session and record audit event"
+)
+async def logout(
+    current_user: Optional[Dict[str, Any]] = Depends(get_current_user_optional)
+):
+    """
+    Log out user. If authenticated, records audit log of the logout event.
+    """
+    if current_user:
+        AuditService.log_event(
+            action="USER_LOGOUT",
+            actor_id=str(current_user.get("_id", "")),
+            actor_email=current_user.get("email"),
+            actor_role=current_user.get("role"),
+            target_resource="users",
+            status="success",
+        )
+    return {"success": True, "message": "Successfully logged out."}
 
 

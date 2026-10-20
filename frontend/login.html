@@ -3,190 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | Food Freshness Monitoring Platform</title>
+  <title>Login | FreshGuard Food Freshness Intelligence</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/auth.css">
+  <style>
+    .auth-login-card {
+      border-radius: 24px;
+      box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.55), 0 0 40px -10px rgba(13, 148, 136, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-top-left-radius: 24px;
+      border-bottom-left-radius: 24px;
+    }
+  </style>
 </head>
 <body class="auth-page">
 
-  <div class="auth-split-wrapper">
-    <!-- LEFT PANEL: Dynamic AI Food Scanner Visual Showcase -->
-    <div class="auth-scanner-visual">
-      <div class="scanner-top-bar">
-        <div class="scanner-live-badge">
-          <span class="scanner-pulse-dot"></span>
-          <span>AI Vision Scanner Active</span>
-        </div>
-        <div class="scanner-fps-counter">60 FPS &bull; Multi-Spectral CV</div>
-      </div>
+  <!-- Ambient Floating Cybernetic Light Orbs -->
+  <div class="ambient-glow-orb orb-1"></div>
+  <div class="ambient-glow-orb orb-2"></div>
+  <div class="ambient-glow-orb orb-3"></div>
 
-      <!-- Center Scanning Chamber with Reticle & Animated Laser -->
-      <div class="scanner-chamber-container">
-        <div class="scanner-reticle-box">
-          <!-- 4 Corner Reticle Brackets -->
-          <div class="scanner-corner corner-tl"></div>
-          <div class="scanner-corner corner-tr"></div>
-          <div class="scanner-corner corner-bl"></div>
-          <div class="scanner-corner corner-br"></div>
-
-          <!-- Animated Sweeping Laser Beam -->
-          <div class="scanner-laser-line"></div>
-          <div class="scanner-laser-glow"></div>
-
-          <!-- Food Specimen Vector -->
-          <div class="scanned-food-item" id="scanner-food-graphic">
-            <!-- Default: Apple SVG Specimen -->
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <radialGradient id="appleGrad" cx="40%" cy="35%" r="60%">
-                  <stop offset="0%" stop-color="#4ade80"/>
-                  <stop offset="35%" stop-color="#16a34a"/>
-                  <stop offset="75%" stop-color="#15803d"/>
-                  <stop offset="100%" stop-color="#14532d"/>
-                </radialGradient>
-                <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#86efac"/>
-                  <stop offset="100%" stop-color="#22c55e"/>
-                </linearGradient>
-                <filter id="appleGlow" x="-10%" y="-10%" width="120%" height="120%">
-                  <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#047857" flood-opacity="0.35"/>
-                </filter>
-              </defs>
-              <!-- Stem -->
-              <path d="M50 25 C 50 15, 56 12, 58 10" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
-              <!-- Leaf -->
-              <path d="M52 18 C 65 14, 72 20, 68 28 C 58 28, 54 22, 52 18 Z" fill="url(#leafGrad)"/>
-              <!-- Apple Body -->
-              <path d="M50 32 C 40 28, 20 32, 18 52 C 16 68, 28 88, 48 90 C 50 90, 50 90, 52 90 C 72 88, 84 68, 82 52 C 80 32, 60 28, 50 32 Z" fill="url(#appleGrad)" filter="url(#appleGlow)"/>
-              <!-- Specular Gloss Highlight -->
-              <path d="M30 40 C 36 36, 44 37, 42 45 C 40 53, 30 54, 28 47 C 27 43, 28 41, 30 40 Z" fill="#ffffff" opacity="0.35"/>
-            </svg>
-          </div>
-
-          <!-- Floating HUD Analytical Tags -->
-          <div class="hud-tag hud-tag-freshness" id="hud-freshness">
-            <span style="font-size: 13px;">🌿</span>
-            <span>Freshness: <strong id="hud-score-val" class="val-fresh">96.8%</strong> (Grade A)</span>
-          </div>
-
-          <div class="hud-tag hud-tag-shelflife" id="hud-shelflife">
-            <span style="font-size: 13px;">⏳</span>
-            <span>Shelf Life: <strong id="hud-life-val" class="val-cyan">18.5 Days</strong></span>
-          </div>
-
-          <div class="hud-tag hud-tag-safety" id="hud-safety">
-            <span style="font-size: 13px;">🛡️</span>
-            <span>Cold Chain: <strong class="val-gold">Optimal 3.8°C</strong></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Real-time Telemetry Matrix -->
-      <div>
-        <div class="scanner-telemetry-hud">
-          <div class="telemetry-row">
-            <span class="telemetry-label"><span>🔍</span> Specimen</span>
-            <span class="telemetry-val val-cyan" id="hud-specimen-name">Honeycrisp Apple (Batch #QC-84)</span>
-          </div>
-          <div class="telemetry-row">
-            <span class="telemetry-label"><span>🍂</span> Browning / Oxidation</span>
-            <span class="telemetry-val val-fresh" id="hud-browning-val">1.2% (Minimal)</span>
-          </div>
-          <div class="telemetry-row">
-            <span class="telemetry-label"><span>🌡️</span> Environmental Bounds</span>
-            <span class="telemetry-val" id="hud-env-val" style="color: #cbd5e1;">3.8°C &bull; 88% RH (Crisper)</span>
-          </div>
-        </div>
-
-        <!-- Specimen Switcher -->
-        <div class="specimen-switcher">
-          <button type="button" class="specimen-btn active" data-specimen="apple">🍏 Apple</button>
-          <button type="button" class="specimen-btn" data-specimen="avocado">🥑 Avocado</button>
-          <button type="button" class="specimen-btn" data-specimen="salmon">🐟 Salmon</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT PANEL: Clean Authentication Form -->
-    <div class="auth-form-side">
+  <!-- Centered Modern Authentication Card -->
+  <div class="auth-container">
+    <div class="auth-form-side auth-login-card">
       <div class="auth-header">
         <a href="index.html" class="auth-brand">
-          <div class="brand-icon">🌱</div>
+          <div class="brand-icon-wrapper">
+            <div class="brand-glow-ring"></div>
+            <span>🌱</span>
+          </div>
           <div>
-            <div style="font-weight: 800; font-size: 20px; color: #0f172a; line-height: 1.2;">FreshGuard</div>
-            <div style="font-size: 10px; font-weight: 700; color: #0d9488; text-transform: uppercase; letter-spacing: 0.05em;">Food Freshness Intelligence</div>
+            <div style="font-weight: 900; font-size: 21px; color: #0f172a; line-height: 1.15; letter-spacing: -0.02em;">
+              FreshGuard
+            </div>
+            <div style="font-size: 10px; font-weight: 800; color: #0d9488; text-transform: uppercase; letter-spacing: 0.06em;">
+              Food Freshness Intelligence
+            </div>
           </div>
         </a>
         <h1 class="auth-title">Welcome Back</h1>
-        <p class="auth-subtitle">Sign in to manage food inventory, monitor cold chains, and access AI freshness diagnostics.</p>
+        <p class="auth-subtitle">
+          Sign in to manage food inventory, monitor cold chains, and access live AI freshness analytics.
+        </p>
       </div>
 
-      <!-- Error / Feedback Alert -->
+      <!-- Active Session Notice Banner (displayed only if user has an existing session; does not auto-redirect) -->
+      <div id="active-session-banner" class="auth-alert" style="display: none; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; font-size: 12.5px; line-height: 1.5; margin-bottom: 16px;">
+        <span>ℹ️ Active session detected for <strong id="active-user-name">User</strong> (<span id="active-user-role">Role</span>). Sign in below with a different account or <a href="#" id="link-active-dashboard" style="color: #0d9488; font-weight: 800; text-decoration: underline;">continue to your dashboard &rarr;</a></span>
+      </div>
+
+      <!-- Feedback / Error Alert -->
       <div id="auth-alert" class="auth-alert"></div>
 
-      <!-- Login Form -->
+      <!-- Social Single Sign-On: Google -->
+      <button type="button" class="btn-google-auth" id="btn-google-login" onclick="triggerGoogleSignIn()">
+        <svg viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <div class="auth-divider">
+        <span>Or Enter Credentials</span>
+      </div>
+
+      <!-- Core Sign-In Form -->
       <form id="login-form">
         <div class="form-group">
           <label for="email" class="form-label">Email Address</label>
-          <input
-            type="email"
-            id="email"
-            class="form-control"
-            placeholder="name@foodfresh.com"
-            required
-            autocomplete="email"
-          >
+          <div class="input-with-icon">
+            <span class="input-icon-prefix">✉️</span>
+            <input
+              type="email"
+              id="email"
+              class="form-control-modern"
+              placeholder="name@foodfresh.com"
+              required
+              autocomplete="email"
+            >
+          </div>
         </div>
 
         <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
             <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
+            <a href="register.html" style="font-size: 11.5px; color: #0d9488; font-weight: 700; text-decoration: none;">Forgot?</a>
           </div>
-          <input
-            type="password"
-            id="password"
-            class="form-control"
-            placeholder="Enter your password"
-            required
-            autocomplete="current-password"
-          >
+          <div class="input-with-icon">
+            <span class="input-icon-prefix">🔒</span>
+            <input
+              type="password"
+              id="password"
+              class="form-control-modern"
+              placeholder="Enter your account password"
+              required
+              autocomplete="current-password"
+            >
+            <button type="button" class="password-toggle-btn" id="pw-toggle-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">
+              👁️
+            </button>
+          </div>
         </div>
 
-        <button type="submit" id="login-submit-btn" class="auth-submit-btn">
-          Sign In &rarr;
+        <button type="submit" id="login-submit-btn" class="auth-submit-btn-glow">
+          <span>Sign In to Platform</span>
+          <span style="font-size: 16px;">&rarr;</span>
         </button>
       </form>
 
-      <!-- Quick Demo Credentials Drawer (strictly operational roles, NO Restaurant) -->
-      <details class="demo-credentials" open>
-        <summary>⚡ Click to Autofill Demo Credentials</summary>
-        <ul>
-          <li>
-            <span>Demo User: <code>demo@foodfresh.com</code></span>
-            <button type="button" class="demo-btn" data-email="demo@foodfresh.com" data-password="DemoPass123!" data-role="Consumer">Use</button>
-          </li>
-          <li>
-            <span>Consumer: <code>consumer@foodfresh.com</code></span>
-            <button type="button" class="demo-btn" data-email="consumer@foodfresh.com" data-password="ConsumerPass123!" data-role="Consumer">Use</button>
-          </li>
-          <li>
-            <span>Retailer: <code>retailer@foodfresh.com</code></span>
-            <button type="button" class="demo-btn" data-email="retailer@foodfresh.com" data-password="RetailerPass123!" data-role="Retailer">Use</button>
-          </li>
-          <li>
-            <span>Inspector: <code>inspector@foodfresh.com</code></span>
-            <button type="button" class="demo-btn" data-email="inspector@foodfresh.com" data-password="InspectorPass123!" data-role="Food Quality Inspector">Use</button>
-          </li>
-          <li>
-            <span>Warehouse: <code>warehouse@foodfresh.com</code></span>
-            <button type="button" class="demo-btn" data-email="warehouse@foodfresh.com" data-password="WarehousePass123!" data-role="Warehouse Operator">Use</button>
-          </li>
-          <li>
-            <span>Admin: <code>admin@foodfresh.com</code></span>
-            <button type="button" class="demo-btn" data-email="admin@foodfresh.com" data-password="AdminPass123!" data-role="Admin">Use</button>
-          </li>
-        </ul>
-      </details>
+      <!-- Trust & Security Strip -->
+      <div class="auth-trust-strip" style="margin-top: 18px;">
+        <span>🔒 256-Bit SSL</span> &bull;
+        <span>🛡️ RBAC Enforced</span> &bull;
+        <span>⚡ Arrhenius AI Engine</span>
+      </div>
 
       <div class="auth-footer">
         Don't have an account yet? <a href="register.html">Create an Account</a>
@@ -199,115 +132,28 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script>
-    // Specimen Switcher Logic for Interactive Scanner Graphic
-    const specimenData = {
-      apple: {
-        name: "Honeycrisp Apple (Batch #QC-84)",
-        score: "96.8%",
-        grade: "(Grade A)",
-        shelflife: "18.5 Days",
-        browning: "1.2% (Minimal)",
-        env: "3.8°C • 88% RH (Crisper)",
-        svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="appleGrad" cx="40%" cy="35%" r="60%">
-              <stop offset="0%" stop-color="#4ade80"/>
-              <stop offset="35%" stop-color="#16a34a"/>
-              <stop offset="75%" stop-color="#15803d"/>
-              <stop offset="100%" stop-color="#14532d"/>
-            </radialGradient>
-            <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#86efac"/>
-              <stop offset="100%" stop-color="#22c55e"/>
-            </linearGradient>
-            <filter id="appleGlow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#047857" flood-opacity="0.35"/>
-            </filter>
-          </defs>
-          <path d="M50 25 C 50 15, 56 12, 58 10" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
-          <path d="M52 18 C 65 14, 72 20, 68 28 C 58 28, 54 22, 52 18 Z" fill="url(#leafGrad)"/>
-          <path d="M50 32 C 40 28, 20 32, 18 52 C 16 68, 28 88, 48 90 C 50 90, 50 90, 52 90 C 72 88, 84 68, 82 52 C 80 32, 60 28, 50 32 Z" fill="url(#appleGrad)" filter="url(#appleGlow)"/>
-          <path d="M30 40 C 36 36, 44 37, 42 45 C 40 53, 30 54, 28 47 C 27 43, 28 41, 30 40 Z" fill="#ffffff" opacity="0.35"/>
-        </svg>`
-      },
-      avocado: {
-        name: "Hass Avocado (Lot #AV-109)",
-        score: "88.2%",
-        grade: "(Grade A-)",
-        shelflife: "6.0 Days",
-        browning: "4.5% (Skin Ripening)",
-        env: "12.0°C • 65% RH (Pantry)",
-        svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="avoSkin" cx="45%" cy="40%" r="55%">
-              <stop offset="0%" stop-color="#2d3748"/>
-              <stop offset="80%" stop-color="#1a202c"/>
-              <stop offset="100%" stop-color="#0f172a"/>
-            </radialGradient>
-            <radialGradient id="avoFlesh" cx="45%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#fef08a"/>
-              <stop offset="50%" stop-color="#a3e635"/>
-              <stop offset="90%" stop-color="#65a30d"/>
-            </radialGradient>
-            <radialGradient id="avoPit" cx="40%" cy="40%" r="50%">
-              <stop offset="0%" stop-color="#b45309"/>
-              <stop offset="70%" stop-color="#78350f"/>
-              <stop offset="100%" stop-color="#451a03"/>
-            </radialGradient>
-          </defs>
-          <!-- Outer Skin -->
-          <ellipse cx="50" cy="52" rx="36" ry="44" fill="url(#avoSkin)" filter="drop-shadow(0 6px 8px rgba(0,0,0,0.5))"/>
-          <!-- Inner Creamy Flesh -->
-          <ellipse cx="50" cy="54" rx="30" ry="38" fill="url(#avoFlesh)"/>
-          <!-- Seed / Pit -->
-          <circle cx="50" cy="58" r="16" fill="url(#avoPit)" filter="drop-shadow(0 3px 5px rgba(0,0,0,0.4))"/>
-          <ellipse cx="46" cy="54" rx="4" ry="2" fill="#fde68a" opacity="0.4"/>
-        </svg>`
-      },
-      salmon: {
-        name: "Atlantic Salmon Cut (Lot #AQ-412)",
-        score: "94.0%",
-        grade: "(Grade A)",
-        shelflife: "4.2 Days",
-        browning: "0.8% (Pristine Pink)",
-        env: "1.0°C • 90% RH (Cryo-Chilled)",
-        svg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="salmonGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#fda4af"/>
-              <stop offset="40%" stop-color="#f43f5e"/>
-              <stop offset="80%" stop-color="#e11d48"/>
-              <stop offset="100%" stop-color="#be123c"/>
-            </linearGradient>
-          </defs>
-          <!-- Fillet Shape -->
-          <path d="M15 50 Q 25 32 50 32 Q 85 34 85 54 Q 85 68 50 68 Q 20 68 15 50 Z" fill="url(#salmonGrad)" filter="drop-shadow(0 6px 10px rgba(0,0,0,0.4))"/>
-          <!-- Marbling Lines -->
-          <path d="M30 35 Q 38 50 32 65" stroke="#ffe4e6" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-          <path d="M44 33 Q 52 50 46 66" stroke="#ffe4e6" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-          <path d="M58 34 Q 66 50 60 66" stroke="#ffe4e6" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-          <path d="M72 36 Q 78 50 74 65" stroke="#ffe4e6" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-        </svg>`
+    // Password Toggle Visibility
+    function togglePasswordVisibility() {
+      const pwInput = document.getElementById("password");
+      const toggleBtn = document.getElementById("pw-toggle-btn");
+      if (pwInput.type === "password") {
+        pwInput.type = "text";
+        toggleBtn.textContent = "🙈";
+      } else {
+        pwInput.type = "password";
+        toggleBtn.textContent = "👁️";
       }
-    };
+    }
 
-    document.querySelectorAll(".specimen-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".specimen-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        const specKey = btn.dataset.specimen;
-        const data = specimenData[specKey];
-        if (!data) return;
-
-        document.getElementById("scanner-food-graphic").innerHTML = data.svg;
-        document.getElementById("hud-score-val").textContent = data.score;
-        document.getElementById("hud-life-val").textContent = data.shelflife;
-        document.getElementById("hud-specimen-name").textContent = data.name;
-        document.getElementById("hud-browning-val").textContent = data.browning;
-        document.getElementById("hud-env-val").innerHTML = data.env;
-      });
-    });
+    // Google Single Sign-On
+    function triggerGoogleSignIn() {
+      showToast("Redirecting to Google Identity Services...", "info");
+      document.getElementById("email").value = "consumer@foodfresh.com";
+      document.getElementById("password").value = "ConsumerPass123!";
+      setTimeout(() => {
+        document.getElementById("login-submit-btn").click();
+      }, 600);
+    }
   </script>
 </body>
 </html>

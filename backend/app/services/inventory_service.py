@@ -435,12 +435,160 @@ class InventoryService:
                 "freshness_status": FreshnessStatus.FRESH.value,
                 "freshness_score": 98.0,
             },
+            # Additional realistic benchmark items (Fruits, Dairy, Seafood, Meat, Bakery, Grains, Pantry)
+            {
+                "food_name": "Sweet Seedless Red Grapes",
+                "category": FoodCategory.FRUITS.value,
+                "quantity": 1.2,
+                "unit": "kg",
+                "purchase_date": (today - timedelta(days=1)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=9)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.REFRIGERATED.value,
+                "storage_temperature": 2.0,
+                "storage_humidity": 85.0,
+                "location": "Chiller Bin 2",
+                "batch_number": "DS-FRT-GRP07",
+                "image_url": "https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=400&q=80",
+                "freshness_status": FreshnessStatus.FRESH.value,
+                "freshness_score": 94.0,
+            },
+            {
+                "food_name": "Salted European Creamery Butter",
+                "category": FoodCategory.DAIRY.value,
+                "quantity": 500,
+                "unit": "g",
+                "purchase_date": (today - timedelta(days=4)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=45)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.REFRIGERATED.value,
+                "storage_temperature": 3.0,
+                "storage_humidity": 60.0,
+                "location": "Dairy Compartment Door",
+                "batch_number": "DS-DRY-BTR06",
+                "image_url": "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&q=80",
+                "freshness_status": FreshnessStatus.FRESH.value,
+                "freshness_score": 95.0,
+            },
+            {
+                "food_name": "Fresh Atlantic Cod Fillet",
+                "category": FoodCategory.FISH.value,
+                "quantity": 800,
+                "unit": "g",
+                "purchase_date": (today - timedelta(days=1)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=3)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.REFRIGERATED.value,
+                "storage_temperature": 1.0,
+                "storage_humidity": 80.0,
+                "location": "Meat & Fish Chill Box",
+                "batch_number": "DS-FSH-COD02",
+                "image_url": "https://images.unsplash.com/photo-1534482421-64566f976cfa?w=400&q=80",
+                "freshness_status": FreshnessStatus.FRESH.value,
+                "freshness_score": 93.0,
+            },
+            {
+                "food_name": "Lean Free-Range Ground Beef",
+                "category": FoodCategory.MEAT.value,
+                "quantity": 1.0,
+                "unit": "kg",
+                "purchase_date": (today - timedelta(days=3)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=2)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.REFRIGERATED.value,
+                "storage_temperature": 2.0,
+                "storage_humidity": 75.0,
+                "location": "Lower Meat Tray",
+                "batch_number": "DS-MEA-BEEF02",
+                "image_url": "https://images.unsplash.com/photo-1588347818036-558601350947?w=400&q=80",
+                "freshness_status": FreshnessStatus.EXPIRING_SOON.value,
+                "freshness_score": 65.0,
+            },
+            {
+                "food_name": "Vanilla Bean Sponge Pound Cake",
+                "category": FoodCategory.BAKERY.value,
+                "quantity": 1.0,
+                "unit": "items",
+                "purchase_date": (today - timedelta(days=2)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=5)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.ROOM_TEMPERATURE.value,
+                "storage_temperature": 20.0,
+                "storage_humidity": 50.0,
+                "location": "Pantry Cake Dome",
+                "batch_number": "DS-BKR-CKE03",
+                "image_url": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&q=80",
+                "freshness_status": FreshnessStatus.FRESH.value,
+                "freshness_score": 92.0,
+            },
+            {
+                "food_name": "Stone Ground Whole Wheat Flour",
+                "category": FoodCategory.GRAINS.value,
+                "quantity": 2.0,
+                "unit": "kg",
+                "purchase_date": (today - timedelta(days=8)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=120)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.PANTRY.value,
+                "storage_temperature": 18.0,
+                "storage_humidity": 45.0,
+                "location": "Pantry Baking Shelf",
+                "batch_number": "DS-GRN-FLR02",
+                "image_url": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=80",
+                "freshness_status": FreshnessStatus.FRESH.value,
+                "freshness_score": 97.0,
+            },
+            {
+                "food_name": "Dry Red Kidney Beans",
+                "category": FoodCategory.GRAINS.value,
+                "quantity": 1.5,
+                "unit": "kg",
+                "purchase_date": (today - timedelta(days=12)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=240)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.PANTRY.value,
+                "storage_temperature": 19.0,
+                "storage_humidity": 40.0,
+                "location": "Pantry Legumes Bin",
+                "batch_number": "DS-GRN-BNS03",
+                "image_url": "https://images.unsplash.com/photo-1551462147-ff29053bfc14?w=400&q=80",
+                "freshness_status": FreshnessStatus.FRESH.value,
+                "freshness_score": 99.0,
+            },
+            {
+                "food_name": "Cold Pressed Extra Virgin Olive Oil",
+                "category": FoodCategory.OTHER.value,
+                "quantity": 1.0,
+                "unit": "liters",
+                "purchase_date": (today - timedelta(days=15)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=300)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.PANTRY.value,
+                "storage_temperature": 19.0,
+                "storage_humidity": 50.0,
+                "location": "Dark Oil Cabinet",
+                "batch_number": "DS-OTH-OIL01",
+                "image_url": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80",
+                "freshness_status": FreshnessStatus.FRESH.value,
+                "freshness_score": 99.0,
+            },
+            {
+                "food_name": "Organic Roasted Peanut Butter",
+                "category": FoodCategory.OTHER.value,
+                "quantity": 500,
+                "unit": "g",
+                "purchase_date": (today - timedelta(days=5)).strftime("%Y-%m-%d"),
+                "expiry_date": (today + timedelta(days=150)).strftime("%Y-%m-%d"),
+                "storage_type": StorageType.PANTRY.value,
+                "storage_temperature": 20.0,
+                "storage_humidity": 45.0,
+                "location": "Pantry Spread Shelf",
+                "batch_number": "DS-OTH-PNT02",
+                "image_url": "https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=400&q=80",
+                "freshness_status": FreshnessStatus.FRESH.value,
+                "freshness_score": 98.0,
+            },
         ]
 
         docs = []
         for item in raw_items:
+            food_n = item["food_name"]
             docs.append({
                 **item,
+                "food_name": food_n,
+                "name": food_n,
                 "user_id": user_oid,
                 "created_at": now,
                 "updated_at": now,
@@ -448,21 +596,57 @@ class InventoryService:
         return docs
 
     @staticmethod
-    def seed_dataset_items_for_user(user_id: Any) -> int:
+    def seed_dataset_items_for_user(user_id: Any) -> Dict[str, Any]:
         """
-        Populate standard dataset items for a user if their inventory is empty or upon user request.
+        Populate standard dataset items for a user.
+        Prevents duplicates by checking existing items by user_id and batch_number or food_name.
+        Does not overwrite user-created or edited items.
+        Returns a dict with inserted count, skipped count, and total count.
         """
         inv_col = get_inventory_collection()
         if inv_col is None:
-            return 0
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Database service unavailable. Cannot load dataset items."
+            )
 
         user_oid = ObjectId(user_id) if ObjectId.is_valid(user_id) else user_id
         items = InventoryService.get_dataset_catalog(user_oid)
         if not items:
-            return 0
+            return {"inserted": 0, "skipped": 0, "total": 0}
 
-        result = inv_col.insert_many(items)
-        return len(result.inserted_ids)
+        user_ids = [user_oid, str(user_oid)]
+        existing_items = list(inv_col.find(
+            {"user_id": {"$in": user_ids}},
+            {"batch_number": 1, "food_name": 1, "name": 1}
+        ))
+        existing_batches = {doc.get("batch_number") for doc in existing_items if doc.get("batch_number")}
+        existing_names = {
+            (doc.get("food_name") or doc.get("name") or "").strip().lower()
+            for doc in existing_items
+        }
+
+        to_insert = []
+        skipped_count = 0
+
+        for item in items:
+            batch = item.get("batch_number")
+            item_name = item.get("food_name", "").strip().lower()
+            if (batch and batch in existing_batches) or (item_name in existing_names):
+                skipped_count += 1
+            else:
+                to_insert.append(item)
+
+        inserted_count = 0
+        if to_insert:
+            result = inv_col.insert_many(to_insert)
+            inserted_count = len(result.inserted_ids)
+
+        return {
+            "inserted": inserted_count,
+            "skipped": skipped_count,
+            "total": len(items),
+        }
 
     @staticmethod
     def _is_authorized(item: Dict[str, Any], current_user: Dict[str, Any]) -> bool:
@@ -482,9 +666,11 @@ class InventoryService:
             )
 
         now = datetime.now(timezone.utc)
+        food_n = (data.food_name or data.name or "").strip()
         item_doc = {
             "user_id": ObjectId(current_user["id"]) if ObjectId.is_valid(current_user["id"]) else current_user["id"],
-            "food_name": data.food_name.strip(),
+            "food_name": food_n,
+            "name": food_n,
             "category": data.category,
             "quantity": float(data.quantity),
             "unit": data.unit.strip(),
@@ -537,10 +723,6 @@ class InventoryService:
             user_ids = [user_oid, str(user_oid)]
             query["user_id"] = {"$in": user_ids}
 
-            # Auto-seed dataset items if user currently has zero inventory items
-            if inv_col.count_documents({"user_id": {"$in": user_ids}}) == 0:
-                InventoryService.seed_dataset_items_for_user(user_oid)
-
         # Category filter
         if category and category.lower() != "all":
             query["category"] = category
@@ -549,11 +731,12 @@ class InventoryService:
         if storage_type and storage_type.lower() != "all":
             query["storage_type"] = storage_type
 
-        # Search filter (food_name, location, or batch_number)
+        # Search filter (food_name, name, location, or batch_number)
         if search and search.strip():
             regex = {"$regex": search.strip(), "$options": "i"}
             query["$or"] = [
                 {"food_name": regex},
+                {"name": regex},
                 {"location": regex},
                 {"batch_number": regex},
             ]
@@ -572,7 +755,7 @@ class InventoryService:
         # Sorting
         sort_direction = 1 if sort_order.lower() == "asc" else -1
         allowed_sort_fields = ["expiry_date", "purchase_date", "food_name", "quantity", "created_at"]
-        effective_sort_by = sort_by if sort_by in allowed_sort_fields else "expiry_date"
+        effective_sort_by = "food_name" if sort_by in ["name", "food_name"] else (sort_by if sort_by in allowed_sort_fields else "expiry_date")
 
         items = inv_col.find(query).sort(effective_sort_by, sort_direction)
         return [inventory_helper(item) for item in items]

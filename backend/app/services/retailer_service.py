@@ -148,12 +148,16 @@ class RetailerService:
 
         # Search filter
         if search and search.strip():
-            regex = {"$regex": search.strip(), "$options": "i"}
-            query["$or"] = [
+            term = search.strip()
+            regex = {"$regex": term, "$options": "i"}
+            or_clauses = [
                 {"food_name": regex},
                 {"location": regex},
                 {"batch_number": regex},
             ]
+            if ObjectId.is_valid(term):
+                or_clauses.append({"_id": ObjectId(term)})
+            query["$or"] = or_clauses
 
         today = date.today()
         today_str = today.strftime("%Y-%m-%d")
@@ -814,12 +818,26 @@ class RetailerService:
         total_quantity = sum(float(i.get("quantity", 0)) for i in items)
 
         fresh_count = sum(1 for i in items if i.get("freshness_status") == FreshnessStatus.FRESH.value)
-        moderate_count = sum(1 for i in items if i.get("freshness_status") == "Moderate" or i.get("freshness_status") == "Moderately Fresh")
+        moderate_count = sum(1 for i in items if i.get("freshness_status") in ["Moderate", "Moderately Fresh", "Near Spoilage", "At Risk"])
         spoiled_count = sum(1 for i in items if i.get("freshness_status") == FreshnessStatus.SPOILED.value)
         not_analyzed_count = sum(1 for i in items if i.get("freshness_status") == FreshnessStatus.NOT_ANALYZED.value or not i.get("freshness_status"))
 
         expired_count = sum(1 for i in items if i.get("expiry_category") == "Expired")
-        approaching_count = sum(1 for i in items if i.get("expiry_category") == "Approaching Expiry")
+        approaching_count = sum(1 for i in items if i.get("expiry_category") == "Approaching Expiry" or (i.get("days_to_expiry") is not None and 0 <= i.get("days_to_expiry") <= 3))
+        at_risk_count = sum(
+            1 for i in items
+            if i.get("freshness_status") in ["Moderate", "Moderately Fresh", "Near Spoilage", "At Risk"]
+            or (i.get("days_to_expiry") is not None and 0 <= i.get("days_to_expiry") <= 3 and i.get("freshness_status") != FreshnessStatus.SPOILED.value)
+        )
+
+        wasted_items = [
+            i for i in items
+            if i.get("freshness_status") == FreshnessStatus.SPOILED.value
+            or i.get("expiry_category") == "Expired"
+            or (i.get("days_to_expiry") is not None and i.get("days_to_expiry") < 0)
+        ]
+        total_waste_qty = round(sum(float(i.get("quantity", 0)) for i in wasted_items), 2)
+        total_waste_count = len(wasted_items)
         low_stock_count = sum(1 for i in items if i.get("is_low_stock"))
 
         scored_items = [i.get("freshness_score") for i in items if i.get("freshness_score") is not None]
@@ -860,13 +878,21 @@ class RetailerService:
         return {
             "kpis": {
                 "total_inventory_items": total_items,
+                "total_products": total_items,
                 "total_stock_quantity": round(total_quantity, 2),
                 "fresh_count": fresh_count,
+                "fresh_products": fresh_count,
                 "moderate_count": moderate_count,
+                "at_risk_count": at_risk_count,
+                "at_risk_products": at_risk_count,
                 "spoiled_count": spoiled_count,
+                "spoiled_products": spoiled_count,
                 "pending_analysis_count": not_analyzed_count,
                 "approaching_expiry_count": approaching_count,
+                "products_nearing_expiry": approaching_count,
                 "expired_count": expired_count,
+                "total_food_waste": total_waste_qty,
+                "total_food_waste_items": total_waste_count,
                 "low_stock_count": low_stock_count,
                 "average_quality_score": avg_quality_score,
                 "total_analyses": total_analyses,
@@ -875,8 +901,8 @@ class RetailerService:
             },
             "charts": {
                 "freshness_distribution": {
-                    "labels": ["Fresh", "Moderately Fresh", "Spoiled / High Risk", "Pending Analysis"],
-                    "data": [fresh_count, moderate_count, spoiled_count, not_analyzed_count]
+                    "labels": ["Fresh", "Moderately Fresh / At Risk", "Spoiled / Critical", "Pending Analysis"],
+                    "data": [fresh_count, at_risk_count, spoiled_count, not_analyzed_count]
                 },
                 "category_breakdown": {
                     "categories": list(cat_counts.keys()),
@@ -906,9 +932,35 @@ class RetailerService:
         alerts = cls.get_spoilage_alerts(current_user=current_user, status_filter="Active")
         waste_priority = cls.get_waste_reduction_prioritization(current_user=current_user)
 
+        fresh_col = get_freshness_records_collection()
+        user_oid = cls._get_user_oid(current_user)
+        user_id_str = str(current_user.get("id") or current_user.get("_id"))
+        recent_scans = []
+        if fresh_col is not None:
+            try:
+                query_cond = {"$or": [{"user_id": user_oid}, {"user_id": user_id_str}]}
+                scans_cursor = list(fresh_col.find(query_cond).sort("analysis_date", -1).limit(6))
+                for sc in scans_cursor:
+                    ad = sc.get("analysis_date")
+                    ad_str = ad.strftime("%Y-%m-%d %H:%M") if isinstance(ad, datetime) else str(ad or "")
+                    recent_scans.append({
+                        "id": str(sc["_id"]),
+                        "food_name": sc.get("food_name", "Food Specimen"),
+                        "category": sc.get("category", "General"),
+                        "image_url": sc.get("image_url"),
+                        "freshness_score": sc.get("freshness_score") if sc.get("freshness_score") is not None else sc.get("composite_freshness_score"),
+                        "freshness_label": sc.get("freshness_label") or sc.get("freshness_category") or "Fresh",
+                        "confidence": sc.get("confidence") or sc.get("confidence_score") or 0.94,
+                        "estimated_shelf_life_days": sc.get("estimated_shelf_life_days") or 7.0,
+                        "analysis_date": ad_str,
+                    })
+            except Exception:
+                pass
+
         return {
             "kpis": analytics["kpis"],
             "recent_inventory": items[:10],
+            "recent_scans": recent_scans,
             "active_alerts": alerts[:6],
             "priority_items": (waste_priority.get("urgent_action", []) + waste_priority.get("critical_clearance", []))[:5],
             "charts": analytics["charts"],
