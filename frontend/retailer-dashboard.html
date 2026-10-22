@@ -291,6 +291,7 @@
         </div>
         <div class="header-right">
           <span id="retailer-store-pill" class="badge" style="background:#e0f2fe;color:#0369a1;font-weight:700;">FreshMart Retail</span>
+          <button id="btn-seed-retailer" class="btn btn-secondary btn-sm" onclick="retailerApp.seedSampleData()">🌱 Seed Demo Data</button>
           <button id="btn-refresh-retailer" class="btn btn-secondary btn-sm">🔄 Refresh Data</button>
           <button id="btn-quick-add" class="btn btn-primary btn-sm">➕ Add Product</button>
         </div>
@@ -1122,45 +1123,268 @@
         </section>
 
         <!-- ===================================================================
-             12. REPORTS & CSV EXPORT PANEL
+             12. REPORTS & QUALITY INTELLIGENCE PANEL
              =================================================================== -->
         <section id="panel-reports" class="retail-section">
-          <div class="filter-panel">
-            <div class="filter-inputs">
-              <select id="report-filter-category" class="form-control" style="max-width:180px;">
-                <option value="all">All Categories</option>
-                <option value="Fruits">Fruits</option>
-                <option value="Vegetables">Vegetables</option>
-                <option value="Dairy">Dairy</option>
-                <option value="Meat">Meat</option>
-                <option value="Fish">Fish</option>
-                <option value="Bakery">Bakery</option>
-              </select>
-            </div>
+          <!-- Section Banner -->
+          <div class="reports-header-banner" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: var(--radius-lg); padding: 22px 26px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: var(--shadow-md);">
             <div>
-              <button id="btn-export-retailer-csv" class="btn btn-primary btn-sm">📥 Download Retail Inventory CSV</button>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:28px;">📊</span>
+                <div>
+                  <h2 style="font-size: 1.35rem; font-weight: 800; color:#ffffff; margin:0 0 4px 0;">Retail Inventory & Quality Reports</h2>
+                  <p style="color: #94a3b8; font-size: 0.88rem; margin:0;">
+                    Visual status breakdowns, category freshness charts, expiry timelines, and departmental audit tables.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <button id="btn-refresh-reports" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
+                🔄 Refresh
+              </button>
+              <button id="btn-print-reports" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
+                🖨️ Print Report
+              </button>
+              <button id="btn-export-retailer-csv" class="btn btn-primary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
+                📥 Export CSV
+              </button>
             </div>
           </div>
 
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Product ID</th>
-                  <th>Product Name</th>
-                  <th>Category</th>
-                  <th>Stock</th>
-                  <th>Batch</th>
-                  <th>Expiry Date</th>
-                  <th>Days Left</th>
-                  <th>Freshness</th>
-                  <th>Quality Score</th>
-                </tr>
-              </thead>
-              <tbody id="reports-table-body">
-                <tr><td colspan="9" style="text-align:center;padding:24px;">Generating inventory report...</td></tr>
-              </tbody>
-            </table>
+          <!-- 1. Executive Summary KPI Cards -->
+          <div class="reports-kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 22px;">
+            <div class="reports-kpi-card" id="rep-card-total" style="background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;" title="Click to filter table to All items">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em;">Monitored Stock</span>
+                <span style="font-size:18px;">📦</span>
+              </div>
+              <div style="font-size:1.75rem; font-weight:800; color:#0f172a; margin:6px 0 2px 0;" id="rep-kpi-total">0</div>
+              <div style="font-size:0.78rem; color:#64748b;" id="rep-kpi-total-units">0 total units</div>
+            </div>
+
+            <div class="reports-kpi-card" id="rep-card-fresh" style="background:#fff; border:1px solid #bbf7d0; border-radius:var(--radius-md); padding:16px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;" title="Click to filter table to Fresh items">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <span style="font-size:0.8rem; font-weight:700; color:#15803d; text-transform:uppercase; letter-spacing:0.04em;">Fresh & Safe</span>
+                <span style="font-size:18px;">🍏</span>
+              </div>
+              <div style="font-size:1.75rem; font-weight:800; color:#16a34a; margin:6px 0 2px 0;" id="rep-kpi-fresh">0</div>
+              <div style="font-size:0.78rem; color:#15803d;" id="rep-kpi-fresh-pct">0% of stock</div>
+            </div>
+
+            <div class="reports-kpi-card" id="rep-card-at-risk" style="background:#fff; border:1px solid #fde68a; border-radius:var(--radius-md); padding:16px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;" title="Click to filter table to At Risk items">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <span style="font-size:0.8rem; font-weight:700; color:#b45309; text-transform:uppercase; letter-spacing:0.04em;">At Risk (≤3 Days)</span>
+                <span style="font-size:18px;">⚠️</span>
+              </div>
+              <div style="font-size:1.75rem; font-weight:800; color:#d97706; margin:6px 0 2px 0;" id="rep-kpi-at-risk">0</div>
+              <div style="font-size:0.78rem; color:#b45309;" id="rep-kpi-at-risk-pct">0% FEFO priority</div>
+            </div>
+
+            <div class="reports-kpi-card" id="rep-card-expired" style="background:#fff; border:1px solid #fecaca; border-radius:var(--radius-md); padding:16px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;" title="Click to filter table to Expired items">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <span style="font-size:0.8rem; font-weight:700; color:#b91c1c; text-transform:uppercase; letter-spacing:0.04em;">Expired / Spoiled</span>
+                <span style="font-size:18px;">☣️</span>
+              </div>
+              <div style="font-size:1.75rem; font-weight:800; color:#dc2626; margin:6px 0 2px 0;" id="rep-kpi-expired">0</div>
+              <div style="font-size:0.78rem; color:#b91c1c;" id="rep-kpi-expired-pct">0% write-off</div>
+            </div>
+
+            <div class="reports-kpi-card" id="rep-card-quality" style="background:#fff; border:1px solid #cbd5e1; border-radius:var(--radius-md); padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <span style="font-size:0.8rem; font-weight:700; color:#334155; text-transform:uppercase; letter-spacing:0.04em;">Avg Quality Score</span>
+                <span style="font-size:18px;">⭐</span>
+              </div>
+              <div style="font-size:1.75rem; font-weight:800; color:#2563eb; margin:6px 0 2px 0;" id="rep-kpi-avg-score">--%</div>
+              <div style="font-size:0.78rem; color:#64748b;" id="rep-kpi-health-grade">Grade A (Store Optimal)</div>
+            </div>
+          </div>
+
+          <!-- 2. Interactive Graphs Grid -->
+          <div class="chart-box-grid" style="grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); margin-bottom: 22px;">
+            <!-- Chart 1: Freshness Health Doughnut -->
+            <div class="chart-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:6px;">
+                  <span>🍩</span> Freshness & Risk Distribution
+                </h3>
+                <span style="font-size:12px; color:#64748b;">Live proportions</span>
+              </div>
+              <div style="height:250px; position:relative;">
+                <canvas id="reportFreshnessDoughnutChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Category Health Breakdown Stacked Bar -->
+            <div class="chart-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:6px;">
+                  <span>📊</span> Category Freshness Comparison
+                </h3>
+                <span style="font-size:12px; color:#64748b;">Fresh vs At-Risk vs Expired</span>
+              </div>
+              <div style="height:250px; position:relative;">
+                <canvas id="reportCategoryHealthChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 3: Expiry Timeline Countdown -->
+            <div class="chart-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:6px;">
+                  <span>⏳</span> Expiry Timeline & FEFO Urgency
+                </h3>
+                <span style="font-size:12px; color:#64748b;">Markdown forecasting</span>
+              </div>
+              <div style="height:250px; position:relative;">
+                <canvas id="reportExpiryTimelineChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 4: Quality Score Rating Distribution -->
+            <div class="chart-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:6px;">
+                  <span>📈</span> Quality Score Distribution
+                </h3>
+                <span style="font-size:12px; color:#64748b;">Grade classification</span>
+              </div>
+              <div style="height:250px; position:relative;">
+                <canvas id="reportQualityHistogramChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Category Quality Breakdown Summary Table -->
+          <div class="card" style="margin-bottom: 22px; padding: 18px 20px; background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+              <div>
+                <h3 style="font-size: 15px; font-weight: 700; margin: 0 0 2px 0;">🏢 Departmental Freshness & Compliance Matrix</h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Aggregated overview across store categories to identify high-risk product lines.</p>
+              </div>
+              <div style="font-size: 12px; color: #64748b;" id="report-summary-meta">Live Store Metrics</div>
+            </div>
+            <div class="table-container" style="border:1px solid var(--border-color); border-radius:var(--radius-sm); overflow-x:auto;">
+              <table class="data-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+                <thead>
+                  <tr style="background:#f8fafc;">
+                    <th style="padding:10px 14px;">Department / Category</th>
+                    <th style="text-align:center; padding:10px 14px;">Total Batches</th>
+                    <th style="text-align:center; padding:10px 14px;">Total Units</th>
+                    <th style="text-align:center; padding:10px 14px; color:#16a34a;">Fresh</th>
+                    <th style="text-align:center; padding:10px 14px; color:#d97706;">At Risk</th>
+                    <th style="text-align:center; padding:10px 14px; color:#dc2626;">Expired</th>
+                    <th style="text-align:center; padding:10px 14px;">Avg Quality</th>
+                    <th style="text-align:center; padding:10px 14px;">Status Health</th>
+                  </tr>
+                </thead>
+                <tbody id="report-category-summary-body">
+                  <tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Loading departmental breakdown...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4. Detailed Filterable Data Table -->
+          <div class="card" style="padding: 20px; background:#fff; border:1px solid var(--border-color); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 2px 0;">📋 Detailed Retail Quality Audit Log</h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Granular batch-by-batch records with real-time freshness scores, days left, and FEFO action guidance.</p>
+              </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-panel" style="background:#f8fafc; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:14px; margin-bottom:16px;">
+              <div class="filter-inputs" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                <!-- Search -->
+                <div style="position:relative; min-width:220px;">
+                  <input type="text" id="report-search-input" class="form-control" placeholder="Search product or batch..." style="padding-left:32px; font-size:13px; height:36px;">
+                  <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none;">🔍</span>
+                </div>
+
+                <!-- Category -->
+                <select id="report-filter-category" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                  <option value="all">All Categories</option>
+                  <option value="Fruits">Fruits</option>
+                  <option value="Vegetables">Vegetables</option>
+                  <option value="Dairy">Dairy</option>
+                  <option value="Meat">Meat</option>
+                  <option value="Fish">Fish & Seafood</option>
+                  <option value="Bakery">Bakery</option>
+                </select>
+
+                <!-- Status Filter -->
+                <select id="report-filter-status" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                  <option value="all">All Freshness Statuses</option>
+                  <option value="Fresh">Fresh Only</option>
+                  <option value="At Risk">At Risk Only</option>
+                  <option value="Expired">Expired Only</option>
+                </select>
+
+                <!-- Expiry Urgency Filter -->
+                <select id="report-filter-urgency" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                  <option value="all">All Expiry Horizons</option>
+                  <option value="critical">Critical (≤ 3 Days)</option>
+                  <option value="warning">Warning (4 – 7 Days)</option>
+                  <option value="safe">Safe (> 7 Days)</option>
+                  <option value="expired">Expired</option>
+                </select>
+
+                <!-- Sort Filter -->
+                <select id="report-filter-sort" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                  <option value="expiry_asc">Expiry Date (Soonest first)</option>
+                  <option value="expiry_desc">Expiry Date (Furthest first)</option>
+                  <option value="score_asc">Quality Score (Lowest first)</option>
+                  <option value="score_desc">Quality Score (Highest first)</option>
+                  <option value="name_asc">Product Name (A – Z)</option>
+                  <option value="qty_desc">Stock Quantity (Highest first)</option>
+                </select>
+
+                <button id="btn-report-reset" class="btn btn-secondary btn-sm" style="height:36px;">Reset</button>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container" style="border:1px solid var(--border-color); border-radius:var(--radius-sm); overflow-x:auto;">
+              <table class="data-table" id="report-detailed-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+                <thead>
+                  <tr style="background:#f8fafc;">
+                    <th style="padding:10px 14px;">Product & Batch</th>
+                    <th style="padding:10px 14px;">Category</th>
+                    <th style="padding:10px 14px;">Stock</th>
+                    <th style="padding:10px 14px;">Expiry Date</th>
+                    <th style="padding:10px 14px;">Days Left</th>
+                    <th style="padding:10px 14px;">Freshness</th>
+                    <th style="padding:10px 14px; min-width:140px;">Quality Score</th>
+                    <th style="padding:10px 14px;">Storage & Temp</th>
+                    <th style="padding:10px 14px;">FEFO Action</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                  <tr><td colspan="9" style="text-align:center;padding:24px;">Generating inventory report...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; gap:10px; font-size:13px; color:#64748b;">
+              <div id="report-pagination-info">Showing 0 of 0 items</div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label style="display:flex; align-items:center; gap:6px; margin:0;">
+                  <span>Per page:</span>
+                  <select id="report-per-page" class="form-control" style="width:auto; padding:2px 8px; height:30px; font-size:12px;">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </label>
+                <button class="btn btn-secondary btn-sm" id="btn-report-prev" disabled>◀ Prev</button>
+                <span id="report-page-num" style="font-weight:700; color:#1e293b;">Page 1 of 1</span>
+                <button class="btn btn-secondary btn-sm" id="btn-report-next" disabled>Next ▶</button>
+              </div>
+            </div>
           </div>
         </section>
 

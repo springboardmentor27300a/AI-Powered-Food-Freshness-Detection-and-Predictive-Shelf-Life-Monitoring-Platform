@@ -115,6 +115,17 @@ class RetailerApp {
     this.loadTabData(tabName);
   }
 
+  async seedSampleData() {
+    try {
+      showToast("Seeding realistic retail inventory, scans & alerts...", "info");
+      await api.seedRetailerData();
+      showToast("Retailer demo data initialized successfully!", "success");
+      await this.loadInitialData();
+    } catch (err) {
+      showToast("Error seeding data: " + err.message, "error");
+    }
+  }
+
   async loadInitialData() {
     await Promise.all([
       this.loadOverview(),
@@ -1596,37 +1607,569 @@ class RetailerApp {
   }
 
   // ============================================================================
-  // 12. REPORTS & CSV EXPORT
+  // 12. REPORTS & QUALITY INTELLIGENCE
   // ============================================================================
-  async loadReports() {
-    try {
-      const cat = document.getElementById("report-filter-category")?.value || "all";
-      const data = await api.getRetailerReports({ category: cat });
-      const tbody = document.getElementById("reports-table-body");
-      if (!tbody) return;
+  setupReportsEvents() {
+    if (this.reportsEventsInitialized) return;
+    this.reportsEventsInitialized = true;
 
+    if (!this.reportsState) {
+      this.reportsState = {
+        rawItems: [],
+        filteredItems: [],
+        page: 1,
+        limit: 25,
+        search: "",
+        category: "all",
+        status: "all",
+        urgency: "all",
+        sortBy: "expiry_asc",
+      };
+    }
+
+    // Search Input
+    const searchInput = document.getElementById("report-search-input");
+    searchInput?.addEventListener("input", (e) => {
+      this.reportsState.search = e.target.value.trim().toLowerCase();
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    // Category Filter
+    const catFilter = document.getElementById("report-filter-category");
+    catFilter?.addEventListener("change", (e) => {
+      this.reportsState.category = e.target.value;
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    // Status Filter
+    const statusFilter = document.getElementById("report-filter-status");
+    statusFilter?.addEventListener("change", (e) => {
+      this.reportsState.status = e.target.value;
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    // Urgency Filter
+    const urgencyFilter = document.getElementById("report-filter-urgency");
+    urgencyFilter?.addEventListener("change", (e) => {
+      this.reportsState.urgency = e.target.value;
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    // Sort Filter
+    const sortFilter = document.getElementById("report-filter-sort");
+    sortFilter?.addEventListener("change", (e) => {
+      this.reportsState.sortBy = e.target.value;
+      this.applyReportsFilterAndSort();
+    });
+
+    // Reset Button
+    const resetBtn = document.getElementById("btn-report-reset");
+    resetBtn?.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      if (catFilter) catFilter.value = "all";
+      if (statusFilter) statusFilter.value = "all";
+      if (urgencyFilter) urgencyFilter.value = "all";
+      if (sortFilter) sortFilter.value = "expiry_asc";
+
+      this.reportsState.search = "";
+      this.reportsState.category = "all";
+      this.reportsState.status = "all";
+      this.reportsState.urgency = "all";
+      this.reportsState.sortBy = "expiry_asc";
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    // Refresh Button
+    const refreshBtn = document.getElementById("btn-refresh-reports");
+    refreshBtn?.addEventListener("click", () => this.loadReports());
+
+    // Print Button
+    const printBtn = document.getElementById("btn-print-reports");
+    printBtn?.addEventListener("click", () => window.print());
+
+    // KPI Summary Card Filters
+    document.getElementById("rep-card-total")?.addEventListener("click", () => {
+      if (statusFilter) statusFilter.value = "all";
+      if (urgencyFilter) urgencyFilter.value = "all";
+      this.reportsState.status = "all";
+      this.reportsState.urgency = "all";
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    document.getElementById("rep-card-fresh")?.addEventListener("click", () => {
+      if (statusFilter) statusFilter.value = "Fresh";
+      this.reportsState.status = "Fresh";
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    document.getElementById("rep-card-at-risk")?.addEventListener("click", () => {
+      if (statusFilter) statusFilter.value = "At Risk";
+      this.reportsState.status = "At Risk";
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    document.getElementById("rep-card-expired")?.addEventListener("click", () => {
+      if (statusFilter) statusFilter.value = "Expired";
+      this.reportsState.status = "Expired";
+      this.reportsState.page = 1;
+      this.applyReportsFilterAndSort();
+    });
+
+    // Pagination
+    document.getElementById("btn-report-prev")?.addEventListener("click", () => {
+      if (this.reportsState.page > 1) {
+        this.reportsState.page--;
+        this.renderReportsDetailedTable();
+      }
+    });
+
+    document.getElementById("btn-report-next")?.addEventListener("click", () => {
+      const maxPage = Math.max(1, Math.ceil(this.reportsState.filteredItems.length / this.reportsState.limit));
+      if (this.reportsState.page < maxPage) {
+        this.reportsState.page++;
+        this.renderReportsDetailedTable();
+      }
+    });
+
+    document.getElementById("report-per-page")?.addEventListener("change", (e) => {
+      this.reportsState.limit = parseInt(e.target.value, 10) || 25;
+      this.reportsState.page = 1;
+      this.renderReportsDetailedTable();
+    });
+  }
+
+  async loadReports() {
+    this.setupReportsEvents();
+    try {
+      const data = await api.getRetailerReports({ category: "all" });
       const items = data.items || [];
-      if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-muted);">No reports records found.</td></tr>`;
-        return;
+      
+      if (!this.reportsState) {
+        this.reportsState = {
+          rawItems: items,
+          filteredItems: items,
+          page: 1,
+          limit: 25,
+          search: "",
+          category: "all",
+          status: "all",
+          urgency: "all",
+          sortBy: "expiry_asc",
+        };
+      } else {
+        this.reportsState.rawItems = items;
       }
 
-      tbody.innerHTML = items.map(item => `
-        <tr>
-          <td><code>${item.id.slice(-6)}</code></td>
-          <td><strong>${escapeHtml(item.food_name)}</strong></td>
-          <td>${escapeHtml(item.category)}</td>
-          <td>${item.quantity} ${escapeHtml(item.unit)}</td>
-          <td><small>${escapeHtml(item.batch_number || 'N/A')}</small></td>
-          <td>${escapeHtml(item.expiry_date)}</td>
-          <td>${item.days_to_expiry !== null ? item.days_to_expiry + 'd' : '--'}</td>
-          <td><span class="badge badge-safe">${escapeHtml(item.freshness_status)}</span></td>
-          <td>${item.freshness_score !== null ? item.freshness_score + '%' : '--'}</td>
-        </tr>
-      `).join("");
+      // 1. KPI Cards
+      const totalRec = data.total_records !== undefined ? data.total_records : items.length;
+      const totalUnits = data.total_quantity !== undefined ? data.total_quantity : items.reduce((sum, it) => sum + (it.quantity || 0), 0);
+      const freshCount = data.fresh_count !== undefined ? data.fresh_count : items.filter(it => it.freshness_status === "Fresh" || (it.days_to_expiry > 3 && it.freshness_status !== "Spoiled")).length;
+      const atRiskCount = data.at_risk_count !== undefined ? data.at_risk_count : items.filter(it => it.freshness_status === "At Risk" || (it.days_to_expiry >= 0 && it.days_to_expiry <= 3)).length;
+      const expiredCount = data.expired_count !== undefined ? data.expired_count : items.filter(it => it.freshness_status === "Spoiled" || (it.days_to_expiry < 0)).length;
+
+      const freshPct = totalRec > 0 ? Math.round((freshCount / totalRec) * 100) : 0;
+      const atRiskPct = totalRec > 0 ? Math.round((atRiskCount / totalRec) * 100) : 0;
+      const expiredPct = totalRec > 0 ? Math.round((expiredCount / totalRec) * 100) : 0;
+
+      const validScores = items.map(it => it.freshness_score).filter(s => s !== null && s !== undefined && !isNaN(s));
+      const avgScore = validScores.length > 0 ? Math.round((validScores.reduce((a, b) => a + b, 0) / validScores.length) * 10) / 10 : 0;
+
+      const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      setEl("rep-kpi-total", totalRec);
+      setEl("rep-kpi-total-units", `${totalUnits} total inventory units`);
+      setEl("rep-kpi-fresh", freshCount);
+      setEl("rep-kpi-fresh-pct", `${freshPct}% of total stock`);
+      setEl("rep-kpi-at-risk", atRiskCount);
+      setEl("rep-kpi-at-risk-pct", `${atRiskPct}% FEFO priority`);
+      setEl("rep-kpi-expired", expiredCount);
+      setEl("rep-kpi-expired-pct", `${expiredPct}% write-off`);
+      setEl("rep-kpi-avg-score", `${avgScore}%`);
+
+      const gradeEl = document.getElementById("rep-kpi-health-grade");
+      if (gradeEl) {
+        if (avgScore >= 80) gradeEl.textContent = "Grade A (Optimal Store Health)";
+        else if (avgScore >= 60) gradeEl.textContent = "Grade B (Good - Minor Markdowns)";
+        else gradeEl.textContent = "Grade C (Attention Required)";
+      }
+
+      // 2. Render Charts
+      this.renderReportCharts(items, data);
+
+      // 3. Render Departmental Summary Table
+      this.renderReportCategorySummaryTable(data.category_breakdown || []);
+
+      // 4. Filter and render Detailed Table
+      this.applyReportsFilterAndSort();
+
     } catch (err) {
+      console.error("Failed to load reports:", err);
       showToast("Error loading reports: " + err.message, "error");
     }
+  }
+
+  renderReportCharts(items, data) {
+    // 1. Freshness Doughnut
+    const dCtx = document.getElementById("reportFreshnessDoughnutChart");
+    if (dCtx) {
+      if (this.charts.reportFreshnessDoughnut) this.charts.reportFreshnessDoughnut.destroy();
+      const fresh = data.fresh_count || 0;
+      const atRisk = data.at_risk_count || 0;
+      const expired = data.expired_count || 0;
+
+      this.charts.reportFreshnessDoughnut = new Chart(dCtx, {
+        type: "doughnut",
+        data: {
+          labels: ["Fresh & Safe", "At Risk (≤3d)", "Expired / Spoiled"],
+          datasets: [{
+            data: [fresh, atRisk, expired],
+            backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
+            borderWidth: 3,
+            borderColor: "#ffffff",
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 12 } } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const val = ctx.raw || 0;
+                  const total = fresh + atRisk + expired;
+                  const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                  return ` ${ctx.label}: ${val} batches (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 2. Category Stacked Bar
+    const catCtx = document.getElementById("reportCategoryHealthChart");
+    if (catCtx) {
+      if (this.charts.reportCategoryHealth) this.charts.reportCategoryHealth.destroy();
+      const breakdown = data.category_breakdown || [];
+      const labels = breakdown.map(b => b.category);
+      const freshData = breakdown.map(b => b.fresh || 0);
+      const atRiskData = breakdown.map(b => b.at_risk || 0);
+      const expiredData = breakdown.map(b => b.expired || 0);
+
+      this.charts.reportCategoryHealth = new Chart(catCtx, {
+        type: "bar",
+        data: {
+          labels: labels.length ? labels : ["No data"],
+          datasets: [
+            { label: "Fresh", data: freshData, backgroundColor: "#10b981", stack: "stack0", borderRadius: 4 },
+            { label: "At Risk", data: atRiskData, backgroundColor: "#f59e0b", stack: "stack0", borderRadius: 4 },
+            { label: "Expired", data: expiredData, backgroundColor: "#ef4444", stack: "stack0", borderRadius: 4 },
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true, grid: { display: false } },
+            y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+          },
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 12 } } }
+          }
+        }
+      });
+    }
+
+    // 3. Expiry Timeline Bar
+    const expCtx = document.getElementById("reportExpiryTimelineChart");
+    if (expCtx) {
+      if (this.charts.reportExpiryTimeline) this.charts.reportExpiryTimeline.destroy();
+      const eb = data.expiry_buckets || { expired: 0, d1_3: 0, d4_7: 0, d8_14: 0, d15_plus: 0 };
+
+      this.charts.reportExpiryTimeline = new Chart(expCtx, {
+        type: "bar",
+        data: {
+          labels: ["Expired", "1 – 3 Days", "4 – 7 Days", "8 – 14 Days", "15+ Days"],
+          datasets: [{
+            label: "Product Batches",
+            data: [eb.expired, eb.d1_3, eb.d4_7, eb.d8_14, eb.d15_plus],
+            backgroundColor: ["#ef4444", "#f97316", "#f59e0b", "#3b82f6", "#10b981"],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.raw} batches in horizon`
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // 4. Quality Score Distribution Histogram
+    const qCtx = document.getElementById("reportQualityHistogramChart");
+    if (qCtx) {
+      if (this.charts.reportQualityHistogram) this.charts.reportQualityHistogram.destroy();
+      const qb = data.quality_buckets || { grade_a: 0, grade_b: 0, grade_c: 0, critical: 0 };
+
+      this.charts.reportQualityHistogram = new Chart(qCtx, {
+        type: "bar",
+        data: {
+          labels: ["Grade A (80-100%)", "Grade B (60-79%)", "Grade C (40-59%)", "Critical (<40%)"],
+          datasets: [{
+            label: "Audited Products",
+            data: [qb.grade_a, qb.grade_b, qb.grade_c, qb.critical],
+            backgroundColor: ["#10b981", "#3b82f6", "#f59e0b", "#ef4444"],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
+
+  renderReportCategorySummaryTable(breakdown) {
+    const tbody = document.getElementById("report-category-summary-body");
+    if (!tbody) return;
+
+    if (!breakdown || breakdown.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">No departmental data found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = breakdown.map(b => {
+      const total = b.batches || 0;
+      const freshPct = total > 0 ? Math.round((b.fresh / total) * 100) : 0;
+      let healthBadge = "";
+      if (freshPct >= 80) {
+        healthBadge = `<span class="badge badge-safe" style="background:#dcfce7; color:#15803d; font-weight:700;">✅ Excellent (${freshPct}%)</span>`;
+      } else if (freshPct >= 50) {
+        healthBadge = `<span class="badge badge-warning" style="background:#fef3c7; color:#b45309; font-weight:700;">⚠️ Moderate (${freshPct}%)</span>`;
+      } else {
+        healthBadge = `<span class="badge badge-danger" style="background:#fee2e2; color:#b91c1c; font-weight:700;">☣️ Needs Attention</span>`;
+      }
+
+      return `
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 14px; font-weight:700; color:#1e293b;">${escapeHtml(b.category)}</td>
+          <td style="text-align:center; padding:10px 14px; font-weight:600;">${b.batches}</td>
+          <td style="text-align:center; padding:10px 14px; color:#64748b;">${b.total_quantity}</td>
+          <td style="text-align:center; padding:10px 14px; color:#16a34a; font-weight:700;">${b.fresh}</td>
+          <td style="text-align:center; padding:10px 14px; color:#d97706; font-weight:700;">${b.at_risk}</td>
+          <td style="text-align:center; padding:10px 14px; color:#dc2626; font-weight:700;">${b.expired}</td>
+          <td style="text-align:center; padding:10px 14px; font-weight:700; color:#2563eb;">${b.avg_quality_score}%</td>
+          <td style="text-align:center; padding:10px 14px;">${healthBadge}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  applyReportsFilterAndSort() {
+    let items = [...(this.reportsState.rawItems || [])];
+
+    // Search
+    if (this.reportsState.search) {
+      const q = this.reportsState.search;
+      items = items.filter(it =>
+        (it.food_name || "").toLowerCase().includes(q) ||
+        (it.batch_number || "").toLowerCase().includes(q) ||
+        (it.id || "").toLowerCase().includes(q)
+      );
+    }
+
+    // Category
+    if (this.reportsState.category && this.reportsState.category !== "all") {
+      items = items.filter(it => (it.category || "").toLowerCase() === this.reportsState.category.toLowerCase());
+    }
+
+    // Status
+    if (this.reportsState.status && this.reportsState.status !== "all") {
+      const st = this.reportsState.status.toLowerCase();
+      if (st === "fresh") {
+        items = items.filter(it => it.freshness_status === "Fresh" || (it.days_to_expiry > 3 && it.freshness_status !== "Spoiled"));
+      } else if (st === "at risk") {
+        items = items.filter(it => it.freshness_status === "At Risk" || (it.days_to_expiry >= 0 && it.days_to_expiry <= 3));
+      } else if (st === "expired") {
+        items = items.filter(it => it.freshness_status === "Spoiled" || (it.days_to_expiry < 0));
+      }
+    }
+
+    // Urgency
+    if (this.reportsState.urgency && this.reportsState.urgency !== "all") {
+      if (this.reportsState.urgency === "critical") {
+        items = items.filter(it => it.days_to_expiry !== null && it.days_to_expiry >= 0 && it.days_to_expiry <= 3);
+      } else if (this.reportsState.urgency === "warning") {
+        items = items.filter(it => it.days_to_expiry !== null && it.days_to_expiry >= 4 && it.days_to_expiry <= 7);
+      } else if (this.reportsState.urgency === "safe") {
+        items = items.filter(it => it.days_to_expiry !== null && it.days_to_expiry > 7);
+      } else if (this.reportsState.urgency === "expired") {
+        items = items.filter(it => it.days_to_expiry !== null && it.days_to_expiry < 0);
+      }
+    }
+
+    // Sort
+    const sort = this.reportsState.sortBy || "expiry_asc";
+    items.sort((a, b) => {
+      if (sort === "expiry_asc") return (a.days_to_expiry ?? 9999) - (b.days_to_expiry ?? 9999);
+      if (sort === "expiry_desc") return (b.days_to_expiry ?? -9999) - (a.days_to_expiry ?? -9999);
+      if (sort === "score_asc") return (a.freshness_score ?? 999) - (b.freshness_score ?? 999);
+      if (sort === "score_desc") return (b.freshness_score ?? -999) - (a.freshness_score ?? -999);
+      if (sort === "name_asc") return (a.food_name || "").localeCompare(b.food_name || "");
+      if (sort === "qty_desc") return (b.quantity || 0) - (a.quantity || 0);
+      return 0;
+    });
+
+    this.reportsState.filteredItems = items;
+    this.renderReportsDetailedTable();
+  }
+
+  renderReportsDetailedTable() {
+    const tbody = document.getElementById("reports-table-body");
+    if (!tbody) return;
+
+    const items = this.reportsState.filteredItems || [];
+    const total = items.length;
+    const page = this.reportsState.page || 1;
+    const limit = this.reportsState.limit || 25;
+    const maxPage = Math.max(1, Math.ceil(total / limit));
+
+    if (total === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-muted);">No inventory products match the selected criteria.</td></tr>`;
+      this.updateReportsPaginationInfo(0, 0, 0, 1, 1);
+      return;
+    }
+
+    const startIdx = (page - 1) * limit;
+    const endIdx = Math.min(total, page * limit);
+    const pageItems = items.slice(startIdx, endIdx);
+
+    tbody.innerHTML = pageItems.map(item => {
+      const days = item.days_to_expiry;
+      const isExpired = days !== null && days < 0;
+      const isCritical = days !== null && days >= 0 && days <= 3;
+      const isWarning = days !== null && days >= 4 && days <= 7;
+
+      let daysBadge = "";
+      if (isExpired) {
+        daysBadge = `<span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; background:#fee2e2; color:#b91c1c;">${Math.abs(days)}d ago (Expired)</span>`;
+      } else if (isCritical) {
+        daysBadge = `<span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; background:#fee2e2; color:#b91c1c;">${days}d (Critical)</span>`;
+      } else if (isWarning) {
+        daysBadge = `<span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; background:#fef3c7; color:#b45309;">${days}d (Approaching)</span>`;
+      } else if (days !== null) {
+        daysBadge = `<span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; background:#dcfce7; color:#15803d;">${days}d (Safe)</span>`;
+      } else {
+        daysBadge = `<span style="color:#94a3b8;">--</span>`;
+      }
+
+      // Freshness Status Badge
+      let statusBadge = "";
+      const st = item.freshness_status || "Fresh";
+      if (st === "Fresh" || st === "Safe") {
+        statusBadge = `<span class="badge badge-safe">Fresh</span>`;
+      } else if (st === "At Risk") {
+        statusBadge = `<span class="badge badge-warning">At Risk</span>`;
+      } else {
+        statusBadge = `<span class="badge badge-danger">Expired</span>`;
+      }
+
+      // Quality score progress bar
+      const score = item.freshness_score;
+      let scoreHtml = "--";
+      if (score !== null && score !== undefined && !isNaN(score)) {
+        const scNum = Math.round(score);
+        const barColor = scNum >= 75 ? "#10b981" : (scNum >= 50 ? "#f59e0b" : "#ef4444");
+        scoreHtml = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="flex:1; background:#e2e8f0; height:6px; border-radius:3px; overflow:hidden;">
+              <div style="width:${scNum}%; background:${barColor}; height:100%; border-radius:3px;"></div>
+            </div>
+            <span style="font-weight:700; font-size:12px; color:${barColor};">${scNum}%</span>
+          </div>
+        `;
+      }
+
+      // Storage
+      const storageText = `${escapeHtml(item.storage_type || 'Standard')}${item.storage_temperature !== null && item.storage_temperature !== undefined ? ` (${item.storage_temperature}°C)` : ''}`;
+
+      // FEFO Guidance
+      let guidanceHtml = "";
+      if (isExpired || st === "Spoiled") {
+        guidanceHtml = `<span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; background:#fee2e2; color:#b91c1c;">☣️ Remove / Discard</span>`;
+      } else if (isCritical) {
+        guidanceHtml = `<span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; background:#fef3c7; color:#b45309;">🏷️ Apply FEFO Markdown</span>`;
+      } else if (isWarning) {
+        guidanceHtml = `<span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; background:#e0f2fe; color:#0369a1;">⚠️ Front-Shelf Priority</span>`;
+      } else {
+        guidanceHtml = `<span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; background:#f0fdf4; color:#16a34a;">✅ Standard Stock</span>`;
+      }
+
+      return `
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 14px;">
+            <div style="font-weight:700; color:#0f172a;">${escapeHtml(item.food_name)}</div>
+            <div style="font-size:11px; color:#64748b;">Batch: ${escapeHtml(item.batch_number || 'N/A')}</div>
+          </td>
+          <td style="padding:10px 14px;">
+            <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:600;">${escapeHtml(item.category || 'General')}</span>
+          </td>
+          <td style="padding:10px 14px;">
+            <strong>${item.quantity}</strong> <span style="font-size:11px; color:#64748b;">${escapeHtml(item.unit || 'units')}</span>
+          </td>
+          <td style="padding:10px 14px; font-size:12px; color:#475569;">
+            ${escapeHtml(item.expiry_date || '--')}
+          </td>
+          <td style="padding:10px 14px;">${daysBadge}</td>
+          <td style="padding:10px 14px;">${statusBadge}</td>
+          <td style="padding:10px 14px;">${scoreHtml}</td>
+          <td style="padding:10px 14px; font-size:12px; color:#475569;">${storageText}</td>
+          <td style="padding:10px 14px;">${guidanceHtml}</td>
+        </tr>
+      `;
+    }).join("");
+
+    this.updateReportsPaginationInfo(startIdx + 1, endIdx, total, page, maxPage);
+  }
+
+  updateReportsPaginationInfo(start, end, total, page, maxPage) {
+    const infoEl = document.getElementById("report-pagination-info");
+    const pageNumEl = document.getElementById("report-page-num");
+    const prevBtn = document.getElementById("btn-report-prev");
+    const nextBtn = document.getElementById("btn-report-next");
+
+    if (infoEl) infoEl.textContent = `Showing ${start} to ${end} of ${total} items`;
+    if (pageNumEl) pageNumEl.textContent = `Page ${page} of ${maxPage}`;
+    if (prevBtn) prevBtn.disabled = (page <= 1);
+    if (nextBtn) nextBtn.disabled = (page >= maxPage);
   }
 
   // ============================================================================
@@ -1836,11 +2379,8 @@ class RetailerApp {
       alertFilter.addEventListener("change", () => this.loadAlerts());
     }
 
-    // Report Filter
-    const reportFilter = document.getElementById("report-filter-category");
-    if (reportFilter) {
-      reportFilter.addEventListener("change", () => this.loadReports());
-    }
+    // Setup Reports Events
+    this.setupReportsEvents();
 
     // CSV Export Button
     const exportBtn = document.getElementById("btn-export-retailer-csv");

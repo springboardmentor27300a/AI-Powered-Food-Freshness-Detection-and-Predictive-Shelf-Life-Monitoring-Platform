@@ -9,13 +9,45 @@
   <!-- Chart.js CDN for Admin Analytics -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Administrator Theme Styling */
+        /* Administrator Theme Styling */
     :root {
       --admin-primary: #4f46e5;
       --admin-primary-dark: #3730a3;
       --admin-primary-light: #e0e7ff;
-      --admin-accent: #0ea5e9;
-      --admin-bg-dark: #0f172a;
+      --admin-accent: #6366f1;
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --sidebar-active: #312e81;
+      --sidebar-text: #94a3b8;
+      --sidebar-text-active: #ffffff;
+    }
+
+    /* Sidebar Navigation Overrides for Admin Theme */
+    .sidebar {
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar .nav-item {
+      color: #94a3b8;
+      cursor: pointer;
+    }
+
+    .sidebar .nav-item:hover {
+      background-color: #1e293b;
+      color: #ffffff;
+    }
+
+    .sidebar .nav-item.active {
+      background-color: #1e1b4b;
+      color: #ffffff;
+      border-left: 3px solid #6366f1;
+      font-weight: 600;
+    }
+
+    .sidebar-footer .user-role-badge {
+      background: rgba(99, 102, 241, 0.2);
+      color: #c7d2fe;
     }
 
     .admin-badge {
@@ -94,39 +126,53 @@
       gap: 6px;
     }
 
-    .tab-nav {
+        .tab-nav {
       display: flex;
-      gap: 4px;
-      border-bottom: 2px solid var(--border-color);
+      gap: 6px;
+      background: #ffffff;
+      padding: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
       margin-bottom: 24px;
       overflow-x: auto;
-      padding-bottom: 2px;
+      scrollbar-width: thin;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-nav::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .tab-nav::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
     }
 
     .tab-nav-btn {
       background: transparent;
       border: none;
-      padding: 12px 18px;
-      font-size: 0.92rem;
+      padding: 8px 16px;
+      font-size: 0.85rem;
       font-weight: 600;
       color: var(--text-muted);
       cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -4px;
+      border-radius: var(--radius-sm);
       white-space: nowrap;
       transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .tab-nav-btn:hover {
       color: var(--admin-primary);
+      background: #f8fafc;
     }
 
     .tab-nav-btn.active {
-      color: var(--admin-primary);
-      border-bottom-color: var(--admin-primary);
+      color: #ffffff;
+      background: var(--admin-primary);
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
     }
 
     .tab-pane {
@@ -275,6 +321,95 @@
       border-color: #cbd5e1;
     }
 
+    .btn-sm-action.danger {
+      border-color: #fca5a5;
+      color: #dc2626;
+      background: #fef2f2;
+    }
+    .btn-sm-action.danger:hover:not(:disabled) {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #b91c1c;
+    }
+    .btn-sm-action.success {
+      border-color: #86efac;
+      color: #16a34a;
+      background: #f0fdf4;
+    }
+    .btn-sm-action.success:hover:not(:disabled) {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #15803d;
+    }
+    .btn-sm-action:disabled {
+      opacity: 0.45;
+      cursor: not-allowed !important;
+      pointer-events: none;
+    }
+    .sortable-th {
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+    .sortable-th:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .sort-indicator {
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 0.72rem;
+      opacity: 0.5;
+    }
+    .sortable-th.active-sort .sort-indicator {
+      opacity: 1;
+      color: #2563eb;
+    }
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      color: #64748b;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .user-id-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.76rem;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+    .role-badge.Manufacturer { background: #ffedd5; color: #c2410c; border-color: #fed7aa; }
+    .role-badge.SupplyChain { background: #fef08a; color: #854d0e; border-color: #fde047; }
+    .role-badge.WarehouseManager { background: #e0e7ff; color: #4338ca; border-color: #c7d2fe; }
+    .feature-card {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .feature-card:hover {
+      box-shadow: var(--shadow-sm);
+      border-color: #cbd5e1;
+    }
+
     .btn-sm-action.danger:hover {
       background: #fef2f2;
       border-color: #f87171;
@@ -397,38 +532,104 @@
     }
   </style>
 </head>
-<body class="dashboard-body">
+<body>
 
-  <!-- Top Navigation Bar -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
-      <a href="admin-dashboard.html" class="brand-logo">
-        <span class="logo-icon">🌿</span>
-        <span class="logo-text">FoodFresh <span style="font-weight:400; font-size:0.85em; opacity:0.8;">| Platform Admin</span></span>
-      </a>
-    </div>
-
-    <nav class="topbar-nav" style="display: flex; gap: 14px; align-items: center;">
-      <a href="admin-dashboard.html" class="nav-link active" style="font-weight:700; color:var(--admin-primary);">Admin Console</a>
-      <a href="inventory.html" class="nav-link">Inventory</a>
-      <a href="reports.html" class="nav-link">Compliance Reports</a>
-    </nav>
-
-    <div class="topbar-right">
-      <div class="user-profile-menu">
-        <div class="user-avatar" id="top-user-avatar" style="background:#4f46e5; color:#fff;">AD</div>
-        <div class="user-meta" style="display: flex; flex-direction: column;">
-          <span class="user-display-name" id="top-user-name" style="font-weight:700; font-size:0.9rem;">Administrator</span>
-          <span class="user-role-badge admin-badge" id="top-user-role" style="align-self: flex-start; padding: 2px 8px; font-size:0.7rem;">Platform Admin</span>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 4px 10px rgba(79, 70, 229, 0.35);">🛡️</div>
+        <div>
+          <div class="brand-title">FreshGuard</div>
+          <div class="brand-subtitle" style="color: #a5b4fc;">Platform Admin</div>
         </div>
-        <button class="btn btn-outline btn-logout" id="btn-top-logout" style="padding: 6px 12px; font-size:0.82rem; margin-left: 10px;">Sign Out</button>
       </div>
-    </div>
-  </header>
 
-  <!-- Main Container -->
-  <main class="dashboard-container" style="max-width: 1440px; margin: 0 auto; padding: 24px;">
+      <nav class="sidebar-nav admin-nav-tabs">
+        <div class="nav-section-title">Platform Governance</div>
+        <a href="#overview" class="nav-item active" data-tab="overview">
+          <span>📊</span> Overview Console
+        </a>
+        <a href="#users" class="nav-item" data-tab="users">
+          <span>👥</span> User & Role Management
+        </a>
+        <a href="#ai-monitor" class="nav-item" data-tab="ai-monitor">
+          <span>🤖</span> AI Vision Monitoring
+        </a>
+        <a href="#storage-rules" class="nav-item" data-tab="storage-rules">
+          <span>❄️</span> Storage Rules & Zones
+        </a>
+        <a href="#audit-logs" class="nav-item" data-tab="audit-logs">
+          <span>📜</span> Security Audit Logs
+        </a>
+        <a href="#system-health" class="nav-item" data-tab="system-health">
+          <span>🖥️</span> System Health Telemetry
+        </a>
+        <a href="#system-config" class="nav-item" data-tab="system-config">
+          <span>⚙️</span> System Configuration
+        </a>
+        <a href="#reports" class="nav-item" data-tab="reports">
+          <span>📈</span> Analytics & Export
+        </a>
+
+        <div class="nav-section-title">Operations</div>
+        <a href="inventory.html" class="nav-item">
+          <span>📦</span> Food Inventory
+        </a>
+        <a href="reports.html" class="nav-item">
+          <span>📋</span> Quality Reports
+        </a>
+
+        <div class="nav-section-title">Account</div>
+        <a href="profile.html" class="nav-item">
+          <span>👤</span> Admin Profile
+        </a>
+        <a href="#logout" class="nav-item btn-logout">
+          <span>🚪</span> Logout
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-quick-profile">
+          <div class="user-avatar" id="sidebar-user-avatar" style="background: #4f46e5; color: #ffffff;">AD</div>
+          <div class="user-info-text">
+            <div class="user-display-name" id="sidebar-user-name">Administrator</div>
+            <div class="user-role-badge" id="sidebar-user-role" style="background: rgba(99, 102, 241, 0.2); color: #c7d2fe;">Platform Admin</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+          <div>
+            <h1 class="page-title" id="admin-page-title" style="display:flex; align-items:center; gap:8px;">
+              <span>🛡️</span> System Operations & Governance
+            </h1>
+            <p class="page-subtitle" id="admin-page-subtitle" style="font-size:12px; color:var(--text-muted); margin:0;">
+              Platform-level control panel for user lifecycle, AI inference, and runtime telemetry
+            </p>
+          </div>
+        </div>
+        <div class="header-right" style="display:flex; align-items:center; gap:12px;">
+          <span class="admin-badge" id="top-role-badge">
+            <span class="status-dot" style="width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block;"></span>
+            <span id="top-sys-status">Health: Optimal</span>
+          </span>
+          <button class="btn btn-secondary btn-sm" id="btn-top-refresh">
+            🔄 Refresh Telemetry
+          </button>
+          <div class="user-avatar" id="top-user-avatar" style="background:#4f46e5; color:#fff; width:34px; height:34px; font-size:13px;" title="Administrator Profile">AD</div>
+          <button class="btn btn-outline btn-sm btn-logout" id="btn-top-logout" style="border-color:var(--border-color); color:var(--text-muted);">
+            Sign Out
+          </button>
+        </div>
+      </header>
+
+      <main class="content-body" style="padding: 24px 32px; max-width: 100%; box-sizing: border-box;">
 
     <!-- Admin Hero Banner -->
     <div class="admin-hero">
@@ -616,22 +817,38 @@
             <option value="Consumer">Consumer</option>
             <option value="Retailer">Retailer</option>
             <option value="Food Quality Inspector">Food Quality Inspector</option>
+            <option value="Warehouse Manager">Warehouse Manager</option>
             <option value="Warehouse Operator">Warehouse Operator</option>
-            <option value="Admin">Admin</option>
+            <option value="Food Manufacturer">Food Manufacturer</option>
+            <option value="Supply Chain Operator">Supply Chain Operator</option>
+            <option value="Administrator">Administrator</option>
           </select>
 
           <!-- Status Filter -->
           <select id="select-users-status-filter" class="form-control" style="width: auto;">
             <option value="">All Statuses</option>
-            <option value="active">Active Only</option>
-            <option value="deactivated">Deactivated Only</option>
+            <option value="active">Active Accounts</option>
+            <option value="deactivated">Inactive / Deactivated</option>
+          </select>
+
+          <!-- Sort Filter -->
+          <select id="select-users-sort-filter" class="form-control" style="width: auto;">
+            <option value="created_at:desc">Sort: Newest Registered</option>
+            <option value="created_at:asc">Sort: Oldest Registered</option>
+            <option value="name:asc">Sort: Name (A-Z)</option>
+            <option value="name:desc">Sort: Name (Z-A)</option>
+            <option value="email:asc">Sort: Email (A-Z)</option>
+            <option value="role:asc">Sort: Role (A-Z)</option>
+            <option value="status:asc">Sort: Active First</option>
+            <option value="last_login:desc">Sort: Last Login</option>
           </select>
 
           <button class="btn btn-outline btn-sm-action" id="btn-filter-users">Filter</button>
           <button class="btn btn-outline btn-sm-action" id="btn-reset-users-filter">Reset</button>
         </div>
 
-        <div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-outline btn-sm-action" id="btn-refresh-users">🔄 Refresh</button>
           <button class="btn btn-primary" id="btn-export-users-csv" style="display: inline-flex; align-items: center; gap: 6px;">
             📥 Export Users CSV
           </button>
@@ -640,23 +857,42 @@
 
       <!-- Users Table -->
       <div class="table-container">
-        <table class="admin-table">
+        <table class="admin-table" id="table-users">
           <thead>
             <tr>
-              <th>User Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Auth Provider</th>
-              <th>Last Login</th>
-              <th>Created Date</th>
-              <th style="text-align: right;">Governance Actions</th>
+              <th class="sortable-th" data-sort="id">User ID <span class="sort-indicator">↕</span></th>
+              <th class="sortable-th" data-sort="name">User Name <span class="sort-indicator">↕</span></th>
+              <th class="sortable-th" data-sort="email">Email Address <span class="sort-indicator">↕</span></th>
+              <th class="sortable-th" data-sort="role">User Role <span class="sort-indicator">↕</span></th>
+              <th class="sortable-th" data-sort="status">Account Status <span class="sort-indicator">↕</span></th>
+              <th class="sortable-th active-sort" data-sort="created_at">Registration Date <span class="sort-indicator">▼</span></th>
+              <th class="sortable-th" data-sort="last_login">Last Login <span class="sort-indicator">↕</span></th>
+              <th style="text-align: right;">Actions</th>
             </tr>
           </thead>
           <tbody id="tbody-users-list">
             <tr><td colspan="8" style="text-align:center; padding: 30px; color:#94a3b8;">Loading user records...</td></tr>
           </tbody>
         </table>
+
+        <!-- Table Pagination Controls -->
+        <div class="pagination-bar">
+          <div id="users-pagination-info">Showing 0 of 0 users</div>
+          <div class="pagination-controls">
+            <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; margin:0;">
+              <span>Rows:</span>
+              <select id="select-users-per-page" class="form-control" style="width: auto; padding: 4px 8px; height: 32px; font-size: 0.82rem;">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+            <button class="btn-sm-action" id="btn-users-prev-page" disabled>◀ Prev</button>
+            <span id="users-page-number" style="font-weight:700; color:#1e293b; padding:0 4px;">Page 1 of 1</span>
+            <button class="btn-sm-action" id="btn-users-next-page" disabled>Next ▶</button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -941,6 +1177,23 @@
     <!-- TAB 7: SYSTEM CONFIGURATION                                           -->
     <!-- ===================================================================== -->
     <section class="tab-pane" id="pane-system-config">
+      <!-- Feature Management Module -->
+      <div class="card" style="max-width: 800px; margin-bottom: 24px; padding: 24px; background: #fff; border-radius: var(--radius-md); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+          <div>
+            <h3 style="font-size: 1.18rem; font-weight: 800; margin-bottom: 4px;">🎛️ Platform Feature Management</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0;">
+              Activate or deactivate operational platform modules for users. Feature controls are independent from user account deactivation.
+            </p>
+          </div>
+          <button class="btn btn-outline btn-sm-action" id="btn-reload-features">🔄 Refresh</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;" id="feature-modules-grid">
+          <!-- Rendered dynamically via admin.js -->
+        </div>
+      </div>
+
       <div class="card" style="max-width: 800px; padding: 28px; background: #fff; border-radius: var(--radius-md); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
         <div class="section-header" style="margin-bottom: 20px;">
           <div>
@@ -1056,8 +1309,9 @@
       </div>
     </section>
 
-  </main>
-
+      </main>
+    </div>
+  </div>
   <!-- ======================================================================= -->
   <!-- MODALS                                                                  -->
   <!-- ======================================================================= -->
@@ -1114,28 +1368,63 @@
 
   <!-- Modal 3: Deactivate User Modal -->
   <div class="modal-backdrop" id="modal-deactivate-user">
-    <div class="modal-card" style="max-width: 480px;">
+    <div class="modal-card" style="max-width: 500px;">
       <div class="modal-header">
         <h3 class="modal-title" style="color: #dc2626;">⚠️ Deactivate User Account</h3>
         <button class="modal-close-btn" data-close="modal-deactivate-user">&times;</button>
       </div>
       <form id="form-deactivate-user">
         <input type="hidden" id="modal-deactivate-user-id">
-        <p style="font-size: 0.9rem; color: #475569; margin-bottom: 12px;">
-          Are you sure you want to suspend account access for <strong id="modal-deactivate-user-name">User</strong>?
-        </p>
-        <p style="font-size: 0.85rem; color: #b91c1c; background: #fee2e2; padding: 10px; border-radius: 6px; margin-bottom: 16px;">
-          Deactivated users are immediately prevented from signing in or accessing any protected APIs.
+        <div style="margin-bottom: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px;">
+          <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 2px;">Selected User:</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a;" id="modal-deactivate-user-name">User Name</div>
+          <div style="font-size: 0.84rem; color: #475569;" id="modal-deactivate-user-email">email@example.com</div>
+        </div>
+
+        <p style="font-size: 0.85rem; color: #b91c1c; background: #fee2e2; border-left: 4px solid #ef4444; padding: 10px 12px; border-radius: 6px; margin-bottom: 16px;">
+          <strong>Security Action:</strong> Deactivated users are immediately prevented from logging in and cannot use existing sessions to access protected APIs. Their inventory, scans, and historical records are preserved.
         </p>
 
         <div class="form-group" style="margin-bottom: 20px;">
-          <label class="form-label" for="modal-deactivate-reason">Reason for Suspension (Optional)</label>
-          <input type="text" id="modal-deactivate-reason" class="form-control" placeholder="e.g. Terms violation or requested inactive status">
+          <label class="form-label" for="modal-deactivate-reason">Reason for Deactivation (Optional)</label>
+          <input type="text" id="modal-deactivate-reason" class="form-control" placeholder="e.g. Inactive vendor, terms violation, or seasonal closure">
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" class="btn btn-outline" data-close="modal-deactivate-user">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-submit-deactivate" style="background:#dc2626; border-color:#dc2626;">Deactivate Account</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-deactivate" style="background:#dc2626; border-color:#dc2626;">🛑 Confirm Deactivate</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3b: Activate User Modal -->
+  <div class="modal-backdrop" id="modal-activate-user">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: #16a34a;">✅ Activate User Account</h3>
+        <button class="modal-close-btn" data-close="modal-activate-user">&times;</button>
+      </div>
+      <form id="form-activate-user">
+        <input type="hidden" id="modal-activate-user-id">
+        <div style="margin-bottom: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px;">
+          <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 2px;">Selected User:</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a;" id="modal-activate-user-name">User Name</div>
+          <div style="font-size: 0.84rem; color: #475569;" id="modal-activate-user-email">email@example.com</div>
+        </div>
+
+        <p style="font-size: 0.85rem; color: #15803d; background: #dcfce7; border-left: 4px solid #22c55e; padding: 10px 12px; border-radius: 6px; margin-bottom: 16px;">
+          <strong>Access Restoration:</strong> The user account will be reactivated immediately. The user will be able to log in normally and access their inventory, dashboard, and role permissions.
+        </p>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label" for="modal-activate-reason">Reason for Activation (Optional)</label>
+          <input type="text" id="modal-activate-reason" class="form-control" placeholder="e.g. Account reinstated upon administrative verification">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" class="btn btn-outline" data-close="modal-activate-user">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-activate" style="background:#16a34a; border-color:#16a34a;">✅ Confirm Activate</button>
         </div>
       </form>
     </div>

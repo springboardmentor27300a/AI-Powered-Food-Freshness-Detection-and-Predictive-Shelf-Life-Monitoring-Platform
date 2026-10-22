@@ -121,6 +121,9 @@ class Settings:
     )
 
     # Paths
+    APP_DIR: Path = APP_DIR
+    BACKEND_DIR: Path = BACKEND_DIR
+    PROJECT_ROOT: Path = PROJECT_ROOT
     UPLOAD_DIR: Path = PROJECT_ROOT / "uploads"
     FRONTEND_DIR: Path = PROJECT_ROOT / "frontend"
     DATASETS_DIR: Path = PROJECT_ROOT / "datasets"

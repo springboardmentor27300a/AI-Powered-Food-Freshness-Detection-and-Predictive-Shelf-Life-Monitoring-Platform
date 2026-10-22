@@ -719,8 +719,11 @@ class InventoryService:
             UserRole.WAREHOUSE_OPERATOR.value,
             UserRole.SUPPLY_CHAIN_OPERATOR.value,
         ]:
-            user_oid = ObjectId(current_user["id"]) if ObjectId.is_valid(current_user["id"]) else current_user["id"]
+            user_id_val = current_user.get("id") or current_user.get("_id")
+            user_oid = ObjectId(user_id_val) if ObjectId.is_valid(user_id_val) else user_id_val
             user_ids = [user_oid, str(user_oid)]
+            if current_user.get("email"):
+                user_ids.append(current_user["email"])
             query["user_id"] = {"$in": user_ids}
 
         # Category filter
@@ -887,8 +890,11 @@ class InventoryService:
             UserRole.WAREHOUSE_OPERATOR.value,
             UserRole.SUPPLY_CHAIN_OPERATOR.value,
         ]:
-            user_oid = ObjectId(current_user["id"]) if ObjectId.is_valid(current_user["id"]) else current_user["id"]
+            user_id_val = current_user.get("id") or current_user.get("_id")
+            user_oid = ObjectId(user_id_val) if ObjectId.is_valid(user_id_val) else user_id_val
             user_ids = [user_oid, str(user_oid)]
+            if current_user.get("email"):
+                user_ids.append(current_user["email"])
             query["user_id"] = {"$in": user_ids}
 
             # Auto-seed dataset items if user currently has zero inventory items

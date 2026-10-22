@@ -38,7 +38,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 2. Handle Logout, Registered, and Session Expiry Notices
-  if (urlParams.get("logged_out") === "true") {
+  const storedLoginError = sessionStorage.getItem("login_error");
+  if (storedLoginError) {
+    sessionStorage.removeItem("login_error");
+    api.clearSession();
+    showAuthError(storedLoginError);
+  } else if (urlParams.get("deactivated") === "true") {
+    api.clearSession();
+    showAuthError("Your account has been deactivated. Please contact the administrator.");
+  } else if (urlParams.get("logged_out") === "true") {
     api.clearSession();
     api.clearReturnUrl();
     showAuthSuccess("You have been successfully signed out.");

@@ -2182,11 +2182,14 @@ async function seedDatasetItems() {
     showToast("Importing food items from AI freshness datasets...", "info");
     const res = await api.seedDatasetInventory();
     showToast(res.message || "Loaded food items from datasets successfully!", "success");
-    await loadOverviewData();
+    if (typeof loadDashboardData === "function") {
+      await loadDashboardData();
+    }
   } catch (err) {
     showToast("Failed to load dataset items: " + (err.message || err), "error");
   }
 }
 
 window.seedDatasetItems = seedDatasetItems;
+window.loadOverviewData = loadDashboardData;
 

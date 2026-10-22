@@ -39,6 +39,20 @@ async def get_retailer_dashboard(
     return RetailerService.get_retailer_dashboard(current_user)
 
 
+@router.post(
+    "/seed",
+    summary="Seed Realistic Demo Products & Telemetry for Retailer"
+)
+async def seed_retailer_demo_data(
+    current_user: Dict[str, Any] = Depends(require_roles([UserRole.RETAILER.value]))
+):
+    """
+    Seeds a full suite of realistic grocery inventory items, scan records,
+    storage compliance readings, alerts, and notifications for this retailer.
+    """
+    return RetailerService.seed_retailer_inventory(current_user)
+
+
 # ==============================================================================
 # 2. Inventory & Stock Management
 # ==============================================================================

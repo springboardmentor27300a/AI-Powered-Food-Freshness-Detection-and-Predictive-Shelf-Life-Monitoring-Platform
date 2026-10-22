@@ -14,17 +14,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const currentUser = api.getUser();
   if (currentUser) {
-
-    // Set topbar and hero display info
     const topName = document.getElementById("top-user-name");
     const topRole = document.getElementById("top-user-role");
     const topAvatar = document.getElementById("top-user-avatar");
+    const sidebarName = document.getElementById("sidebar-user-name");
+    const sidebarRole = document.getElementById("sidebar-user-role");
+    const sidebarAvatar = document.getElementById("sidebar-user-avatar");
     const heroAdmin = document.getElementById("hero-admin-name");
 
-    if (topName) topName.textContent = currentUser.name || "Administrator";
+    const displayName = currentUser.name || "Administrator";
+    const initials = (currentUser.name || "AD").substring(0, 2).toUpperCase();
+
+    if (topName) topName.textContent = displayName;
     if (topRole) topRole.textContent = "Platform Admin";
-    if (topAvatar) topAvatar.textContent = (currentUser.name || "A").substring(0, 2).toUpperCase();
-    if (heroAdmin) heroAdmin.textContent = `👤 Logged In: ${currentUser.name || currentUser.email || "Admin"}`;
+    if (topAvatar) topAvatar.textContent = initials;
+    if (sidebarName) sidebarName.textContent = displayName;
+    if (sidebarRole) sidebarRole.textContent = "Platform Admin";
+    if (sidebarAvatar) sidebarAvatar.textContent = initials;
+    if (heroAdmin) heroAdmin.textContent = `👤 Logged In: ${displayName}`;
   }
 
   // 2. Setup Components & Event Listeners
@@ -38,25 +45,68 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupReportsEvents();
   setupHeroEvents();
 
-  // Topbar logout
-  const btnLogout = document.getElementById("btn-top-logout");
-  if (btnLogout) {
-    btnLogout.addEventListener("click", () => api.logout());
+  // Mobile menu toggle
+  const mobileBtn = document.querySelector(".mobile-menu-btn");
+  const sidebar = document.querySelector(".sidebar");
+  if (mobileBtn && sidebar) {
+    mobileBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+    });
   }
 
-  // 3. Initial Data Load (Overview Tab)
-  await loadOverviewData();
+  // Topbar and sidebar logout buttons
+  document.querySelectorAll(".btn-logout").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      api.logout();
+    });
+  });
+
+  // Top header telemetry refresh
+  document.getElementById("btn-top-refresh")?.addEventListener("click", async () => {
+    const btn = document.getElementById("btn-top-refresh");
+    setButtonLoading(btn, true, "🔄 Refresh Telemetry");
+    await loadOverviewData();
+    await loadSystemHealthData();
+    showToast("Platform telemetry refreshed.", "info");
+    setButtonLoading(btn, false, "🔄 Refresh Telemetry");
+  });
+
+  // Check URL hash for initial tab
+  const hash = window.location.hash.replace("#", "");
+  if (hash && document.getElementById(`pane-${hash}`)) {
+    switchTab(hash);
+  } else {
+    // 3. Initial Data Load (Overview Tab)
+    await loadOverviewData();
+  }
 });
 
 // =============================================================================
 // TAB NAVIGATION
 // =============================================================================
 function setupTabNavigation() {
+  // Pill tab buttons
   const tabBtns = document.querySelectorAll(".tab-nav-btn");
   tabBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       const targetTab = btn.dataset.tab;
       switchTab(targetTab);
+    });
+  });
+
+  // Sidebar navigation links
+  const sidebarLinks = document.querySelectorAll(".admin-nav-tabs .nav-item[data-tab]");
+  sidebarLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetTab = link.dataset.tab;
+      switchTab(targetTab);
+
+      const sidebar = document.querySelector(".sidebar");
+      if (sidebar && window.innerWidth < 992) {
+        sidebar.classList.remove("open");
+      }
     });
   });
 
@@ -74,14 +124,41 @@ function setupTabNavigation() {
 }
 
 function switchTab(tabId) {
+  // Update segmented tab buttons
   document.querySelectorAll(".tab-nav-btn").forEach((b) => b.classList.remove("active"));
-  document.querySelectorAll(".tab-pane").forEach((p) => p.classList.remove("active"));
-
   const targetBtn = document.querySelector(`.tab-nav-btn[data-tab="${tabId}"]`);
-  const targetPane = document.getElementById(`pane-${tabId}`);
-
   if (targetBtn) targetBtn.classList.add("active");
+
+  // Update sidebar links
+  document.querySelectorAll(".admin-nav-tabs .nav-item[data-tab]").forEach((item) => item.classList.remove("active"));
+  const targetSidebarItem = document.querySelector(`.admin-nav-tabs .nav-item[data-tab="${tabId}"]`);
+  if (targetSidebarItem) targetSidebarItem.classList.add("active");
+
+  // Update tab panes
+  document.querySelectorAll(".tab-pane").forEach((p) => p.classList.remove("active"));
+  const targetPane = document.getElementById(`pane-${tabId}`);
   if (targetPane) targetPane.classList.add("active");
+
+  // Update URL hash cleanly
+  if (window.location.hash !== `#${tabId}`) {
+    history.replaceState(null, null, `#${tabId}`);
+  }
+
+  // Update top title to reflect active section
+  const titleMap = {
+    overview: "System Operations & Governance",
+    users: "User Lifecycle & Role Governance",
+    "ai-monitor": "AI Freshness Vision Telemetry",
+    "storage-rules": "Storage Safety Rules & Zones",
+    "audit-logs": "Security Audit Trail & Compliance",
+    "system-health": "Infrastructure Diagnostics & Health",
+    "system-config": "Runtime System Configuration",
+    reports: "Platform-Wide Analytics & Intelligence"
+  };
+  const titleEl = document.getElementById("admin-page-title");
+  if (titleEl && titleMap[tabId]) {
+    titleEl.innerHTML = `<span>🛡️</span> ${titleMap[tabId]}`;
+  }
 
   // Lazy load tab data
   if (tabId === "overview") loadOverviewData();
@@ -93,6 +170,8 @@ function switchTab(tabId) {
   else if (tabId === "system-config") loadSystemConfigData();
   else if (tabId === "reports") loadReportsData();
 }
+
+window.switchTab = switchTab;
 
 function setupHeroEvents() {
   const btnRefresh = document.getElementById("btn-hero-refresh-all");
@@ -198,12 +277,13 @@ function renderOverviewRecentUsers(users) {
   const tbody = document.getElementById("tbody-overview-recent-users");
   if (!tbody) return;
 
-  if (!users || users.length === 0) {
+  const rawList = Array.isArray(users) ? users : (users && users.items ? users.items : []);
+  if (!rawList || rawList.length === 0) {
     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px; color:#94a3b8;">No registered users recorded.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = users.slice(0, 5).map((u) => {
+  tbody.innerHTML = rawList.slice(0, 5).map((u) => {
     const roleBadge = getRoleBadgeHtml(u.role);
     const statusPill = u.status === "deactivated"
       ? `<span class="status-pill deactivated">Deactivated</span>`
@@ -250,24 +330,138 @@ function renderOverviewRecentAudits(audits) {
 // =============================================================================
 // MODULE 2: USER & ROLE MANAGEMENT
 // =============================================================================
+let usersState = {
+  page: 1,
+  limit: 25,
+  search: "",
+  role: "",
+  status: "",
+  sortBy: "created_at",
+  sortOrder: "desc",
+  total: 0,
+  pages: 1,
+  items: [],
+};
+
 function setupUserManagementEvents() {
   const btnFilter = document.getElementById("btn-filter-users");
   const btnReset = document.getElementById("btn-reset-users-filter");
+  const btnRefresh = document.getElementById("btn-refresh-users");
   const inputSearch = document.getElementById("input-users-search");
+  const roleSelect = document.getElementById("select-users-role-filter");
+  const statusSelect = document.getElementById("select-users-status-filter");
+  const sortSelect = document.getElementById("select-users-sort-filter");
+  const perPageSelect = document.getElementById("select-users-per-page");
+  const btnPrev = document.getElementById("btn-users-prev-page");
+  const btnNext = document.getElementById("btn-users-next-page");
   const btnExport = document.getElementById("btn-export-users-csv");
 
-  btnFilter?.addEventListener("click", () => loadUsersData());
-  btnReset?.addEventListener("click", () => {
-    if (inputSearch) inputSearch.value = "";
-    const roleSelect = document.getElementById("select-users-role-filter");
-    const statusSelect = document.getElementById("select-users-status-filter");
-    if (roleSelect) roleSelect.value = "";
-    if (statusSelect) statusSelect.value = "";
-    loadUsersData();
+  // Search input: filter on Enter
+  inputSearch?.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      usersState.search = inputSearch.value.trim();
+      loadUsersData(1);
+    }
   });
 
-  inputSearch?.addEventListener("keyup", (e) => {
-    if (e.key === "Enter") loadUsersData();
+  // Role filter change
+  roleSelect?.addEventListener("change", () => {
+    usersState.role = roleSelect.value;
+    loadUsersData(1);
+  });
+
+  // Status filter change
+  statusSelect?.addEventListener("change", () => {
+    usersState.status = statusSelect.value;
+    loadUsersData(1);
+  });
+
+  // Sort dropdown change
+  sortSelect?.addEventListener("change", () => {
+    const [by, ord] = sortSelect.value.split(":");
+    usersState.sortBy = by || "created_at";
+    usersState.sortOrder = ord || "desc";
+    updateHeaderSortIndicators();
+    loadUsersData(1);
+  });
+
+  // Filter button
+  btnFilter?.addEventListener("click", () => {
+    usersState.search = inputSearch?.value.trim() || "";
+    usersState.role = roleSelect?.value || "";
+    usersState.status = statusSelect?.value || "";
+    if (sortSelect) {
+      const [by, ord] = sortSelect.value.split(":");
+      usersState.sortBy = by || "created_at";
+      usersState.sortOrder = ord || "desc";
+      updateHeaderSortIndicators();
+    }
+    loadUsersData(1);
+  });
+
+  // Reset button
+  btnReset?.addEventListener("click", () => {
+    if (inputSearch) inputSearch.value = "";
+    if (roleSelect) roleSelect.value = "";
+    if (statusSelect) statusSelect.value = "";
+    if (sortSelect) sortSelect.value = "created_at:desc";
+    usersState.search = "";
+    usersState.role = "";
+    usersState.status = "";
+    usersState.sortBy = "created_at";
+    usersState.sortOrder = "desc";
+    updateHeaderSortIndicators();
+    loadUsersData(1);
+  });
+
+  // Refresh button
+  btnRefresh?.addEventListener("click", () => {
+    loadUsersData(usersState.page);
+  });
+
+  // Rows per page
+  perPageSelect?.addEventListener("change", () => {
+    usersState.limit = parseInt(perPageSelect.value, 10) || 25;
+    loadUsersData(1);
+  });
+
+  // Pagination Next / Prev
+  btnPrev?.addEventListener("click", () => {
+    if (usersState.page > 1) {
+      loadUsersData(usersState.page - 1);
+    }
+  });
+
+  btnNext?.addEventListener("click", () => {
+    if (usersState.page < usersState.pages) {
+      loadUsersData(usersState.page + 1);
+    }
+  });
+
+  // Clickable Table Headers Sorting
+  document.querySelectorAll("#table-users .sortable-th").forEach((th) => {
+    th.addEventListener("click", () => {
+      const field = th.dataset.sort;
+      if (!field) return;
+
+      if (usersState.sortBy === field) {
+        usersState.sortOrder = (usersState.sortOrder === "asc") ? "desc" : "asc";
+      } else {
+        usersState.sortBy = field;
+        usersState.sortOrder = (field === "created_at" || field === "last_login") ? "desc" : "asc";
+      }
+
+      // Sync sort dropdown if present
+      if (sortSelect) {
+        const val = `${usersState.sortBy}:${usersState.sortOrder}`;
+        if ([...sortSelect.options].some((opt) => opt.value === val)) {
+          sortSelect.value = val;
+        }
+      }
+
+      updateHeaderSortIndicators();
+      loadUsersData(1);
+    });
   });
 
   btnExport?.addEventListener("click", handleExportCsv);
@@ -285,7 +479,8 @@ function setupUserManagementEvents() {
       await api.updateUserRole(userId, newRole);
       showToast(`User role successfully updated to ${newRole}.`, "success");
       closeModal("modal-change-role");
-      await loadUsersData();
+      await loadUsersData(usersState.page);
+      await loadOverviewData();
     } catch (err) {
       showToast(err.message || "Failed to update role.", "error");
     } finally {
@@ -301,42 +496,121 @@ function setupUserManagementEvents() {
     const reason = document.getElementById("modal-deactivate-reason").value.trim() || undefined;
     const btnSubmit = document.getElementById("btn-submit-deactivate");
 
-    setButtonLoading(btnSubmit, true, "Deactivate Account");
+    setButtonLoading(btnSubmit, true, "Deactivating...");
     try {
       await api.deactivateUser(userId, reason);
-      showToast("User account has been deactivated.", "success");
+      showToast("User account has been deactivated successfully.", "success");
       closeModal("modal-deactivate-user");
-      await loadUsersData();
+      await loadUsersData(usersState.page);
+      await loadOverviewData();
     } catch (err) {
       showToast(err.message || "Failed to deactivate account.", "error");
     } finally {
-      setButtonLoading(btnSubmit, false, "Deactivate Account");
+      setButtonLoading(btnSubmit, false, "🛑 Confirm Deactivate");
+    }
+  });
+
+  // Form submit: Activate User
+  const formActivate = document.getElementById("form-activate-user");
+  formActivate?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userId = document.getElementById("modal-activate-user-id").value;
+    const reason = document.getElementById("modal-activate-reason").value.trim() || undefined;
+    const btnSubmit = document.getElementById("btn-submit-activate");
+
+    setButtonLoading(btnSubmit, true, "Activating...");
+    try {
+      await api.activateUser(userId, reason);
+      showToast("User account has been reactivated successfully.", "success");
+      closeModal("modal-activate-user");
+      await loadUsersData(usersState.page);
+      await loadOverviewData();
+    } catch (err) {
+      showToast(err.message || "Failed to activate account.", "error");
+    } finally {
+      setButtonLoading(btnSubmit, false, "✅ Confirm Activate");
     }
   });
 }
 
-async function loadUsersData() {
+function updateHeaderSortIndicators() {
+  document.querySelectorAll("#table-users .sortable-th").forEach((th) => {
+    const field = th.dataset.sort;
+    const indicator = th.querySelector(".sort-indicator");
+    if (!indicator) return;
+
+    if (field === usersState.sortBy) {
+      th.classList.add("active-sort");
+      indicator.textContent = (usersState.sortOrder === "asc") ? "▲" : "▼";
+    } else {
+      th.classList.remove("active-sort");
+      indicator.textContent = "↕";
+    }
+  });
+}
+
+async function loadUsersData(targetPage = null) {
   const tbody = document.getElementById("tbody-users-list");
   if (!tbody) return;
 
+  if (targetPage !== null) {
+    usersState.page = targetPage;
+  }
+
   tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color:#94a3b8;">Loading user records...</td></tr>`;
 
-  const search = document.getElementById("input-users-search")?.value.trim() || "";
-  const role = document.getElementById("select-users-role-filter")?.value || "";
-  const status = document.getElementById("select-users-status-filter")?.value || "";
+  const skip = (usersState.page - 1) * usersState.limit;
+  const params = {
+    limit: usersState.limit,
+    skip: skip,
+    sort_by: usersState.sortBy,
+    sort_order: usersState.sortOrder,
+  };
 
-  const params = {};
-  if (search) params.search = search;
-  if (role) params.role = role;
-  if (status) params.status = status;
+  if (usersState.search) params.search = usersState.search;
+  if (usersState.role) params.role = usersState.role;
+  if (usersState.status) params.status = usersState.status;
 
   try {
-    const users = await api.getAdminUsers(params);
-    currentUsersList = users || [];
-    renderUsersTable(currentUsersList);
+    const res = await api.getAdminUsers(params);
+    const users = Array.isArray(res) ? res : (res && res.items ? res.items : []);
+    const total = res && typeof res.total === "number" ? res.total : users.length;
+    
+    usersState.items = users || [];
+    usersState.total = total;
+    usersState.pages = res && typeof res.pages === "number" ? res.pages : Math.max(1, Math.ceil(total / usersState.limit));
+
+    renderUsersTable(usersState.items);
+    renderUsersPagination();
   } catch (err) {
     console.error("Failed to load users:", err);
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 25px; color:#dc2626;">Failed to load users: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderUsersPagination() {
+  const infoEl = document.getElementById("users-pagination-info");
+  const pageNumEl = document.getElementById("users-page-number");
+  const btnPrev = document.getElementById("btn-users-prev-page");
+  const btnNext = document.getElementById("btn-users-next-page");
+
+  const start = usersState.total === 0 ? 0 : (usersState.page - 1) * usersState.limit + 1;
+  const end = Math.min(usersState.total, usersState.page * usersState.limit);
+
+  if (infoEl) {
+    infoEl.textContent = `Showing ${start} to ${end} of ${usersState.total} users`;
+  }
+
+  if (pageNumEl) {
+    pageNumEl.textContent = `Page ${usersState.page} of ${usersState.pages}`;
+  }
+
+  if (btnPrev) {
+    btnPrev.disabled = (usersState.page <= 1);
+  }
+
+  if (btnNext) {
+    btnNext.disabled = (usersState.page >= usersState.pages);
   }
 }
 
@@ -344,45 +618,71 @@ function renderUsersTable(users) {
   const tbody = document.getElementById("tbody-users-list");
   if (!tbody) return;
 
-  if (!users || users.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 35px; color:#94a3b8;">No matching users found.</td></tr>`;
+  const rawList = Array.isArray(users) ? users : (users && users.items ? users.items : []);
+  if (!rawList || rawList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 35px; color:#94a3b8;">No matching users found for current filter criteria.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = users.map((u) => {
+  const currentAdmin = api.getUser() || {};
+  const currentAdminId = currentAdmin.id || currentAdmin._id || "";
+  const currentAdminEmail = (currentAdmin.email || "").toLowerCase().trim();
+
+  tbody.innerHTML = rawList.map((u) => {
     const roleBadge = getRoleBadgeHtml(u.role);
-    const isDeactivated = u.status === "deactivated" || u.is_active === false;
+    const isDeactivated = (u.status === "deactivated" || u.is_active === false);
     const statusPill = isDeactivated
-      ? `<span class="status-pill deactivated">Deactivated</span>`
+      ? `<span class="status-pill deactivated">Inactive</span>`
       : `<span class="status-pill active">Active</span>`;
 
-    const lastLoginFormatted = u.last_login ? new Date(u.last_login).toLocaleString() : "Never";
-    const createdFormatted = u.created_at ? new Date(u.created_at).toLocaleDateString() : "N/A";
-    const authProviderBadge = u.auth_provider === "google"
-      ? `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; color:#ea4335; font-weight:700;">🌐 Google</span>`
-      : `<span style="font-size:0.75rem; color:#64748b;">🔑 Local</span>`;
+    const lastLoginFormatted = u.last_login
+      ? new Date(u.last_login).toLocaleString([], { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+      : `<span style="color:#94a3b8; font-style:italic;">Never</span>`;
 
-    const toggleStatusBtn = isDeactivated
-      ? `<button class="btn-sm-action success" onclick="handleActivateUser('${u.id}', '${escapeHtml(u.name)}')">✅ Activate</button>`
-      : `<button class="btn-sm-action danger" onclick="openDeactivateUserModal('${u.id}', '${escapeHtml(u.name)}')">🛑 Deactivate</button>`;
+    const createdFormatted = u.created_at
+      ? new Date(u.created_at).toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" })
+      : "N/A";
+
+    // Self check
+    const isSelf = (currentAdminId && u.id === currentAdminId) ||
+                   (currentAdminEmail && u.email && u.email.toLowerCase().trim() === currentAdminEmail);
+
+    const selfBadge = isSelf ? ` <span style="font-size:0.68rem; color:#2563eb; background:#dbeafe; padding:1px 6px; border-radius:4px; font-weight:700;">You</span>` : "";
+
+    // Action button
+    let statusActionBtn = "";
+    if (isDeactivated) {
+      statusActionBtn = `<button class="btn-sm-action success" onclick="openActivateUserModal('${u.id}', '${escapeHtml(u.name || "User")}', '${escapeHtml(u.email || "")}')" title="Reactivate user access">✅ Activate</button>`;
+    } else {
+      if (isSelf) {
+        statusActionBtn = `<button class="btn-sm-action danger" disabled title="Administrators cannot deactivate their own active account">🛑 Deactivate</button>`;
+      } else {
+        statusActionBtn = `<button class="btn-sm-action danger" onclick="openDeactivateUserModal('${u.id}', '${escapeHtml(u.name || "User")}', '${escapeHtml(u.email || "")}')" title="Deactivate account access">🛑 Deactivate</button>`;
+      }
+    }
+
+    const shortId = u.id ? (u.id.length > 8 ? u.id.substring(0, 8) + "..." : u.id) : "N/A";
 
     return `
       <tr>
         <td>
-          <div style="font-weight: 700; color: #1e293b;">${escapeHtml(u.name || "User")}</div>
-          <div style="font-size: 0.76rem; color: #94a3b8;">ID: ${escapeHtml(u.id)}</div>
+          <code class="user-id-code" title="${escapeHtml(u.id)}">${escapeHtml(shortId)}</code>
         </td>
-        <td>${escapeHtml(u.email || "")}</td>
+        <td>
+          <div style="font-weight: 700; color: #1e293b;">${escapeHtml(u.name || "User")}${selfBadge}</div>
+        </td>
+        <td>
+          <span style="color: #475569; font-size: 0.86rem;">${escapeHtml(u.email || "")}</span>
+        </td>
         <td>${roleBadge}</td>
         <td>${statusPill}</td>
-        <td>${authProviderBadge}</td>
-        <td style="font-size: 0.8rem; color: #64748b;">${lastLoginFormatted}</td>
-        <td style="font-size: 0.8rem; color: #64748b;">${createdFormatted}</td>
+        <td style="font-size: 0.82rem; color: #64748b;">${createdFormatted}</td>
+        <td style="font-size: 0.82rem; color: #64748b;">${lastLoginFormatted}</td>
         <td style="text-align: right;">
           <div class="action-btn-group" style="justify-content: flex-end;">
-            <button class="btn-sm-action" onclick="openUserDetailsModal('${u.id}')">🔍 Details</button>
-            <button class="btn-sm-action" onclick="openChangeRoleModal('${u.id}', '${escapeHtml(u.name)}', '${escapeHtml(u.role)}')">🔄 Role</button>
-            ${toggleStatusBtn}
+            <button class="btn-sm-action" onclick="openUserDetailsModal('${u.id}')" title="Inspect user record and details">🔍 Details</button>
+            <button class="btn-sm-action" onclick="openChangeRoleModal('${u.id}', '${escapeHtml(u.name || "User")}', '${escapeHtml(u.role || "Consumer")}')" title="Reassign operational role">🔄 Role</button>
+            ${statusActionBtn}
           </div>
         </td>
       </tr>
@@ -390,7 +690,7 @@ function renderUsersTable(users) {
   }).join("");
 }
 
-// User Action Handlers (exposed globally for inline onclick)
+// User Action Handlers (exposed globally)
 window.openUserDetailsModal = async function(userId) {
   try {
     const user = await api.getAdminUser(userId);
@@ -402,9 +702,9 @@ window.openUserDetailsModal = async function(userId) {
         <strong>Full Name:</strong> <span>${escapeHtml(user.name || "N/A")}</span>
         <strong>Email:</strong> <span>${escapeHtml(user.email || "N/A")}</span>
         <strong>Assigned Role:</strong> <span>${getRoleBadgeHtml(user.role)}</span>
-        <strong>Account Status:</strong> <span>${user.status === "deactivated" ? '<span class="status-pill deactivated">Deactivated</span>' : '<span class="status-pill active">Active</span>'}</span>
+        <strong>Account Status:</strong> <span>${user.status === "deactivated" || user.is_active === false ? '<span class="status-pill deactivated">Inactive</span>' : '<span class="status-pill active">Active</span>'}</span>
         <strong>Auth Provider:</strong> <span>${escapeHtml(user.auth_provider || "local").toUpperCase()}</span>
-        ${user.google_id ? `<strong>Google Subject ID:</strong> <code style="font-size:0.8rem;">${escapeHtml(user.google_id)}</code>` : ''}
+        ${user.google_id ? `<strong>Google Subject ID:</strong> <code style="font-size:0.8rem;">${escapeHtml(user.google_id)}</code>` : ""}
         <strong>Last Login:</strong> <span>${user.last_login ? new Date(user.last_login).toLocaleString() : "Never logged in"}</span>
         <strong>Registered Date:</strong> <span>${user.created_at ? new Date(user.created_at).toLocaleString() : "N/A"}</span>
         <strong>User ID:</strong> <code style="font-size:0.8rem;">${escapeHtml(user.id)}</code>
@@ -422,27 +722,34 @@ window.openChangeRoleModal = function(userId, userName, currentRole) {
   document.getElementById("modal-role-user-name").textContent = userName;
   const select = document.getElementById("modal-select-role");
   if (select) {
-    select.value = (currentRole === "Admin") ? "Consumer" : currentRole;
+    select.value = (currentRole === "Admin" || currentRole === "Administrator") ? "Administrator" : currentRole;
   }
   openModal("modal-change-role");
 };
 
-window.openDeactivateUserModal = function(userId, userName) {
+window.openDeactivateUserModal = function(userId, userName, userEmail) {
+  const currentAdmin = api.getUser() || {};
+  const currentAdminId = currentAdmin.id || currentAdmin._id || "";
+  const currentAdminEmail = (currentAdmin.email || "").toLowerCase().trim();
+
+  if ((currentAdminId && currentAdminId === userId) || (currentAdminEmail && userEmail && currentAdminEmail === userEmail.toLowerCase().trim())) {
+    showToast("Security Policy: Administrators cannot deactivate their own active account.", "warning");
+    return;
+  }
+
   document.getElementById("modal-deactivate-user-id").value = userId;
   document.getElementById("modal-deactivate-user-name").textContent = userName;
+  document.getElementById("modal-deactivate-user-email").textContent = userEmail || "No email available";
   document.getElementById("modal-deactivate-reason").value = "";
   openModal("modal-deactivate-user");
 };
 
-window.handleActivateUser = async function(userId, userName) {
-  if (!confirm(`Reactivate account access for ${userName}?`)) return;
-  try {
-    await api.activateUser(userId);
-    showToast(`Account for ${userName} has been reactivated.`, "success");
-    await loadUsersData();
-  } catch (err) {
-    showToast(err.message || "Failed to activate user.", "error");
-  }
+window.openActivateUserModal = function(userId, userName, userEmail) {
+  document.getElementById("modal-activate-user-id").value = userId;
+  document.getElementById("modal-activate-user-name").textContent = userName;
+  document.getElementById("modal-activate-user-email").textContent = userEmail || "No email available";
+  document.getElementById("modal-activate-reason").value = "";
+  openModal("modal-activate-user");
 };
 
 async function handleExportCsv() {
@@ -906,6 +1213,7 @@ function setupSystemConfigEvents() {
 }
 
 async function loadSystemConfigData() {
+  loadPlatformFeatures();
   try {
     const cfg = await api.getAdminSystemConfig();
 
@@ -1019,10 +1327,109 @@ function renderFreshnessRatioChart(freshnessMetrics) {
 function getRoleBadgeHtml(role) {
   const r = role || "Consumer";
   let cls = "Consumer";
-  if (r === "Admin") cls = "Admin";
-  else if (r === "Retailer") cls = "Retailer";
-  else if (r.includes("Inspector")) cls = "Inspector";
-  else if (r.includes("Warehouse")) cls = "Warehouse";
+  const rLower = r.toLowerCase();
+  if (rLower.includes("admin")) cls = "Admin";
+  else if (rLower.includes("retailer")) cls = "Retailer";
+  else if (rLower.includes("inspector")) cls = "Inspector";
+  else if (rLower.includes("warehouse manager")) cls = "WarehouseManager";
+  else if (rLower.includes("warehouse")) cls = "Warehouse";
+  else if (rLower.includes("manufacturer")) cls = "Manufacturer";
+  else if (rLower.includes("supply chain")) cls = "SupplyChain";
 
   return `<span class="role-badge ${cls}">${escapeHtml(r)}</span>`;
 }
+
+
+// =============================================================================
+// PLATFORM FEATURE MODULES MANAGEMENT
+// =============================================================================
+const FEATURE_MODULES = [
+  {
+    key: "feature_food_scanner_enabled",
+    name: "Food Freshness Scanner",
+    icon: "📷",
+    description: "Computer vision image analysis and freshness quality score estimation for produce and perishables.",
+  },
+  {
+    key: "feature_inventory_management_enabled",
+    name: "Food Inventory Management",
+    icon: "📦",
+    description: "Batch management, item cataloging, stock tracking, and shelf-life calculations across user roles.",
+  },
+  {
+    key: "feature_freshness_alerts_enabled",
+    name: "Freshness & Spoilage Alerts",
+    icon: "⚠️",
+    description: "Automated event dispatching for approaching expiration dates and critical freshness decline.",
+  },
+  {
+    key: "feature_expiry_tracking_enabled",
+    name: "Expiry & FEFO Shelf-Life Tracking",
+    icon: "⏳",
+    description: "FEFO (First Expired, First Out) inventory rotation prioritizing and dynamic expiration timelines.",
+  },
+  {
+    key: "feature_storage_monitoring_enabled",
+    name: "Storage Condition Monitoring",
+    icon: "❄️",
+    description: "Warehouse temperature and humidity threshold validation against defined category storage rules.",
+  },
+  {
+    key: "feature_reports_enabled",
+    name: "Reports & Food Waste Analytics",
+    icon: "📊",
+    description: "Visual inventory reports, category distribution charts, food waste analysis, and audit exports.",
+  },
+];
+
+async function loadPlatformFeatures() {
+  const container = document.getElementById("feature-modules-grid");
+  if (!container) return;
+
+  try {
+    const config = await api.getAdminSystemConfig();
+    container.innerHTML = FEATURE_MODULES.map((mod) => {
+      const isEnabled = config[mod.key] !== false;
+      const statusPill = isEnabled
+        ? `<span class="status-pill active">Active</span>`
+        : `<span class="status-pill deactivated">Disabled</span>`;
+
+      const actionBtn = isEnabled
+        ? `<button class="btn-sm-action danger" onclick="toggleFeatureModule('${mod.key}', false, '${escapeHtml(mod.name)}')">Deactivate</button>`
+        : `<button class="btn-sm-action success" onclick="toggleFeatureModule('${mod.key}', true, '${escapeHtml(mod.name)}')">Activate</button>`;
+
+      return `
+        <div class="feature-card">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-weight: 700; font-size: 0.95rem; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                <span>${mod.icon}</span> <span>${escapeHtml(mod.name)}</span>
+              </span>
+              ${statusPill}
+            </div>
+            <p style="font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.4;">${escapeHtml(mod.description)}</p>
+          </div>
+          <div style="display: flex; justify-content: flex-end; padding-top: 8px; border-top: 1px solid #f1f5f9;">
+            ${actionBtn}
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch (err) {
+    console.error("Failed to load platform features:", err);
+    container.innerHTML = `<div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #dc2626;">Failed to load feature modules: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+window.toggleFeatureModule = async function(key, enable, name) {
+  const actionText = enable ? "activate" : "deactivate";
+  if (!confirm(`Are you sure you want to ${actionText} the '${name}' module platform-wide?`)) return;
+
+  try {
+    await api.updateAdminSystemConfig({ [key]: enable });
+    showToast(`Module '${name}' has been ${enable ? 'activated' : 'deactivated'}.`, "success");
+    await loadPlatformFeatures();
+  } catch (err) {
+    showToast(err.message || `Failed to ${actionText} feature.`, "error");
+  }
+};

@@ -95,7 +95,7 @@ class AuthService:
             )
 
         # Enforce account activation status
-        if user.get("is_active") is False or user.get("status") == "deactivated":
+        if user.get("is_active") is False or user.get("status") in ["deactivated", "inactive"]:
             AuditService.log_event(
                 action="USER_LOGIN_FAILED",
                 actor_id=str(user["_id"]),
@@ -108,7 +108,7 @@ class AuthService:
             )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Account is deactivated. Please contact platform administrator."
+                detail="Your account has been deactivated. Please contact the administrator."
             )
 
         now = datetime.now(timezone.utc)
@@ -171,7 +171,7 @@ class AuthService:
 
         if user:
             # Check if deactivated
-            if user.get("is_active") is False or user.get("status") == "deactivated":
+            if user.get("is_active") is False or user.get("status") in ["deactivated", "inactive"]:
                 AuditService.log_event(
                     action="GOOGLE_LOGIN_FAILED",
                     actor_id=str(user["_id"]),
@@ -181,7 +181,7 @@ class AuthService:
                 )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Account is deactivated. Please contact platform administrator."
+                    detail="Your account has been deactivated. Please contact the administrator."
                 )
 
             # Link google_id if missing and update last_login

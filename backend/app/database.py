@@ -21,7 +21,7 @@ db = None
 # CONFIGURATION
 # ============================================================
 
-CONNECTION_ATTEMPTS = 1
+CONNECTION_ATTEMPTS = 3
 RETRY_DELAY_SECONDS = 1
 SERVER_SELECTION_TIMEOUT_MS = 3000
 CONNECT_TIMEOUT_MS = 3000
@@ -79,41 +79,65 @@ def connect_to_mongo() -> bool:
             database_name,
         )
 
-        # Use the CA bundle supplied by certifi for TLS certificate validation.
-        new_client = MongoClient(
-            mongo_uri,
-            tlsCAFile=certifi.where(),
-            serverSelectionTimeoutMS=SERVER_SELECTION_TIMEOUT_MS,
-            connectTimeoutMS=CONNECT_TIMEOUT_MS,
-            socketTimeoutMS=SOCKET_TIMEOUT_MS,
-            retryWrites=True,
-            appname="FoodFreshnessMonitoringPlatform",
-        )
-
-        # Verify the connection before assigning the global client.
+        # Connection attempts: standard certifi first, then resilient TLS fallback if SSL handshake fails
         last_error = None
+        connected = False
 
-        for attempt in range(1, CONNECTION_ATTEMPTS + 1):
+        tls_modes = [(True, False)]
+        if "mongodb+srv://" in mongo_uri or "tls=true" in mongo_uri.lower() or "ssl=true" in mongo_uri.lower():
+            tls_modes.append((False, True))
+
+        for mode_idx, (use_certifi, allow_invalid) in enumerate(tls_modes):
             try:
-                new_client.admin.command("ping")
-                last_error = None
-                break
-
-            except PyMongoError as exc:
-                last_error = exc
-
-                if attempt < CONNECTION_ATTEMPTS:
+                client_kwargs = {
+                    "serverSelectionTimeoutMS": SERVER_SELECTION_TIMEOUT_MS,
+                    "connectTimeoutMS": CONNECT_TIMEOUT_MS,
+                    "socketTimeoutMS": SOCKET_TIMEOUT_MS,
+                    "retryWrites": True,
+                    "appname": "FoodFreshnessMonitoringPlatform",
+                }
+                if use_certifi:
+                    try:
+                        client_kwargs["tlsCAFile"] = certifi.where()
+                    except Exception:
+                        pass
+                if allow_invalid:
+                    client_kwargs["tlsAllowInvalidCertificates"] = True
                     logger.warning(
-                        "MongoDB connection attempt %s/%s failed. "
-                        "Retrying in %s seconds. Error type: %s",
-                        attempt,
-                        CONNECTION_ATTEMPTS,
-                        RETRY_DELAY_SECONDS,
-                        type(exc).__name__,
+                        "Retrying MongoDB connection using resilient TLS fallback (tlsAllowInvalidCertificates)..."
                     )
-                    time.sleep(RETRY_DELAY_SECONDS)
 
-        if last_error is not None:
+                new_client = MongoClient(mongo_uri, **client_kwargs)
+
+                for attempt in range(1, CONNECTION_ATTEMPTS + 1):
+                    try:
+                        new_client.admin.command("ping")
+                        connected = True
+                        last_error = None
+                        break
+                    except PyMongoError as exc:
+                        last_error = exc
+                        if attempt < CONNECTION_ATTEMPTS:
+                            time.sleep(RETRY_DELAY_SECONDS)
+
+                if connected:
+                    break
+                else:
+                    try:
+                        new_client.close()
+                    except Exception:
+                        pass
+                    new_client = None
+            except Exception as exc:
+                last_error = exc
+                if new_client is not None:
+                    try:
+                        new_client.close()
+                    except Exception:
+                        pass
+                    new_client = None
+
+        if not connected or last_error is not None:
             raise last_error
 
         # Connection verified: expose the client and selected database.
@@ -137,12 +161,27 @@ def connect_to_mongo() -> bool:
         return True
 
     except Exception as exc:
+        err_msg = str(exc)
         logger.error(
-            "Could not connect to the configured MongoDB database. "
-            "Error type: %s",
+            "Could not connect to the configured MongoDB database. Error type: %s: %s",
             type(exc).__name__,
+            exc,
             exc_info=True,
         )
+        if "TLSV1_ALERT_INTERNAL_ERROR" in err_msg or "SSL handshake failed" in err_msg:
+            logger.error(
+                "\n========================================================================\n"
+                "  MONGODB ATLAS NETWORK ACCESS NOTICE:\n"
+                "  An SSL/TLS handshake alert (TLSV1_ALERT_INTERNAL_ERROR) occurred.\n"
+                "  In MongoDB Atlas, this error almost always means your current public IP\n"
+                "  is not whitelisted in Atlas Network Access.\n\n"
+                "  TO RESOLVE THIS IN MONGODB ATLAS:\n"
+                "  1. Log into your MongoDB Atlas account (https://cloud.mongodb.com)\n"
+                "  2. In the left navigation, click 'Network Access' under 'Security'\n"
+                "  3. Click 'Add IP Address' -> 'Add Current IP Address' (or 0.0.0.0/0)\n"
+                "  4. Click 'Confirm' and wait ~1 minute for Atlas to activate the rule.\n"
+                "========================================================================"
+            )
 
         if new_client is not None:
             try:

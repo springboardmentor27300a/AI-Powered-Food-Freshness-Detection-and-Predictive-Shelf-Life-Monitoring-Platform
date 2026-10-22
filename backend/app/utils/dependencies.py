@@ -14,6 +14,7 @@ async def get_current_user(
 ) -> Dict[str, Any]:
     """
     Extract and validate current authenticated user from Bearer token.
+    Enforces that the user exists in database and is actively enabled.
     """
     if not credentials or not credentials.credentials:
         raise HTTPException(
@@ -56,29 +57,17 @@ async def get_current_user(
             user = None
 
     if not user:
-        email = payload.get("email", "")
-        role = payload.get("role", "Consumer")
-        if email:
-            user = {
-                "_id": ObjectId(user_id) if ObjectId.is_valid(user_id) else user_id,
-                "name": email.split("@")[0].replace(".", " ").title(),
-                "email": email,
-                "role": role,
-                "status": "active",
-                "is_active": True,
-            }
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User associated with this token does not exist.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User associated with this token does not exist.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-    # Enforce account activation status
-    if user.get("is_active") is False or user.get("status") == "deactivated":
+    # Strictly enforce account activation status against live database state
+    if user.get("is_active") is False or user.get("status") in ["deactivated", "inactive"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account is deactivated. Please contact platform administrator.",
+            detail="Your account has been deactivated. Please contact the administrator.",
         )
 
     # Attach string id for easy access

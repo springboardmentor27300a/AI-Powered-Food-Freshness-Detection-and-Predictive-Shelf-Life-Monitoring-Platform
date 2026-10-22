@@ -139,7 +139,7 @@ class RetailerAlertResponse(BaseModel):
     inventory_id: str
     batch_number: Optional[str] = None
     severity: str  # Critical, Warning, Info
-    timestamp: datetime
+    timestamp: Optional[datetime] = None
     reason: str
     status: str    # Active, Acknowledged
     action: str

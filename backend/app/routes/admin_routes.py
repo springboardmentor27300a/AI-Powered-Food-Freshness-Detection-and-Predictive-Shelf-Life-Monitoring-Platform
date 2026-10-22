@@ -44,20 +44,30 @@ async def get_admin_dashboard(admin_user: Dict[str, Any] = Depends(require_admin
 # ==============================================================================
 @router.get(
     "/users",
-    summary="List, search, and filter platform users"
+    summary="List, search, filter, and sort platform users with pagination"
 )
 async def list_users(
     search: Optional[str] = Query(None, description="Search by name or email"),
     role: Optional[str] = Query(None, description="Filter by assigned role"),
-    status: Optional[str] = Query(None, description="Filter by status ('active', 'deactivated')"),
+    status: Optional[str] = Query(None, description="Filter by status ('active', 'deactivated', 'inactive')"),
+    sort_by: Optional[str] = Query("created_at", description="Field to sort by (created_at, name, email, role, status, last_login)"),
+    sort_order: Optional[str] = Query("desc", description="Sort direction ('asc' or 'desc')"),
     limit: int = Query(50, ge=1, le=200),
     skip: int = Query(0, ge=0),
     admin_user: Dict[str, Any] = Depends(require_admin)
 ):
     """
-    View all registered users with search, multi-role filtering, status filtering, and pagination.
+    View all registered users with search, multi-role filtering, status filtering, sorting, and pagination.
     """
-    return AdminService.list_users(search=search, role=role, status=status, limit=limit, skip=skip)
+    return AdminService.list_users(
+        search=search,
+        role=role,
+        status=status,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        limit=limit,
+        skip=skip
+    )
 
 
 @router.get(
@@ -124,6 +134,26 @@ async def deactivate_user(
     """
     reason = data.reason if data else None
     return AdminService.deactivate_user(user_id=user_id, admin_user=admin_user, reason=reason)
+
+
+@router.patch(
+    "/users/{user_id}/status",
+    response_model=UserResponse,
+    summary="Update user status (activate or deactivate)"
+)
+async def update_user_status(
+    user_id: str,
+    data: UserStatusUpdateRequest,
+    admin_user: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Unified endpoint to set user account status to 'active' or 'deactivated'.
+    """
+    status_val = (data.status or "active").lower()
+    if status_val in ["active", "activated"]:
+        return AdminService.activate_user(user_id=user_id, admin_user=admin_user, reason=data.reason)
+    else:
+        return AdminService.deactivate_user(user_id=user_id, admin_user=admin_user, reason=data.reason)
 
 
 # ==============================================================================

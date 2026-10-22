@@ -132,6 +132,9 @@ class RetailerService:
             raise HTTPException(status_code=503, detail="Database service unavailable.")
 
         user_oid = cls._get_user_oid(current_user)
+        # If retailer has no inventory, automatically seed demonstration grocery products
+        if inv_col.count_documents({"user_id": {"$in": [user_oid, str(user_oid)]}}) == 0:
+            cls.seed_retailer_inventory(current_user)
         query: Dict[str, Any] = {"user_id": user_oid}
 
         # Filter by archive status
@@ -635,7 +638,7 @@ class RetailerService:
                 "inventory_id": str(a.get("inventory_id")),
                 "batch_number": a.get("batch_number"),
                 "severity": a.get("severity", "Warning"),
-                "timestamp": a.get("timestamp"),
+                "timestamp": a.get("timestamp") or a.get("created_at") or datetime.now(timezone.utc),
                 "reason": a.get("reason", ""),
                 "status": a.get("status", "Active"),
                 "action": a.get("action", "Inspect product")
@@ -982,10 +985,104 @@ class RetailerService:
             is_archived=False
         )
 
+        total_records = len(items)
+        total_quantity = sum(item.get("quantity", 0) for item in items)
+        
+        fresh_count = 0
+        at_risk_count = 0
+        expired_count = 0
+        scores = []
+
+        category_breakdown = {}
+        expiry_buckets = {"expired": 0, "d1_3": 0, "d4_7": 0, "d8_14": 0, "d15_plus": 0}
+        quality_buckets = {"grade_a": 0, "grade_b": 0, "grade_c": 0, "critical": 0}
+
+        for it in items:
+            cat = it.get("category", "Other")
+            if cat not in category_breakdown:
+                category_breakdown[cat] = {
+                    "category": cat,
+                    "batches": 0,
+                    "total_quantity": 0,
+                    "fresh": 0,
+                    "at_risk": 0,
+                    "expired": 0,
+                    "scores": []
+                }
+            category_breakdown[cat]["batches"] += 1
+            category_breakdown[cat]["total_quantity"] += it.get("quantity", 0)
+
+            st = it.get("freshness_status")
+            days = it.get("days_to_expiry")
+            score = it.get("freshness_score")
+
+            if score is not None:
+                try:
+                    s_val = float(score)
+                    scores.append(s_val)
+                    category_breakdown[cat]["scores"].append(s_val)
+                    if s_val >= 80:
+                        quality_buckets["grade_a"] += 1
+                    elif s_val >= 60:
+                        quality_buckets["grade_b"] += 1
+                    elif s_val >= 40:
+                        quality_buckets["grade_c"] += 1
+                    else:
+                        quality_buckets["critical"] += 1
+                except Exception:
+                    pass
+
+            # Expiry timeline bucketing
+            if days is not None:
+                if days < 0 or st == "Spoiled":
+                    expiry_buckets["expired"] += 1
+                elif 0 <= days <= 3:
+                    expiry_buckets["d1_3"] += 1
+                elif 4 <= days <= 7:
+                    expiry_buckets["d4_7"] += 1
+                elif 8 <= days <= 14:
+                    expiry_buckets["d8_14"] += 1
+                else:
+                    expiry_buckets["d15_plus"] += 1
+
+            # Status classification
+            if st == "Spoiled" or (days is not None and days < 0):
+                expired_count += 1
+                category_breakdown[cat]["expired"] += 1
+            elif st == "At Risk" or (days is not None and 0 <= days <= 3):
+                at_risk_count += 1
+                category_breakdown[cat]["at_risk"] += 1
+            else:
+                fresh_count += 1
+                category_breakdown[cat]["fresh"] += 1
+
+        avg_score = round(sum(scores) / len(scores), 1) if scores else 0.0
+
+        # Finalize category breakdown
+        cat_list = []
+        for cat, data in category_breakdown.items():
+            cat_avg = round(sum(data["scores"]) / len(data["scores"]), 1) if data["scores"] else 0.0
+            data["avg_quality_score"] = cat_avg
+            data.pop("scores", None)
+            cat_list.append(data)
+
+        cat_list.sort(key=lambda c: c["batches"], reverse=True)
+
         return {
-            "total_records": len(items),
+            "total_records": total_records,
+            "total_quantity": total_quantity,
+            "fresh_count": fresh_count,
+            "at_risk_count": at_risk_count,
+            "expired_count": expired_count,
+            "fresh_pct": round((fresh_count / total_records) * 100, 1) if total_records > 0 else 0,
+            "at_risk_pct": round((at_risk_count / total_records) * 100, 1) if total_records > 0 else 0,
+            "expired_pct": round((expired_count / total_records) * 100, 1) if total_records > 0 else 0,
+            "avg_quality_score": avg_score,
+            "category_breakdown": cat_list,
+            "expiry_buckets": expiry_buckets,
+            "quality_buckets": quality_buckets,
             "generated_at": datetime.now(timezone.utc).isoformat(),
-            "retailer": current_user.get("name"),
+            "retailer": current_user.get("name", "Retail Store"),
             "items": items
         }
 
@@ -1256,3 +1353,201 @@ class RetailerService:
                     reason=f"Stock level is low: {qty} {item.get('unit', 'units')} remaining (Threshold: {threshold}).",
                     action="Place replenishment order with warehouse or supplier."
                 )
+
+    @classmethod
+    def seed_retailer_inventory(cls, current_user: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Seeds realistic supermarket inventory items, scans, storage readings,
+        and alerts for the authenticated retailer if their inventory is empty.
+        """
+        user_oid = cls._get_user_oid(current_user)
+        inv_col = get_inventory_collection()
+        fresh_col = get_freshness_records_collection()
+        cond_col = get_storage_conditions_collection()
+        notif_col = get_notifications_collection()
+
+        if inv_col is None:
+            raise HTTPException(status_code=503, detail="Database service unavailable.")
+
+        from seed_retailer_data import generate_retailer_catalog
+        catalog = generate_retailer_catalog(user_oid)
+
+        res = inv_col.insert_many(catalog)
+        inserted_ids = res.inserted_ids
+
+        now = datetime.now(timezone.utc)
+
+        # Scans
+        if fresh_col is not None and fresh_col.count_documents({"user_id": user_oid}) == 0:
+            scans = [
+                {
+                    "user_id": user_oid,
+                    "inventory_id": str(inserted_ids[0]),
+                    "food_name": "Crisp Fuji Apples",
+                    "category": "Fruits",
+                    "image_url": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&q=80",
+                    "freshness_score": 96.5,
+                    "freshness_label": "Fresh",
+                    "confidence": 0.97,
+                    "estimated_shelf_life_days": 14.0,
+                    "analysis_date": now - timedelta(hours=3),
+                },
+                {
+                    "user_id": user_oid,
+                    "inventory_id": str(inserted_ids[3]),
+                    "food_name": "Farm Fresh Strawberries",
+                    "category": "Fruits",
+                    "image_url": "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400&q=80",
+                    "freshness_score": 94.0,
+                    "freshness_label": "Fresh",
+                    "confidence": 0.95,
+                    "estimated_shelf_life_days": 5.0,
+                    "analysis_date": now - timedelta(hours=6),
+                },
+                {
+                    "user_id": user_oid,
+                    "inventory_id": str(inserted_ids[2]),
+                    "food_name": "Ripe Bananas with Sugar Spots",
+                    "category": "Fruits",
+                    "image_url": "https://images.unsplash.com/photo-1528825871115-3581a5387919?w=400&q=80",
+                    "freshness_score": 62.0,
+                    "freshness_label": "At Risk",
+                    "confidence": 0.92,
+                    "estimated_shelf_life_days": 1.0,
+                    "analysis_date": now - timedelta(hours=14),
+                },
+                {
+                    "user_id": user_oid,
+                    "inventory_id": str(inserted_ids[8]),
+                    "food_name": "Bacterial Soft-Rot Tomatoes",
+                    "category": "Vegetables",
+                    "image_url": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&q=80",
+                    "freshness_score": 18.0,
+                    "freshness_label": "Spoiled",
+                    "confidence": 0.98,
+                    "estimated_shelf_life_days": 0.0,
+                    "analysis_date": now - timedelta(hours=20),
+                },
+                {
+                    "user_id": user_oid,
+                    "inventory_id": str(inserted_ids[10]),
+                    "food_name": "Farm Fresh Whole Milk",
+                    "category": "Dairy",
+                    "image_url": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&q=80",
+                    "freshness_score": 98.0,
+                    "freshness_label": "Fresh",
+                    "confidence": 0.96,
+                    "estimated_shelf_life_days": 8.0,
+                    "analysis_date": now - timedelta(days=1),
+                },
+            ]
+            fresh_col.insert_many(scans)
+
+        # Storage readings
+        if cond_col is not None and cond_col.count_documents({"user_id": user_oid}) == 0:
+            storage_readings = [
+                {
+                    "user_id": user_oid,
+                    "location_name": "Walk-In Produce Cooler A",
+                    "category": "Vegetables",
+                    "current_temperature": 4.1,
+                    "target_temperature": 4.0,
+                    "min_temp": 1.0,
+                    "max_temp": 6.0,
+                    "current_humidity": 88.0,
+                    "target_humidity": 90.0,
+                    "compliance_status": "Compliant",
+                    "item_count": 8,
+                    "recorded_at": now,
+                },
+                {
+                    "user_id": user_oid,
+                    "location_name": "Dairy Chiller Wall 1",
+                    "category": "Dairy",
+                    "current_temperature": 3.0,
+                    "target_temperature": 3.0,
+                    "min_temp": 0.0,
+                    "max_temp": 4.0,
+                    "current_humidity": 58.0,
+                    "target_humidity": 60.0,
+                    "compliance_status": "Compliant",
+                    "item_count": 5,
+                    "recorded_at": now,
+                },
+                {
+                    "user_id": user_oid,
+                    "location_name": "Seafood Cold Bed A",
+                    "category": "Fish",
+                    "current_temperature": 1.1,
+                    "target_temperature": 0.5,
+                    "min_temp": -1.0,
+                    "max_temp": 2.0,
+                    "current_humidity": 82.0,
+                    "target_humidity": 80.0,
+                    "compliance_status": "Compliant",
+                    "item_count": 3,
+                    "recorded_at": now,
+                },
+                {
+                    "user_id": user_oid,
+                    "location_name": "Clearance Fruit Stand",
+                    "category": "Fruits",
+                    "current_temperature": 21.0,
+                    "target_temperature": 4.0,
+                    "min_temp": 1.0,
+                    "max_temp": 6.0,
+                    "current_humidity": 55.0,
+                    "target_humidity": 90.0,
+                    "compliance_status": "Non-Compliant (High Temp)",
+                    "item_count": 2,
+                    "recorded_at": now,
+                },
+            ]
+            cond_col.insert_many(storage_readings)
+
+        # Store Notifications
+        if notif_col is not None and notif_col.count_documents({"user_id": user_oid}) == 0:
+            notifs = [
+                {
+                    "user_id": user_oid,
+                    "title": "Welcome to Retailer Operations Hub",
+                    "message": "Your retail store inventory and AI monitoring hub are fully initialized.",
+                    "type": "SYSTEM",
+                    "is_read": False,
+                    "created_at": now - timedelta(hours=1),
+                },
+                {
+                    "user_id": user_oid,
+                    "title": "Spoilage Flag: Bacterial Soft-Rot Tomatoes",
+                    "message": "Quality score dropped to 18%. Immediate disposal advised.",
+                    "type": "ALERT",
+                    "is_read": False,
+                    "created_at": now - timedelta(hours=5),
+                },
+                {
+                    "user_id": user_oid,
+                    "title": "FEFO Priority: Bananas & Spinach",
+                    "message": "Markdown discounts recommended for 2 products expiring within 24-48 hours.",
+                    "type": "ACTION",
+                    "is_read": False,
+                    "created_at": now - timedelta(hours=10),
+                },
+                {
+                    "user_id": user_oid,
+                    "title": "Restock Notice: Brown Basmati Rice",
+                    "message": "Stock fell below safe buffer threshold (2 remaining / 5 required).",
+                    "type": "STOCK",
+                    "is_read": False,
+                    "created_at": now - timedelta(hours=16),
+                },
+            ]
+            notif_col.insert_many(notifs)
+
+        # Sync real-time alerts
+        cls._sync_realtime_alerts(current_user)
+
+        return {
+            "success": True,
+            "message": f"Seeded {len(inserted_ids)} demo products and telemetry.",
+            "inserted_count": len(inserted_ids),
+        }

@@ -394,6 +394,19 @@ class ApiClient {
 
       const data = await response.json().catch(() => ({}));
 
+      if (response.status === 403) {
+        const detailStr = (typeof data.detail === "string" ? data.detail : "") || "";
+        if (detailStr.toLowerCase().includes("deactivated") || detailStr.toLowerCase().includes("inactive")) {
+          this.clearSession();
+          sessionStorage.setItem("login_error", "Your account has been deactivated. Please contact the administrator.");
+          const path = window.location.pathname;
+          if (!path.includes("login.html") && !path.includes("register.html")) {
+            window.location.href = "login.html?deactivated=true";
+          }
+          throw new Error("Your account has been deactivated. Please contact the administrator.");
+        }
+      }
+
       if (!response.ok) {
         let errorMessage = "An unexpected error occurred.";
 
@@ -644,6 +657,10 @@ class ApiClient {
   // ----------------------------------------------------------
   // Retailer API
   // ----------------------------------------------------------
+
+  async seedRetailerData() {
+    return this.request("/retailer/seed", { method: "POST" });
+  }
 
   async getRetailerDashboard() {
     return this.request("/retailer/dashboard");

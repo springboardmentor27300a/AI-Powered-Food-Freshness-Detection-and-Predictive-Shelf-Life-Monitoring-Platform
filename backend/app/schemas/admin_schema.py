@@ -19,16 +19,18 @@ class UserRoleUpdateRequest(BaseModel):
 
 
 class UserStatusUpdateRequest(BaseModel):
-    status: str = Field(..., description="Account status ('active' or 'deactivated')")
+    status: Optional[str] = Field(None, description="Account status ('active' or 'deactivated')")
     reason: Optional[str] = Field(None, max_length=500, description="Administrative justification")
 
     @field_validator("status")
     @classmethod
-    def validate_status(cls, v: str) -> str:
+    def validate_status(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
         s = v.strip().lower()
-        if s not in ["active", "deactivated"]:
+        if s not in ["active", "deactivated", "inactive"]:
             raise ValueError("Status must be either 'active' or 'deactivated'")
-        return s
+        return "deactivated" if s == "inactive" else s
 
 
 class StorageRuleCreateRequest(BaseModel):
@@ -91,6 +93,12 @@ class SystemConfigResponse(BaseModel):
     max_upload_size_mb: int
     temperature_alert_tolerance_c: float
     notification_email_alerts_enabled: bool
+    feature_food_scanner_enabled: Optional[bool] = True
+    feature_inventory_management_enabled: Optional[bool] = True
+    feature_freshness_alerts_enabled: Optional[bool] = True
+    feature_expiry_tracking_enabled: Optional[bool] = True
+    feature_storage_monitoring_enabled: Optional[bool] = True
+    feature_reports_enabled: Optional[bool] = True
     updated_at: Optional[datetime] = None
 
 
@@ -102,6 +110,12 @@ class SystemConfigUpdateRequest(BaseModel):
     max_upload_size_mb: Optional[int] = Field(None, ge=1, le=100)
     temperature_alert_tolerance_c: Optional[float] = Field(None, ge=0.1, le=20.0)
     notification_email_alerts_enabled: Optional[bool] = None
+    feature_food_scanner_enabled: Optional[bool] = None
+    feature_inventory_management_enabled: Optional[bool] = None
+    feature_freshness_alerts_enabled: Optional[bool] = None
+    feature_expiry_tracking_enabled: Optional[bool] = None
+    feature_storage_monitoring_enabled: Optional[bool] = None
+    feature_reports_enabled: Optional[bool] = None
 
 
 class AuditLogResponse(BaseModel):

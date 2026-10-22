@@ -102,6 +102,12 @@ DEFAULT_SYSTEM_CONFIG = {
     "max_upload_size_mb": 10,
     "temperature_alert_tolerance_c": 2.0,
     "notification_email_alerts_enabled": True,
+    "feature_food_scanner_enabled": True,
+    "feature_inventory_management_enabled": True,
+    "feature_freshness_alerts_enabled": True,
+    "feature_expiry_tracking_enabled": True,
+    "feature_storage_monitoring_enabled": True,
+    "feature_reports_enabled": True,
 }
 
 
@@ -232,10 +238,12 @@ class AdminService:
         search: Optional[str] = None,
         role: Optional[str] = None,
         status: Optional[str] = None,
+        sort_by: Optional[str] = "created_at",
+        sort_order: Optional[str] = "desc",
         limit: int = 50,
         skip: int = 0,
     ) -> Dict[str, Any]:
-        """Search and filter platform users with pagination."""
+        """Search and filter platform users with sorting and pagination."""
         users_col = get_users_collection()
         if users_col is None:
             raise HTTPException(status_code=503, detail="Database service unavailable.")
@@ -254,18 +262,40 @@ class AdminService:
             if st == "active":
                 query["$or"] = [{"status": "active"}, {"status": {"$exists": False}}]
                 query["is_active"] = {"$ne": False}
-            elif st == "deactivated":
-                query["$or"] = [{"status": "deactivated"}, {"is_active": False}]
+            elif st in ["deactivated", "inactive"]:
+                query["$or"] = [{"status": {"$in": ["deactivated", "inactive"]}}, {"is_active": False}]
+
+        # Allowed sorting fields
+        sort_field = "created_at"
+        allowed_sort_fields = {
+            "created_at": "created_at",
+            "date": "created_at",
+            "registration": "created_at",
+            "name": "name",
+            "email": "email",
+            "role": "role",
+            "status": "status",
+            "last_login": "last_login",
+        }
+        if sort_by and sort_by.lower() in allowed_sort_fields:
+            sort_field = allowed_sort_fields[sort_by.lower()]
+
+        direction = -1 if (not sort_order or str(sort_order).lower() in ["desc", "-1"]) else 1
 
         total = users_col.count_documents(query)
-        cursor = users_col.find(query).sort("created_at", -1).skip(skip).limit(limit)
+        cursor = users_col.find(query).sort(sort_field, direction).skip(skip).limit(limit)
         items = [user_helper(u) for u in cursor]
+
+        page = (skip // limit) + 1 if limit > 0 else 1
+        pages = (total + limit - 1) // limit if limit > 0 else 1
 
         return {
             "items": items,
             "total": total,
             "limit": limit,
             "skip": skip,
+            "page": page,
+            "pages": pages,
         }
 
     @staticmethod
@@ -365,6 +395,13 @@ class AdminService:
         if not user:
             raise HTTPException(status_code=404, detail=f"User with ID '{user_id}' not found.")
 
+        # Prevent duplicate or unnecessary status updates
+        if user.get("is_active") is True and user.get("status") == "active":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User account '{user.get('name', user_id)}' is already active.",
+            )
+
         now = datetime.now(timezone.utc)
         users_col.update_one(
             {"_id": user["_id"]},
@@ -373,15 +410,19 @@ class AdminService:
 
         AuditService.log_event(
             action="USER_ACTIVATION",
-            actor_id=str(admin_user["id"]),
-            actor_email=admin_user["email"],
-            actor_role=admin_user["role"],
+            actor_id=str(admin_user.get("id", admin_user.get("_id", "admin"))),
+            actor_email=admin_user.get("email", "admin@platform.local"),
+            actor_role=admin_user.get("role", "Administrator"),
             target_id=str(user["_id"]),
             target_resource="users",
-            previous_value={"status": user.get("status", "deactivated")},
+            previous_value={"status": user.get("status", "deactivated"), "is_active": user.get("is_active", False)},
             new_value={"status": "active", "is_active": True},
             status="success",
-            metadata={"reason": reason or "Administrative reactivation"},
+            metadata={
+                "reason": reason or "Administrative account reactivation",
+                "target_email": user.get("email"),
+                "target_name": user.get("name"),
+            },
         )
 
         updated = users_col.find_one({"_id": user["_id"]})
@@ -394,11 +435,12 @@ class AdminService:
         if users_col is None:
             raise HTTPException(status_code=503, detail="Database service unavailable.")
 
-        # Admin cannot deactivate self
-        if str(admin_user["id"]) == str(user_id):
+        # Admin cannot deactivate self (by ID)
+        admin_id = str(admin_user.get("id", admin_user.get("_id", "")))
+        if admin_id and str(user_id) == admin_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Security policy: Administrators cannot deactivate their own active session.",
+                detail="Security policy: Administrators cannot deactivate their own active account.",
             )
 
         try:
@@ -411,6 +453,36 @@ class AdminService:
         if not user:
             raise HTTPException(status_code=404, detail=f"User with ID '{user_id}' not found.")
 
+        # Admin cannot deactivate self (by email)
+        target_email = user.get("email", "").lower().strip()
+        admin_email = admin_user.get("email", "").lower().strip()
+        if target_email and target_email == admin_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Security policy: Administrators cannot deactivate their own active account.",
+            )
+
+        # Prevent duplicate or unnecessary status updates
+        if user.get("is_active") is False and user.get("status") in ["deactivated", "inactive"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User account '{user.get('name', user_id)}' is already deactivated.",
+            )
+
+        # Prevent deactivation of the last active administrator
+        target_role = user.get("role", "")
+        if target_role in [UserRole.ADMIN.value, "Administrator", "admin", "Admin"]:
+            active_admin_count = users_col.count_documents({
+                "role": {"$in": [UserRole.ADMIN.value, "Administrator", "admin", "Admin"]},
+                "$or": [{"status": "active"}, {"status": {"$exists": False}}],
+                "is_active": {"$ne": False}
+            })
+            if active_admin_count <= 1:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Security policy: Cannot deactivate the last remaining active Administrator.",
+                )
+
         now = datetime.now(timezone.utc)
         users_col.update_one(
             {"_id": user["_id"]},
@@ -419,15 +491,19 @@ class AdminService:
 
         AuditService.log_event(
             action="USER_DEACTIVATION",
-            actor_id=str(admin_user["id"]),
-            actor_email=admin_user["email"],
-            actor_role=admin_user["role"],
+            actor_id=str(admin_user.get("id", admin_user.get("_id", "admin"))),
+            actor_email=admin_user.get("email", "admin@platform.local"),
+            actor_role=admin_user.get("role", "Administrator"),
             target_id=str(user["_id"]),
             target_resource="users",
-            previous_value={"status": user.get("status", "active")},
+            previous_value={"status": user.get("status", "active"), "is_active": user.get("is_active", True)},
             new_value={"status": "deactivated", "is_active": False},
             status="success",
-            metadata={"reason": reason or "Administrative deactivation"},
+            metadata={
+                "reason": reason or "Administrative account deactivation",
+                "target_email": user.get("email"),
+                "target_name": user.get("name"),
+            },
         )
 
         updated = users_col.find_one({"_id": user["_id"]})
