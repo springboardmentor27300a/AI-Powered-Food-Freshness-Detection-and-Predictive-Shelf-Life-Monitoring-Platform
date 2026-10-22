@@ -9,133 +9,254 @@
   <!-- Chart.js CDN for Quality Control Visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Specialized Inspector Theme Accents */
+    /* Inspector Theme Styling & Overrides */
+    :root {
+      --inspector-primary: #0d9488;
+      --inspector-primary-dark: #0f766e;
+      --inspector-primary-light: #ccfbf1;
+      --inspector-accent: #14b8a6;
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --sidebar-active: #134e4a;
+      --sidebar-text: #94a3b8;
+      --sidebar-text-active: #ffffff;
+    }
+
+    /* Sidebar Navigation Overrides for Inspector Theme */
+    .sidebar {
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar .nav-item {
+      color: #94a3b8;
+      cursor: pointer;
+    }
+
+    .sidebar .nav-item:hover {
+      background-color: #1e293b;
+      color: #ffffff;
+    }
+
+    .sidebar .nav-item.active {
+      background-color: #134e4a;
+      color: #ffffff;
+      border-left: 3px solid #14b8a6;
+      font-weight: 600;
+    }
+
+    .sidebar-footer .user-role-badge {
+      background: rgba(20, 184, 166, 0.2);
+      color: #99f6e4;
+    }
+
+    .notification-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #ef4444;
+      color: white;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
+      margin-left: auto;
+    }
+
     .inspector-badge {
-      background: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #bae6fd;
-      padding: 4px 10px;
+      background: #ccfbf1;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+      padding: 4px 12px;
       border-radius: var(--radius-full);
-      font-size: 0.75rem;
+      font-size: 0.76rem;
       font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
+
     .inspector-hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0d9488 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #134e4a 55%, #0d9488 100%);
       color: #ffffff;
-      padding: 28px 32px;
+      padding: 30px 34px;
       border-radius: var(--radius-lg);
       margin-bottom: 24px;
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
       position: relative;
       overflow: hidden;
     }
+
+    .inspector-hero::after {
+      content: "🔬";
+      position: absolute;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 6.5rem;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
     .inspector-hero h1 {
-      font-size: 1.8rem;
+      font-size: 1.85rem;
       font-weight: 800;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
       gap: 12px;
+      color: #ffffff;
     }
+
     .inspector-hero p {
       color: #cbd5e1;
       font-size: 0.95rem;
-      max-width: 800px;
+      max-width: 820px;
       margin-bottom: 0;
+      line-height: 1.5;
     }
+
+    .hero-meta-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .hero-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(6px);
+      color: #f8fafc;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Sub-Navigation Pill Strip */
+    .tab-nav {
+      display: flex;
+      gap: 6px;
+      background: #ffffff;
+      padding: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      margin-bottom: 24px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-nav::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .tab-nav::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .tab-nav-btn {
+      background: transparent;
+      border: none;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-nav-btn:hover {
+      color: var(--inspector-primary);
+      background: #f0fdfa;
+    }
+
+    .tab-nav-btn.active {
+      color: #ffffff;
+      background: var(--inspector-primary);
+      box-shadow: 0 2px 8px rgba(13, 148, 136, 0.35);
+    }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Quick Action Pills */
     .quick-actions-bar {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       margin-bottom: 24px;
     }
+
     .action-pill-btn {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       color: var(--text-main);
-      padding: 10px 18px;
+      padding: 9px 16px;
       border-radius: var(--radius-md);
       font-weight: 600;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 8px;
       transition: all 0.2s ease;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: var(--shadow-sm);
     }
+
     .action-pill-btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
+      border-color: var(--inspector-primary);
+      color: var(--inspector-primary);
       transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(13, 148, 136, 0.15);
+      box-shadow: 0 4px 10px rgba(13, 148, 136, 0.15);
     }
+
     .action-pill-btn.primary {
-      background: var(--primary);
+      background: var(--inspector-primary);
       color: #ffffff;
-      border-color: var(--primary);
+      border-color: var(--inspector-primary);
     }
+
     .action-pill-btn.primary:hover {
-      background: var(--primary-hover);
+      background: var(--inspector-primary-dark);
       color: #ffffff;
     }
-    .tab-nav {
-      display: flex;
-      gap: 4px;
-      border-bottom: 2px solid var(--border-color);
-      margin-bottom: 24px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-    }
-    .tab-nav-btn {
-      background: transparent;
-      border: none;
-      padding: 12px 18px;
-      font-size: 0.92rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -4px;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .tab-nav-btn:hover {
-      color: var(--primary);
-    }
-    .tab-nav-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
-    .tab-pane {
-      display: none;
-    }
-    .tab-pane.active {
-      display: block;
-      animation: fadeIn 0.25s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+
     .diagnostic-grid {
       display: grid;
-      grid-template-columns: 340px 1fr;
+      grid-template-columns: 360px 1fr;
       gap: 24px;
     }
-    @media (max-width: 992px) {
+
+    @media (max-width: 1024px) {
       .diagnostic-grid {
         grid-template-columns: 1fr;
       }
     }
+
     .upload-dropzone {
       border: 2px dashed #0d9488;
       background: #f0fdfa;
@@ -146,10 +267,12 @@
       transition: all 0.2s ease;
       position: relative;
     }
+
     .upload-dropzone:hover, .upload-dropzone.dragover {
       background: #ccfbf1;
       border-color: #0f766e;
     }
+
     .image-preview-box {
       max-width: 100%;
       height: 200px;
@@ -159,6 +282,7 @@
       display: none;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
+
     .scorecard-banner {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -167,27 +291,34 @@
       padding: 16px;
       border-radius: var(--radius-md);
       margin-bottom: 16px;
+      border: 1px solid var(--border-color);
     }
+
     .scorecard-item {
       text-align: center;
     }
+
     .scorecard-item .val {
       font-size: 1.4rem;
       font-weight: 800;
       color: var(--text-main);
     }
+
     .scorecard-item .lbl {
       font-size: 0.72rem;
       text-transform: uppercase;
       font-weight: 700;
       color: var(--text-muted);
+      margin-top: 2px;
     }
+
     .feature-tag-list {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       margin-top: 8px;
     }
+
     .feature-tag {
       background: #f1f5f9;
       color: #334155;
@@ -197,21 +328,25 @@
       border-radius: var(--radius-full);
       border: 1px solid #e2e8f0;
     }
+
     .feature-tag.danger {
       background: #fef2f2;
       color: #991b1b;
       border-color: #fecaca;
     }
+
     .feature-tag.warning {
       background: #fffbeb;
       color: #92400e;
       border-color: #fde68a;
     }
+
     .feature-tag.success {
       background: #f0fdf4;
       color: #166534;
       border-color: #bbf7d0;
     }
+
     .inspector-decision-box {
       border: 1px solid #cbd5e1;
       background: #f8fafc;
@@ -219,6 +354,7 @@
       padding: 18px;
       margin-top: 20px;
     }
+
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -230,6 +366,7 @@
       z-index: 1000;
       padding: 20px;
     }
+
     .modal-card {
       background: #ffffff;
       border-radius: var(--radius-lg);
@@ -241,10 +378,12 @@
       padding: 24px 28px;
       animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     @keyframes modalPop {
       from { transform: scale(0.96); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
+
     .badge-status {
       display: inline-block;
       padding: 3px 9px;
@@ -253,6 +392,7 @@
       font-weight: 700;
       text-transform: capitalize;
     }
+
     .badge-status.confirmed { background: #dcfce7; color: #166534; }
     .badge-status.flagged { background: #fee2e2; color: #991b1b; }
     .badge-status.requires-further-inspection,
@@ -260,6 +400,7 @@
     .badge-status.under-review,
     .badge-status.under_review { background: #e0f2fe; color: #075985; }
     .badge-status.pending { background: #f1f5f9; color: #475569; }
+
     .severity-badge {
       padding: 2px 8px;
       border-radius: 4px;
@@ -267,687 +408,871 @@
       font-weight: 700;
       text-transform: uppercase;
     }
+
     .severity-badge.critical { background: #ef4444; color: #fff; }
     .severity-badge.high { background: #f97316; color: #fff; }
     .severity-badge.medium { background: #eab308; color: #000; }
     .severity-badge.low { background: #3b82f6; color: #fff; }
+
+    .table-container {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+
+    /* Print Optimizations */
+    @media print {
+      .sidebar,
+      .top-header,
+      .tab-nav,
+      .quick-actions-bar,
+      .btn,
+      button,
+      .modal-backdrop,
+      #toast-container,
+      .form-control,
+      .mobile-menu-btn,
+      #dropzone-inspection,
+      #wrapper-upload-device,
+      #wrapper-upload-url,
+      .preview-container-box,
+      .diagnostic-grid > div:first-child,
+      .filter-bar,
+      #btn-apply-history-filters {
+        display: none !important;
+      }
+
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 11pt !important;
+      }
+
+      .app-container,
+      .main-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        display: block !important;
+      }
+
+      .content-body {
+        padding: 0 !important;
+      }
+
+      .tab-pane {
+        display: block !important;
+      }
+
+      .tab-pane:not(.active) {
+        display: none !important;
+      }
+
+      .card,
+      .stat-card,
+      .inspector-hero {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 16px !important;
+      }
+
+      .diagnostic-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .data-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+
+      .data-table th,
+      .data-table td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 8px !important;
+        font-size: 10pt !important;
+      }
+    }
   </style>
 </head>
-<body class="dashboard-body">
+<body>
 
-  <!-- Top Navigation Bar -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
-      <a href="dashboard.html" class="brand-logo">
-        <span class="logo-icon">🌿</span>
-        <span class="logo-text">FoodFresh <span style="font-weight:400; font-size:0.85em; opacity:0.8;">| Quality Assurance</span></span>
-      </a>
-    </div>
-
-    <nav class="topbar-nav" style="display: flex; gap: 16px; align-items: center;">
-      <a href="dashboard-inspector.html" class="nav-link active" style="font-weight:700; color:var(--primary);">Inspector Hub</a>
-      <a href="inventory.html" class="nav-link">Inventory</a>
-      <a href="reports.html" class="nav-link">Compliance Reports</a>
-      <a href="profile.html" class="nav-link">My Profile</a>
-    </nav>
-
-    <div class="topbar-right">
-      <div class="user-profile-menu">
-        <div class="user-avatar" id="top-user-avatar">QA</div>
-        <div class="user-info">
-          <span class="user-display-name" id="top-user-name">Quality Inspector</span>
-          <span class="inspector-badge">Quality Inspector</span>
-        </div>
-      </div>
-      <button class="btn btn-sm btn-outline btn-logout" style="margin-left: 14px;">Sign Out</button>
-    </div>
-  </header>
-
-  <main class="dashboard-main" style="max-width: 1360px; margin: 0 auto; padding: 24px 20px;">
-
-    <!-- Hero Banner -->
-    <div class="inspector-hero">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon" style="background: linear-gradient(135deg, #14b8a6, #0d9488); box-shadow: 0 4px 10px rgba(13, 148, 136, 0.35);">🔬</div>
         <div>
-          <h1>🔬 Food Quality Inspector Workspace</h1>
-          <p>
-            Conduct rigorous visual quality inspections, review multi-spectral computer vision diagnostics,
-            audit environmental cold-chain tolerances, record independent human evaluations, and uphold food safety standards.
-          </p>
-        </div>
-        <div>
-          <button class="btn btn-light" id="btn-refresh-dashboard" style="font-weight: 700;">🔄 Refresh Data</button>
+          <div class="brand-title">FreshGuard</div>
+          <div class="brand-subtitle" style="color: #99f6e4;">Inspector Workspace</div>
         </div>
       </div>
-    </div>
 
-    <!-- KPI Summary Cards -->
-    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 24px;">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#e0f2fe; color:#0369a1;">📋</div>
-        <div class="stat-info">
-          <span class="stat-value" id="kpi-today-inspections">0</span>
-          <span class="stat-label">Today's Inspections</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#fef3c7; color:#92400e;">⏳</div>
-        <div class="stat-info">
-          <span class="stat-value" id="kpi-pending-reviews">0</span>
-          <span class="stat-label">Pending Reviews</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#ecfdf5; color:#047857;">🍏</div>
-        <div class="stat-info">
-          <span class="stat-value" id="kpi-fresh-items">0</span>
-          <span class="stat-label">Fresh Products</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#fee2e2; color:#991b1b;">🚨</div>
-        <div class="stat-info">
-          <span class="stat-value" id="kpi-spoilage-alerts">0</span>
-          <span class="stat-label">Spoilage Alerts</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#fef2f2; color:#b91c1c;">🚩</div>
-        <div class="stat-info">
-          <span class="stat-value" id="kpi-flagged-results">0</span>
-          <span class="stat-label">Flagged Results</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:#f0fdfa; color:#0d9488;">⭐</div>
-        <div class="stat-info">
-          <span class="stat-value" id="kpi-avg-quality">0%</span>
-          <span class="stat-label">Avg Quality (<span id="kpi-avg-confidence">0%</span> Conf)</span>
-        </div>
-      </div>
-    </div>
+      <nav class="sidebar-nav inspector-nav-tabs">
+        <div class="nav-section-title">Quality Assurance</div>
+        <a href="#tab-overview" class="nav-item active" data-tab="tab-overview">
+          <span>📊</span> Overview &amp; KPIs
+        </a>
+        <a href="#tab-new-inspection" class="nav-item" data-tab="tab-new-inspection">
+          <span>🔬</span> Live AI Inspection
+        </a>
+        <a href="#tab-reviews" class="nav-item" data-tab="tab-reviews">
+          <span>⚖️</span> AI Validation Queue <span id="nav-pending-badge" class="notification-pill" style="display:none;">0</span>
+        </a>
+        <a href="#tab-history" class="nav-item" data-tab="tab-history">
+          <span>📋</span> Inspection Audit Log
+        </a>
+        <a href="#tab-storage" class="nav-item" data-tab="tab-storage">
+          <span>🌡️</span> Storage Condition Audit
+        </a>
+        <a href="#tab-analytics" class="nav-item" data-tab="tab-analytics">
+          <span>📈</span> Quality Analytics
+        </a>
+        <a href="#tab-alerts" class="nav-item" data-tab="tab-alerts">
+          <span>🚨</span> Spoilage Alerts <span id="nav-alerts-badge" class="notification-pill" style="display:none;">0</span>
+        </a>
 
-    <!-- Quick Action Pills -->
-    <div class="quick-actions-bar">
-      <button class="action-pill-btn primary" id="quick-action-new-insp">
-        <span>📸</span> New Image Inspection
-      </button>
-      <button class="action-pill-btn" id="quick-action-pending">
-        <span>⏳</span> Pending Reviews (<span id="badge-pending-count">0</span>)
-      </button>
-      <button class="action-pill-btn" id="quick-action-alerts">
-        <span>🚨</span> Quality Alerts (<span id="badge-alerts-count">0</span>)
-      </button>
-      <button class="action-pill-btn" id="quick-action-analytics">
-        <span>📊</span> Quality Analytics
-      </button>
-      <button class="action-pill-btn" id="quick-action-export">
-        <span>📥</span> Export Inspection Log (CSV)
-      </button>
-    </div>
+        <div class="nav-section-title">Operations</div>
+        <a href="inventory.html" class="nav-item">
+          <span>📦</span> Food Inventory
+        </a>
+        <a href="reports.html" class="nav-item">
+          <span>📑</span> Compliance Reports
+        </a>
 
-    <!-- Module Navigation Tabs -->
-    <div class="tab-nav">
-      <button class="tab-nav-btn active" data-tab="tab-overview"><span>🏠</span> Overview</button>
-      <button class="tab-nav-btn" data-tab="tab-new-inspection"><span>🔬</span> Image Inspection</button>
-      <button class="tab-nav-btn" data-tab="tab-reviews"><span>⚖️</span> AI Result Validation</button>
-      <button class="tab-nav-btn" data-tab="tab-history"><span>📜</span> Inspection History</button>
-      <button class="tab-nav-btn" data-tab="tab-storage"><span>🌡️</span> Storage Condition Review</button>
-      <button class="tab-nav-btn" data-tab="tab-analytics"><span>📈</span> Quality Analytics</button>
-      <button class="tab-nav-btn" data-tab="tab-alerts"><span>🚨</span> Quality Alerts</button>
-    </div>
+        <div class="nav-section-title">Account</div>
+        <a href="profile.html" class="nav-item">
+          <span>👤</span> Inspector Profile
+        </a>
+        <a href="#logout" class="nav-item btn-logout">
+          <span>🚪</span> Sign Out
+        </a>
+      </nav>
 
-    <!-- ===================================================================== -->
-    <!-- TAB 1: OVERVIEW -->
-    <!-- ===================================================================== -->
-    <div id="tab-overview" class="tab-pane active">
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
-        
-        <!-- Left: Recent Inspections Table -->
-        <div class="card">
-          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">📋 Recent Quality Inspections</h2>
-            <button class="btn btn-sm btn-outline" id="btn-view-all-history">View Full History</button>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Inspection ID</th>
-                  <th>Product</th>
-                  <th>Category</th>
-                  <th>AI Grade</th>
-                  <th>Quality</th>
-                  <th>Shelf Life</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="overview-recent-table-body">
-                <tr><td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">Loading inspection records...</td></tr>
-              </tbody>
-            </table>
+      <div class="sidebar-footer">
+        <div class="user-quick-profile">
+          <div class="user-avatar" id="sidebar-user-avatar" style="background: #0d9488; color: #ffffff;">QA</div>
+          <div class="user-info-text">
+            <div class="user-display-name" id="sidebar-user-name">Quality Inspector</div>
+            <div class="user-role-badge" id="sidebar-user-role">Food Quality Inspector</div>
           </div>
         </div>
-
-        <!-- Right: Active Quality Alerts -->
-        <div class="card">
-          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">🚨 Urgent Attention Queue</h2>
-            <span class="badge" id="overview-alerts-badge" style="background:#fee2e2; color:#991b1b;">0 Alerts</span>
-          </div>
-          <div id="overview-alerts-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto;">
-            <div style="text-align:center; padding: 20px; color:var(--text-muted);">No critical quality alerts active.</div>
-          </div>
-        </div>
-
       </div>
-    </div>
+    </aside>
 
-    <!-- ===================================================================== -->
-    <!-- TAB 2: IMAGE-BASED FOOD INSPECTION -->
-    <!-- ===================================================================== -->
-    <div id="tab-new-inspection" class="tab-pane">
-      <div class="diagnostic-grid">
-        
-        <!-- Left Column: Inspection Form -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">📸 Submit Food Inspection Sample</h2>
-            <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">Upload a clear photograph and enter storage details.</p>
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+          <div>
+            <h1 class="page-title" id="inspector-page-title" style="display:flex; align-items:center; gap:8px;">
+              <span>🔬</span> Food Quality Inspector Workspace
+            </h1>
+            <p class="page-subtitle" id="inspector-page-subtitle" style="font-size:12px; color:var(--text-muted); margin:0;">
+              Multi-spectral visual diagnostics, defect classification, storage audits, and regulatory compliance
+            </p>
           </div>
-
-          <form id="form-new-inspection">
-            <div class="form-group">
-              <label class="form-label" for="insp-product-name">Food / Product Name *</label>
-              <input type="text" id="insp-product-name" class="form-control" placeholder="e.g. Fuji Apples or Salmon Fillet" required>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="insp-category">Food Category *</label>
-              <select id="insp-category" class="form-control" required>
-                <option value="Fruits">Fruits</option>
-                <option value="Vegetables">Vegetables</option>
-                <option value="Dairy">Dairy</option>
-                <option value="Meat">Meat</option>
-                <option value="Fish">Fish</option>
-                <option value="Bakery">Bakery</option>
-                <option value="Grains">Grains</option>
-                <option value="Packaged Food">Packaged Food</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="insp-batch">Batch / Lot Code</label>
-                <input type="text" id="insp-batch" class="form-control" placeholder="e.g. LOT-2026-A1">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="insp-location">Storage Location</label>
-                <input type="text" id="insp-location" class="form-control" placeholder="e.g. Cold Case 2">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="insp-temp">Storage Temp (°C)</label>
-                <input type="number" step="0.1" id="insp-temp" class="form-control" placeholder="e.g. 4.0">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="insp-rh">Storage Humidity (%RH)</label>
-                <input type="number" step="0.5" id="insp-rh" class="form-control" placeholder="e.g. 85.0">
-              </div>
-            </div>
-
-            <!-- Image Source Selection: Upload from Device OR Scan by Image Address -->
-            <div class="form-group">
-              <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Food Inspection Image *</span>
-                <span style="font-size: 0.78rem; font-weight: 400; color: var(--text-muted);">Choose input method:</span>
-              </label>
-
-              <!-- Source Mode Tabs -->
-              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <button type="button" class="btn btn-sm" id="btn-source-device" style="flex: 1; background: var(--primary); color: white; border-color: var(--primary); font-weight: 600;">
-                  📁 Upload from Device
-                </button>
-                <button type="button" class="btn btn-sm btn-outline" id="btn-source-url" style="flex: 1; font-weight: 600;">
-                  🌐 Scan by Image Address (URL)
-                </button>
-              </div>
-
-              <!-- Mode 1: Device Upload Dropzone -->
-              <div id="wrapper-upload-device">
-                <div class="upload-dropzone" id="dropzone-inspection">
-                  <span style="font-size: 2rem;">📸</span>
-                  <p style="margin: 6px 0 2px 0; font-weight: 600; color: var(--text-main);">Drag & Drop or Click to Upload from Device</p>
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">Supports .jpg, .png, .webp, .bmp (up to 10 MB)</span>
-                  <input type="file" id="insp-file-input" accept="image/*" style="display: none;">
-                </div>
-              </div>
-
-              <!-- Mode 2: Image Address / URL Input -->
-              <div id="wrapper-upload-url" style="display: none;">
-                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                  <input type="url" id="insp-image-url-input" class="form-control" placeholder="Paste image web address (e.g. https://... or image URL)">
-                  <button type="button" class="btn btn-outline" id="btn-fetch-url-preview" style="white-space: nowrap;">
-                    🔍 Load Preview
-                  </button>
-                </div>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
-                  <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Try sample URL:</span>
-                  <button type="button" class="btn btn-sm btn-outline btn-sample-url" data-url="https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400" style="padding: 2px 8px; font-size: 0.75rem;">🍏 Fresh Apple</button>
-                  <button type="button" class="btn btn-sm btn-outline btn-sample-url" data-url="https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400" style="padding: 2px 8px; font-size: 0.75rem;">🥑 Avocado</button>
-                  <button type="button" class="btn btn-sm btn-outline btn-sample-url" data-url="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400" style="padding: 2px 8px; font-size: 0.75rem;">🐟 Fresh Salmon</button>
-                </div>
-              </div>
-
-              <!-- Shared Image Preview Container -->
-              <div id="preview-container-box" style="text-align: center; margin-top: 10px; display: none;">
-                <div style="position: relative; display: inline-block;">
-                  <img id="insp-image-preview" class="image-preview-box" alt="Inspection Preview" style="display: block; max-height: 220px; border-radius: 8px; border: 1px solid var(--border-color);">
-                  <button type="button" id="btn-clear-image-preview" style="position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; line-height: 1;">&times;</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="insp-notes">Inspector Initial Notes</label>
-              <textarea id="insp-notes" class="form-control" rows="2" placeholder="Visual observation context, origin, or customer remarks..."></textarea>
-            </div>
-
-            <button type="submit" id="btn-submit-inspection" class="btn btn-primary" style="width: 100%;">
-              ⚡ Run AI Freshness Diagnostic & Save
-            </button>
-          </form>
         </div>
+        <div class="header-right" style="display:flex; align-items:center; gap:12px;">
+          <span class="inspector-badge" id="top-inspector-badge">
+            <span class="status-dot" style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+            <span id="top-insp-status">Inspector Certified</span>
+          </span>
+          <button class="btn btn-secondary btn-sm" id="btn-top-refresh">
+            🔄 Refresh Data
+          </button>
+          <button class="btn btn-outline btn-sm" id="btn-top-print" style="border-color:var(--border-color); color:var(--text-main);">
+            🖨️ Print Report
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-top-new-insp">
+            📸 New Inspection
+          </button>
+          <div class="user-avatar" id="top-user-avatar" style="background:#0d9488; color:#fff; width:34px; height:34px; font-size:13px;" title="Quality Inspector Profile">QA</div>
+          <button class="btn btn-outline btn-sm btn-logout" id="btn-top-logout" style="border-color:var(--border-color); color:var(--text-muted);">
+            Sign Out
+          </button>
+        </div>
+      </header>
 
-        <!-- Right Column: Live Quality Assessment Scorecard -->
-        <div class="card" id="diagnostic-scorecard-card">
-          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <main class="content-body" style="padding: 24px 32px; max-width: 100%; box-sizing: border-box;">
+
+        <!-- Inspector Hero Banner -->
+        <div class="inspector-hero">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
             <div>
-              <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">🔬 AI Quality Assessment & Validation</h2>
-              <span id="diagnostic-insp-id" style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">Inspection Preview</span>
-            </div>
-            <span id="diagnostic-status-badge" class="badge-status pending">Pending Scan</span>
-          </div>
-
-          <div id="diagnostic-empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
-            <span style="font-size: 3rem;">🧪</span>
-            <h3 style="margin-top: 12px; font-size: 1.1rem; color: var(--text-main);">No Inspection Active</h3>
-            <p style="font-size: 0.88rem; max-width: 400px; margin: 8px auto;">
-              Upload a food image on the left and submit to view multi-spectral color grading,
-              organoleptic defect segmentation, and Arrhenius shelf-life kinetics.
-            </p>
-          </div>
-
-          <div id="diagnostic-results-content" style="display: none;">
-            <!-- Score Banner -->
-            <div class="scorecard-banner">
-              <div class="scorecard-item">
-                <div class="val" id="diag-score">--</div>
-                <div class="lbl">Quality Score</div>
+              <div class="inspector-badge" style="background: rgba(255,255,255,0.15); color: #ccfbf1; border-color: rgba(255,255,255,0.25); margin-bottom: 10px;">
+                🔬 Food Quality Assurance &amp; Safety Compliance
               </div>
-              <div class="scorecard-item">
-                <div class="val" id="diag-classification">--</div>
-                <div class="lbl">AI Classification</div>
-              </div>
-              <div class="scorecard-item">
-                <div class="val" id="diag-confidence">--</div>
-                <div class="lbl">AI Confidence</div>
-              </div>
-              <div class="scorecard-item">
-                <div class="val" id="diag-shelf-life">--</div>
-                <div class="lbl">Est. Shelf Life</div>
-              </div>
-              <div class="scorecard-item">
-                <div class="val" id="diag-spoilage-risk">--</div>
-                <div class="lbl">Spoilage Risk</div>
-              </div>
-            </div>
-
-            <!-- Visual Features & Defects -->
-            <div style="margin-bottom: 16px;">
-              <h4 style="font-size: 0.9rem; margin-bottom: 6px; font-weight: 700; color: var(--text-main);">Visual Quality & Spoilage Indicators</h4>
-              <div class="feature-tag-list" id="diag-defects-list"></div>
-            </div>
-
-            <!-- Environmental Storage Review -->
-            <div style="background: var(--bg-surface); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 16px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-weight: 700; font-size: 0.85rem;">Storage Condition Compliance:</span>
-                <span id="diag-storage-badge" class="badge">Normal</span>
-              </div>
-              <div style="font-size: 0.82rem; color: var(--text-muted);" id="diag-storage-text">
-                Storage conditions within optimal boundaries.
-              </div>
-            </div>
-
-            <!-- Inspector Validation Workflow -->
-            <div class="inspector-decision-box">
-              <h4 style="font-size: 0.95rem; margin-bottom: 8px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-                <span>⚖️</span> Inspector Decision & Validation
-              </h4>
-              <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
-                Confirm the AI diagnostic or flag discrepancies. Original AI results are permanently preserved for audit traceability.
+              <h1>Food Quality Inspector Workspace</h1>
+              <p>
+                Conduct rigorous visual quality inspections, review multi-spectral computer vision diagnostics,
+                audit environmental cold-chain tolerances, record independent human evaluations, and uphold food safety standards.
               </p>
-
-              <div class="form-group">
-                <label class="form-label" for="diag-inspector-comments">Inspector Comments / Observations</label>
-                <textarea id="diag-inspector-comments" class="form-control" rows="2" placeholder="Record visual observations, tissue firmness, or packaging integrity..."></textarea>
-              </div>
-
-              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button type="button" class="btn btn-primary" id="btn-diag-confirm" style="flex: 1;">
-                  ✅ Confirm Review
-                </button>
-                <button type="button" class="btn btn-outline" id="btn-diag-further-insp" style="flex: 1; border-color: #f59e0b; color: #b45309;">
-                  ⚠️ Requires Further Inspection
-                </button>
-                <button type="button" class="btn btn-danger" id="btn-diag-flag" style="flex: 1;">
-                  🚩 Flag Product
-                </button>
+              <div class="hero-meta-badges">
+                <span class="hero-pill" id="hero-inspector-name">👤 Logged In: Inspector</span>
+                <span class="hero-pill" id="hero-ai-status">🤖 Vision Pipeline: Active</span>
+                <span class="hero-pill" id="hero-safety-status">⚡ Quality Standards: ISO/FSMA</span>
               </div>
             </div>
-
+            <div>
+              <button class="btn btn-light" id="btn-refresh-dashboard" style="font-weight: 700; background: #ffffff; color: #134e4a; border: none; border-radius: 9999px; padding: 7px 18px;">
+                🔄 Refresh Data
+              </button>
+            </div>
           </div>
         </div>
 
-      </div>
-    </div>
-
-    <!-- ===================================================================== -->
-    <!-- TAB 3: PENDING REVIEWS & VALIDATION QUEUE -->
-    <!-- ===================================================================== -->
-    <div id="tab-reviews" class="tab-pane">
-      <div class="card">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">⚖️ AI Result Validation Queue</h2>
-            <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">
-              Inspections awaiting official human confirmation, risk assessment, or secondary lab testing.
-            </p>
+        <!-- 6 KPI Summary Cards -->
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#e0f2fe; color:#0369a1;">📋</div>
+            <div class="stat-info">
+              <span class="stat-value" id="kpi-today-inspections">0</span>
+              <span class="stat-label">Today's Inspections</span>
+            </div>
           </div>
-          <span class="badge" id="reviews-queue-count" style="background:#fef3c7; color:#92400e;">0 Items</span>
-        </div>
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Inspection ID</th>
-                <th>Product</th>
-                <th>Category</th>
-                <th>AI Classification</th>
-                <th>Score</th>
-                <th>Spoilage Risk</th>
-                <th>Storage Status</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="reviews-table-body">
-              <tr><td colspan="9" style="text-align:center; padding: 24px; color: var(--text-muted);">Loading pending reviews...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===================================================================== -->
-    <!-- TAB 4: INSPECTION HISTORY -->
-    <!-- ===================================================================== -->
-    <div id="tab-history" class="tab-pane">
-      <div class="card">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-          <div>
-            <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">📜 Quality Inspection Audit Log</h2>
-            <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">Comprehensive traceable historical inspection register.</p>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7; color:#92400e;">⏳</div>
+            <div class="stat-info">
+              <span class="stat-value" id="kpi-pending-reviews">0</span>
+              <span class="stat-label">Pending Reviews</span>
+            </div>
           </div>
-          <button class="btn btn-sm btn-outline" id="btn-history-export-csv">📥 Download CSV Log</button>
-        </div>
-
-        <!-- Filter Bar -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md);">
-          <div>
-            <label class="form-label" style="font-size: 0.78rem;">Search</label>
-            <input type="text" id="hist-search" class="form-control" placeholder="Product, batch, ID...">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ecfdf5; color:#047857;">🍏</div>
+            <div class="stat-info">
+              <span class="stat-value" id="kpi-fresh-items">0</span>
+              <span class="stat-label">Fresh Products</span>
+            </div>
           </div>
-          <div>
-            <label class="form-label" style="font-size: 0.78rem;">Category</label>
-            <select id="hist-category" class="form-control">
-              <option value="all">All Categories</option>
-              <option value="Fruits">Fruits</option>
-              <option value="Vegetables">Vegetables</option>
-              <option value="Dairy">Dairy</option>
-              <option value="Meat">Meat</option>
-              <option value="Fish">Fish</option>
-              <option value="Bakery">Bakery</option>
-              <option value="Grains">Grains</option>
-              <option value="Packaged Food">Packaged Food</option>
-            </select>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fee2e2; color:#991b1b;">🚨</div>
+            <div class="stat-info">
+              <span class="stat-value" id="kpi-spoilage-alerts">0</span>
+              <span class="stat-label">Spoilage Alerts</span>
+            </div>
           </div>
-          <div>
-            <label class="form-label" style="font-size: 0.78rem;">Freshness</label>
-            <select id="hist-freshness" class="form-control">
-              <option value="all">All Freshness</option>
-              <option value="Fresh">Fresh</option>
-              <option value="Moderate">Moderately Fresh</option>
-              <option value="Spoiled">Spoiled</option>
-            </select>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fef2f2; color:#b91c1c;">🚩</div>
+            <div class="stat-info">
+              <span class="stat-value" id="kpi-flagged-results">0</span>
+              <span class="stat-label">Flagged Results</span>
+            </div>
           </div>
-          <div>
-            <label class="form-label" style="font-size: 0.78rem;">Review Status</label>
-            <select id="hist-status" class="form-control">
-              <option value="all">All Statuses</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Flagged">Flagged</option>
-              <option value="Requires Further Inspection">Requires Further Inspection</option>
-              <option value="Under Review">Under Review</option>
-              <option value="Pending">Pending</option>
-            </select>
-          </div>
-          <div style="display: flex; align-items: flex-end;">
-            <button class="btn btn-primary" id="btn-apply-history-filters" style="width: 100%;">Filter</button>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#f0fdfa; color:#0d9488;">⭐</div>
+            <div class="stat-info">
+              <span class="stat-value" id="kpi-avg-quality">0%</span>
+              <span class="stat-label">Avg Quality (<span id="kpi-avg-confidence">0%</span> Conf)</span>
+            </div>
           </div>
         </div>
 
-        <!-- History Table -->
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Inspection ID</th>
-                <th>Product</th>
-                <th>Category</th>
-                <th>AI Result</th>
-                <th>Score</th>
-                <th>Inspector Decision</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="history-table-body">
-              <tr><td colspan="9" style="text-align:center; padding: 24px; color: var(--text-muted);">Loading inspection history...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===================================================================== -->
-    <!-- TAB 5: STORAGE CONDITION REVIEW -->
-    <!-- ===================================================================== -->
-    <div id="tab-storage" class="tab-pane">
-      <div class="card" style="margin-bottom: 24px;">
-        <div class="card-header">
-          <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">🌡️ Storage Condition Compliance Auditor</h2>
-          <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">
-            Evaluate real-time warehouse or retail display temperatures against food-safety category guidelines.
-          </p>
+        <!-- Quick Action Pills -->
+        <div class="quick-actions-bar">
+          <button class="action-pill-btn primary" id="quick-action-new-insp">
+            <span>📸</span> New Image Inspection
+          </button>
+          <button class="action-pill-btn" id="quick-action-pending">
+            <span>⏳</span> Pending Reviews (<span id="badge-pending-count">0</span>)
+          </button>
+          <button class="action-pill-btn" id="quick-action-alerts">
+            <span>🚨</span> Quality Alerts (<span id="badge-alerts-count">0</span>)
+          </button>
+          <button class="action-pill-btn" id="quick-action-analytics">
+            <span>📊</span> Quality Analytics
+          </button>
+          <button class="action-pill-btn" id="quick-action-export">
+            <span>📥</span> Export Inspection Log (CSV)
+          </button>
+          <button class="action-pill-btn" id="quick-action-print-report">
+            <span>🖨️</span> Print Reports
+          </button>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
-          <!-- Tester Form -->
-          <div style="background: var(--bg-surface); padding: 20px; border-radius: var(--radius-md);">
-            <h3 style="font-size: 1rem; margin-bottom: 14px;">Audit Environmental Sample</h3>
+        <!-- Sub-Navigation Tab Strip -->
+        <div class="tab-nav">
+          <button class="tab-nav-btn active" data-tab="tab-overview"><span>🏠</span> Overview</button>
+          <button class="tab-nav-btn" data-tab="tab-new-inspection"><span>🔬</span> Image Inspection</button>
+          <button class="tab-nav-btn" data-tab="tab-reviews"><span>⚖️</span> AI Result Validation</button>
+          <button class="tab-nav-btn" data-tab="tab-history"><span>📜</span> Inspection History</button>
+          <button class="tab-nav-btn" data-tab="tab-storage"><span>🌡️</span> Storage Condition Review</button>
+          <button class="tab-nav-btn" data-tab="tab-analytics"><span>📈</span> Quality Analytics</button>
+          <button class="tab-nav-btn" data-tab="tab-alerts"><span>🚨</span> Quality Alerts</button>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 1: OVERVIEW -->
+        <!-- =================================================================== -->
+        <div id="tab-overview" class="tab-pane active">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
             
-            <div class="form-group">
-              <label class="form-label" for="storage-audit-category">Food Category</label>
-              <select id="storage-audit-category" class="form-control">
-                <option value="Fruits">Fruits</option>
-                <option value="Vegetables">Vegetables</option>
-                <option value="Dairy">Dairy</option>
-                <option value="Meat">Meat</option>
-                <option value="Fish">Fish</option>
-                <option value="Bakery">Bakery</option>
-                <option value="Grains">Grains</option>
-                <option value="Packaged Food">Packaged Food</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="storage-audit-temp">Observed Temperature (°C)</label>
-              <input type="number" step="0.1" id="storage-audit-temp" class="form-control" value="4.0">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="storage-audit-rh">Observed Humidity (%RH)</label>
-              <input type="number" step="0.5" id="storage-audit-rh" class="form-control" value="85.0">
-            </div>
-
-            <button type="button" class="btn btn-primary" id="btn-run-storage-audit" style="width: 100%;">
-              Audit Storage Tolerances
-            </button>
-          </div>
-
-          <!-- Evaluation Card -->
-          <div id="storage-audit-results" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <h3 style="font-size: 1.1rem; margin: 0;" id="storage-result-title">Storage Compliance Report</h3>
-              <span class="badge" id="storage-result-badge" style="background:#dcfce7; color:#166534; font-size: 0.85rem;">Normal</span>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-              <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm);">
-                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Temperature Tolerances</div>
-                <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);" id="storage-temp-range">1.0°C - 6.0°C</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">Recommended: <span id="storage-temp-opt">4.0°C</span></div>
+            <!-- Left: Recent Inspections Table -->
+            <div class="card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">📋 Recent Quality Inspections</h2>
+                <button class="btn btn-sm btn-outline" id="btn-view-all-history">View Full History</button>
               </div>
-              <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm);">
-                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Relative Humidity Tolerances</div>
-                <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);" id="storage-rh-range">80.0% - 95.0%</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">Optimal: <span id="storage-rh-opt">90.0%</span></div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Inspection ID</th>
+                      <th>Product</th>
+                      <th>Category</th>
+                      <th>AI Grade</th>
+                      <th>Quality</th>
+                      <th>Shelf Life</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overview-recent-table-body">
+                    <tr><td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">Loading inspection records...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <div id="storage-violations-box" style="margin-bottom: 14px;">
-              <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Compliance Findings:</h4>
-              <ul id="storage-findings-list" style="margin-top: 6px; padding-left: 20px; font-size: 0.88rem; color: var(--text-main);">
-                <li>Environmental conditions within compliant tolerances.</li>
-              </ul>
+            <!-- Right: Active Quality Alerts -->
+            <div class="card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">🚨 Urgent Attention Queue</h2>
+                <span class="badge" id="overview-alerts-badge" style="background:#fee2e2; color:#991b1b;">0 Alerts</span>
+              </div>
+              <div id="overview-alerts-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto;">
+                <div style="text-align:center; padding: 20px; color:var(--text-muted);">No critical quality alerts active.</div>
+              </div>
             </div>
 
-            <div style="background: #f0fdfa; border-left: 4px solid var(--primary); padding: 10px 14px; font-size: 0.85rem; color: #115e59;" id="storage-advice-text">
-              Maintain optimal temperature to prevent microbial and kinetic Arrhenius acceleration.
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 2: IMAGE-BASED FOOD INSPECTION -->
+        <!-- =================================================================== -->
+        <div id="tab-new-inspection" class="tab-pane">
+          <div class="diagnostic-grid">
+            
+            <!-- Left Column: Inspection Form -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">📸 Submit Food Inspection Sample</h2>
+                <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">Upload a clear photograph and enter storage details.</p>
+              </div>
+
+              <form id="form-new-inspection">
+                <div class="form-group">
+                  <label class="form-label" for="insp-product-name">Food / Product Name *</label>
+                  <input type="text" id="insp-product-name" class="form-control" placeholder="e.g. Fuji Apples or Salmon Fillet" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="insp-category">Food Category *</label>
+                  <select id="insp-category" class="form-control" required>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Vegetables">Vegetables</option>
+                    <option value="Dairy">Dairy</option>
+                    <option value="Meat">Meat</option>
+                    <option value="Fish">Fish</option>
+                    <option value="Bakery">Bakery</option>
+                    <option value="Grains">Grains</option>
+                    <option value="Packaged Food">Packaged Food</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="insp-batch">Batch / Lot Code</label>
+                    <input type="text" id="insp-batch" class="form-control" placeholder="e.g. LOT-2026-A1">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="insp-location">Storage Location</label>
+                    <input type="text" id="insp-location" class="form-control" placeholder="e.g. Cold Case 2">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="insp-temp">Storage Temp (°C)</label>
+                    <input type="number" step="0.1" id="insp-temp" class="form-control" placeholder="e.g. 4.0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="insp-rh">Storage Humidity (%RH)</label>
+                    <input type="number" step="0.5" id="insp-rh" class="form-control" placeholder="e.g. 85.0">
+                  </div>
+                </div>
+
+                <!-- Image Source Selection: Upload from Device OR Scan by Image Address -->
+                <div class="form-group">
+                  <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Food Inspection Image *</span>
+                    <span style="font-size: 0.78rem; font-weight: 400; color: var(--text-muted);">Choose input method:</span>
+                  </label>
+
+                  <!-- Source Mode Tabs -->
+                  <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <button type="button" class="btn btn-sm" id="btn-source-device" style="flex: 1; background: var(--inspector-primary); color: white; border-color: var(--inspector-primary); font-weight: 600;">
+                      📁 Upload from Device
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" id="btn-source-url" style="flex: 1; font-weight: 600;">
+                      🌐 Scan by Image Address (URL)
+                    </button>
+                  </div>
+
+                  <!-- Mode 1: Device Upload Dropzone -->
+                  <div id="wrapper-upload-device">
+                    <div class="upload-dropzone" id="dropzone-inspection">
+                      <span style="font-size: 2rem;">📸</span>
+                      <p style="margin: 6px 0 2px 0; font-weight: 600; color: var(--text-main);">Drag &amp; Drop or Click to Upload from Device</p>
+                      <span style="font-size: 0.75rem; color: var(--text-muted);">Supports .jpg, .png, .webp, .bmp (up to 10 MB)</span>
+                      <input type="file" id="insp-file-input" accept="image/*" style="display: none;">
+                    </div>
+                  </div>
+
+                  <!-- Mode 2: Image Address / URL Input -->
+                  <div id="wrapper-upload-url" style="display: none;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                      <input type="url" id="insp-image-url-input" class="form-control" placeholder="Paste image web address (e.g. https://... or image URL)">
+                      <button type="button" class="btn btn-outline" id="btn-fetch-url-preview" style="white-space: nowrap;">
+                        🔍 Load Preview
+                      </button>
+                    </div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+                      <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Try sample URL:</span>
+                      <button type="button" class="btn btn-sm btn-outline btn-sample-url" data-url="https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400" style="padding: 2px 8px; font-size: 0.75rem;">🍏 Fresh Apple</button>
+                      <button type="button" class="btn btn-sm btn-outline btn-sample-url" data-url="https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400" style="padding: 2px 8px; font-size: 0.75rem;">🥑 Avocado</button>
+                      <button type="button" class="btn btn-sm btn-outline btn-sample-url" data-url="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400" style="padding: 2px 8px; font-size: 0.75rem;">🐟 Fresh Salmon</button>
+                    </div>
+                  </div>
+
+                  <!-- Shared Image Preview Container -->
+                  <div id="preview-container-box" style="text-align: center; margin-top: 10px; display: none;">
+                    <div style="position: relative; display: inline-block;">
+                      <img id="insp-image-preview" class="image-preview-box" alt="Inspection Preview" style="display: block; max-height: 220px; border-radius: 8px; border: 1px solid var(--border-color);">
+                      <button type="button" id="btn-clear-image-preview" style="position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; line-height: 1;">&times;</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="insp-notes">Inspector Initial Notes</label>
+                  <textarea id="insp-notes" class="form-control" rows="2" placeholder="Visual observation context, origin, or customer remarks..."></textarea>
+                </div>
+
+                <button type="submit" id="btn-submit-inspection" class="btn btn-primary" style="width: 100%;">
+                  ⚡ Run AI Freshness Diagnostic &amp; Save
+                </button>
+              </form>
+            </div>
+
+            <!-- Right Column: Live Quality Assessment Scorecard -->
+            <div class="card" id="diagnostic-scorecard-card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">🔬 AI Quality Assessment &amp; Validation</h2>
+                  <span id="diagnostic-insp-id" style="font-size: 0.8rem; font-weight: 700; color: var(--inspector-primary);">Inspection Preview</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" class="btn btn-sm btn-outline" id="btn-diag-print-report" style="display: none;" title="Print this diagnostic report">🖨️ Print</button>
+                  <span id="diagnostic-status-badge" class="badge-status pending">Pending Scan</span>
+                </div>
+              </div>
+
+              <div id="diagnostic-empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                <span style="font-size: 3rem;">🧪</span>
+                <h3 style="margin-top: 12px; font-size: 1.1rem; color: var(--text-main);">No Inspection Active</h3>
+                <p style="font-size: 0.88rem; max-width: 400px; margin: 8px auto;">
+                  Upload a food image on the left and submit to view multi-spectral color grading,
+                  organoleptic defect segmentation, and Arrhenius shelf-life kinetics.
+                </p>
+              </div>
+
+              <div id="diagnostic-results-content" style="display: none;">
+                <!-- Score Banner -->
+                <div class="scorecard-banner">
+                  <div class="scorecard-item">
+                    <div class="val" id="diag-score">--</div>
+                    <div class="lbl">Quality Score</div>
+                  </div>
+                  <div class="scorecard-item">
+                    <div class="val" id="diag-classification">--</div>
+                    <div class="lbl">AI Classification</div>
+                  </div>
+                  <div class="scorecard-item">
+                    <div class="val" id="diag-confidence">--</div>
+                    <div class="lbl">AI Confidence</div>
+                  </div>
+                  <div class="scorecard-item">
+                    <div class="val" id="diag-shelf-life">--</div>
+                    <div class="lbl">Est. Shelf Life</div>
+                  </div>
+                  <div class="scorecard-item">
+                    <div class="val" id="diag-spoilage-risk">--</div>
+                    <div class="lbl">Spoilage Risk</div>
+                  </div>
+                </div>
+
+                <!-- Visual Features & Defects -->
+                <div style="margin-bottom: 16px;">
+                  <h4 style="font-size: 0.9rem; margin-bottom: 6px; font-weight: 700; color: var(--text-main);">Visual Quality &amp; Spoilage Indicators</h4>
+                  <div class="feature-tag-list" id="diag-defects-list"></div>
+                </div>
+
+                <!-- Environmental Storage Review -->
+                <div style="background: var(--bg-surface); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; border: 1px solid var(--border-color);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: 700; font-size: 0.85rem;">Storage Condition Compliance:</span>
+                    <span id="diag-storage-badge" class="badge">Normal</span>
+                  </div>
+                  <div style="font-size: 0.82rem; color: var(--text-muted);" id="diag-storage-text">
+                    Storage conditions within optimal boundaries.
+                  </div>
+                </div>
+
+                <!-- Inspector Validation Workflow -->
+                <div class="inspector-decision-box">
+                  <h4 style="font-size: 0.95rem; margin-bottom: 8px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                    <span>⚖️</span> Inspector Decision &amp; Validation
+                  </h4>
+                  <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+                    Confirm the AI diagnostic or flag discrepancies. Original AI results are permanently preserved for audit traceability.
+                  </p>
+
+                  <div class="form-group">
+                    <label class="form-label" for="diag-inspector-comments">Inspector Comments / Observations</label>
+                    <textarea id="diag-inspector-comments" class="form-control" rows="2" placeholder="Record visual observations, tissue firmness, or packaging integrity..."></textarea>
+                  </div>
+
+                  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-primary" id="btn-diag-confirm" style="flex: 1;">
+                      ✅ Confirm Review
+                    </button>
+                    <button type="button" class="btn btn-outline" id="btn-diag-further-insp" style="flex: 1; border-color: #f59e0b; color: #b45309;">
+                      ⚠️ Requires Further Inspection
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btn-diag-flag" style="flex: 1;">
+                      🚩 Flag Product
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 3: PENDING REVIEWS & VALIDATION QUEUE -->
+        <!-- =================================================================== -->
+        <div id="tab-reviews" class="tab-pane">
+          <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">⚖️ AI Result Validation Queue</h2>
+                <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">
+                  Inspections awaiting official human confirmation, risk assessment, or secondary lab testing.
+                </p>
+              </div>
+              <span class="badge" id="reviews-queue-count" style="background:#fef3c7; color:#92400e;">0 Items</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Inspection ID</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>AI Classification</th>
+                    <th>Score</th>
+                    <th>Spoilage Risk</th>
+                    <th>Storage Status</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reviews-table-body">
+                  <tr><td colspan="9" style="text-align:center; padding: 24px; color: var(--text-muted);">Loading pending reviews...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
-      </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 4: INSPECTION HISTORY -->
+        <!-- =================================================================== -->
+        <div id="tab-history" class="tab-pane">
+          <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">📜 Quality Inspection Audit Log</h2>
+                <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">Comprehensive traceable historical inspection register.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-sm btn-outline" id="btn-history-print">🖨️ Print Audit Log</button>
+                <button class="btn btn-sm btn-outline" id="btn-history-export-csv">📥 Download CSV Log</button>
+              </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+              <div>
+                <label class="form-label" style="font-size: 0.78rem;">Search</label>
+                <input type="text" id="hist-search" class="form-control" placeholder="Product, batch, ID...">
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 0.78rem;">Category</label>
+                <select id="hist-category" class="form-control">
+                  <option value="all">All Categories</option>
+                  <option value="Fruits">Fruits</option>
+                  <option value="Vegetables">Vegetables</option>
+                  <option value="Dairy">Dairy</option>
+                  <option value="Meat">Meat</option>
+                  <option value="Fish">Fish</option>
+                  <option value="Bakery">Bakery</option>
+                  <option value="Grains">Grains</option>
+                  <option value="Packaged Food">Packaged Food</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 0.78rem;">Freshness</label>
+                <select id="hist-freshness" class="form-control">
+                  <option value="all">All Freshness</option>
+                  <option value="Fresh">Fresh</option>
+                  <option value="Moderate">Moderately Fresh</option>
+                  <option value="Spoiled">Spoiled</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 0.78rem;">Review Status</label>
+                <select id="hist-status" class="form-control">
+                  <option value="all">All Statuses</option>
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Flagged">Flagged</option>
+                  <option value="Requires Further Inspection">Requires Further Inspection</option>
+                  <option value="Under Review">Under Review</option>
+                  <option value="Pending">Pending</option>
+                </select>
+              </div>
+              <div style="display: flex; align-items: flex-end;">
+                <button class="btn btn-primary" id="btn-apply-history-filters" style="width: 100%;">Filter</button>
+              </div>
+            </div>
+
+            <!-- History Table -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Inspection ID</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>AI Result</th>
+                    <th>Score</th>
+                    <th>Inspector Decision</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body">
+                  <tr><td colspan="9" style="text-align:center; padding: 24px; color: var(--text-muted);">Loading inspection history...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 5: STORAGE CONDITION REVIEW -->
+        <!-- =================================================================== -->
+        <div id="tab-storage" class="tab-pane">
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">🌡️ Storage Condition Compliance Auditor</h2>
+              <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">
+                Evaluate real-time warehouse or retail display temperatures against food-safety category guidelines.
+              </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
+              <!-- Tester Form -->
+              <div style="background: var(--bg-surface); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <h3 style="font-size: 1rem; margin-bottom: 14px;">Audit Environmental Sample</h3>
+                
+                <div class="form-group">
+                  <label class="form-label" for="storage-audit-category">Food Category</label>
+                  <select id="storage-audit-category" class="form-control">
+                    <option value="Fruits">Fruits</option>
+                    <option value="Vegetables">Vegetables</option>
+                    <option value="Dairy">Dairy</option>
+                    <option value="Meat">Meat</option>
+                    <option value="Fish">Fish</option>
+                    <option value="Bakery">Bakery</option>
+                    <option value="Grains">Grains</option>
+                    <option value="Packaged Food">Packaged Food</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="storage-audit-temp">Observed Temperature (°C)</label>
+                  <input type="number" step="0.1" id="storage-audit-temp" class="form-control" value="4.0">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="storage-audit-rh">Observed Humidity (%RH)</label>
+                  <input type="number" step="0.5" id="storage-audit-rh" class="form-control" value="85.0">
+                </div>
+
+                <button type="button" class="btn btn-primary" id="btn-run-storage-audit" style="width: 100%;">
+                  Audit Storage Tolerances
+                </button>
+              </div>
+
+              <!-- Evaluation Card -->
+              <div id="storage-audit-results" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; background: #ffffff;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h3 style="font-size: 1.1rem; margin: 0;" id="storage-result-title">Storage Compliance Report</h3>
+                  <span class="badge" id="storage-result-badge" style="background:#dcfce7; color:#166534; font-size: 0.85rem;">Normal</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                  <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Temperature Tolerances</div>
+                    <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);" id="storage-temp-range">1.0°C - 6.0°C</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Recommended: <span id="storage-temp-opt">4.0°C</span></div>
+                  </div>
+                  <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Relative Humidity Tolerances</div>
+                    <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);" id="storage-rh-range">80.0% - 95.0%</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Optimal: <span id="storage-rh-opt">90.0%</span></div>
+                  </div>
+                </div>
+
+                <div id="storage-violations-box" style="margin-bottom: 14px;">
+                  <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Compliance Findings:</h4>
+                  <ul id="storage-findings-list" style="margin-top: 6px; padding-left: 20px; font-size: 0.88rem; color: var(--text-main);">
+                    <li>Environmental conditions within compliant tolerances.</li>
+                  </ul>
+                </div>
+
+                <div style="background: #f0fdfa; border-left: 4px solid var(--inspector-primary); padding: 10px 14px; font-size: 0.85rem; color: #115e59; border-radius: 4px;" id="storage-advice-text">
+                  Maintain optimal temperature to prevent microbial and kinetic Arrhenius acceleration.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 6: QUALITY ANALYTICS -->
+        <!-- =================================================================== -->
+        <div id="tab-analytics" class="tab-pane">
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">📈 Quality Control Visual Analytics</h2>
+                <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">Freshness distribution, multi-day quality trends, spoilage velocity, and inspection throughput.</p>
+              </div>
+              <button class="btn btn-sm btn-outline" id="btn-analytics-print">🖨️ Print Analytics</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px;">
+            
+            <!-- Chart 1: Freshness Distribution -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">🍩 Freshness Classification Distribution</h3>
+              </div>
+              <div style="height: 280px; position: relative;">
+                <canvas id="chart-freshness-dist"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Quality Score Trends -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">📈 Quality Score Trends Over Time</h3>
+              </div>
+              <div style="height: 280px; position: relative;">
+                <canvas id="chart-quality-trends"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 3: Spoilage & Flagged Trends -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">🚨 Spoilage &amp; Flagged Frequency</h3>
+              </div>
+              <div style="height: 280px; position: relative;">
+                <canvas id="chart-spoilage-trends"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 4: Daily Inspection Activity -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">⚡ Inspection Velocity (Daily Counts)</h3>
+              </div>
+              <div style="height: 280px; position: relative;">
+                <canvas id="chart-inspection-activity"></canvas>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- TAB 7: QUALITY ALERTS -->
+        <!-- =================================================================== -->
+        <div id="tab-alerts" class="tab-pane">
+          <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">🚨 Active Food Quality Alerts</h2>
+                <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">
+                  Investigate critical spoilage flags, temperature anomalies, and microbial risk warnings.
+                </p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-sm btn-outline active" id="btn-filter-alerts-active">Active Only</button>
+                <button class="btn btn-sm btn-outline" id="btn-filter-alerts-all">All Alerts</button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Severity</th>
+                    <th>Alert Type</th>
+                    <th>Product</th>
+                    <th>Inspection Ref</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="alerts-table-body">
+                  <tr><td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">Loading quality alerts...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
     </div>
-
-    <!-- ===================================================================== -->
-    <!-- TAB 6: QUALITY ANALYTICS -->
-    <!-- ===================================================================== -->
-    <div id="tab-analytics" class="tab-pane">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px;">
-        
-        <!-- Chart 1: Freshness Distribution -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">🍩 Freshness Classification Distribution</h3>
-          </div>
-          <div style="height: 280px; position: relative;">
-            <canvas id="chart-freshness-dist"></canvas>
-          </div>
-        </div>
-
-        <!-- Chart 2: Quality Score Trends -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">📈 Quality Score Trends Over Time</h3>
-          </div>
-          <div style="height: 280px; position: relative;">
-            <canvas id="chart-quality-trends"></canvas>
-          </div>
-        </div>
-
-        <!-- Chart 3: Spoilage & Flagged Trends -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">🚨 Spoilage & Flagged Frequency</h3>
-          </div>
-          <div style="height: 280px; position: relative;">
-            <canvas id="chart-spoilage-trends"></canvas>
-          </div>
-        </div>
-
-        <!-- Chart 4: Daily Inspection Activity -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">⚡ Inspection Velocity (Daily Counts)</h3>
-          </div>
-          <div style="height: 280px; position: relative;">
-            <canvas id="chart-inspection-activity"></canvas>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ===================================================================== -->
-    <!-- TAB 7: QUALITY ALERTS -->
-    <!-- ===================================================================== -->
-    <div id="tab-alerts" class="tab-pane">
-      <div class="card">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h2 class="card-title" style="font-size: 1.15rem; margin: 0;">🚨 Active Food Quality Alerts</h2>
-            <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">
-              Investigate critical spoilage flags, temperature anomalies, and microbial risk warnings.
-            </p>
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-sm btn-outline active" id="btn-filter-alerts-active">Active Only</button>
-            <button class="btn btn-sm btn-outline" id="btn-filter-alerts-all">All Alerts</button>
-          </div>
-        </div>
-
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Severity</th>
-                <th>Alert Type</th>
-                <th>Product</th>
-                <th>Inspection Ref</th>
-                <th>Message</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="alerts-table-body">
-              <tr><td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">Loading quality alerts...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-  </main>
+  </div>
 
   <!-- ======================================================================= -->
   <!-- MODALS -->
@@ -958,7 +1283,10 @@
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
         <h3 style="font-size: 1.2rem; margin: 0;">🔬 Inspection Report Audit</h3>
-        <button type="button" class="btn btn-sm btn-outline" id="btn-close-modal-details">✕</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="btn btn-sm btn-outline" id="btn-modal-print-icon" title="Print this inspection report">🖨️ Print</button>
+          <button type="button" class="btn btn-sm btn-outline" id="btn-close-modal-details">✕</button>
+        </div>
       </div>
       <div id="modal-details-content">
         <!-- Rendered dynamically -->
@@ -976,7 +1304,7 @@
       <form id="form-modal-review">
         <input type="hidden" id="modal-review-insp-id">
         
-        <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 14px;">
+        <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 14px; border: 1px solid var(--border-color);">
           <div style="font-weight: 700; font-size: 0.9rem;" id="modal-review-product-name">Product Name</div>
           <div style="font-size: 0.82rem; color: var(--text-muted);">Original AI Result: <strong id="modal-review-ai-res">Fresh</strong></div>
         </div>
@@ -1058,7 +1386,7 @@
 
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" class="btn btn-outline" id="btn-cancel-modal-flag">Cancel</button>
-          <button type="submit" class="btn btn-danger" id="btn-submit-modal-flag">Flag Product & Raise Alert</button>
+          <button type="submit" class="btn btn-danger" id="btn-submit-modal-flag">Flag Product &amp; Raise Alert</button>
         </div>
       </form>
     </div>
@@ -1074,7 +1402,7 @@
       <form id="form-modal-resolve">
         <input type="hidden" id="modal-resolve-alert-id">
         
-        <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 14px;">
+        <div style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 14px; border: 1px solid var(--border-color);">
           <div style="font-weight: 700; font-size: 0.9rem;" id="modal-resolve-item-name">Alert Item</div>
           <div style="font-size: 0.82rem; color: #991b1b;" id="modal-resolve-message">Alert Message</div>
         </div>

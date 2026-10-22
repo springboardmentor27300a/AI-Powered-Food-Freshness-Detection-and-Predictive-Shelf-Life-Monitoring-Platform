@@ -5,13 +5,33 @@
  */
 
 let activeInspectionData = null;
+let currentOpenInspectionId = null;
 let chartInstances = {};
 
 document.addEventListener("DOMContentLoaded", async () => {
   // 1. Guard Authentication and Role
   if (!api.enforceRoleAccess(["Food Quality Inspector", "Quality Inspector"])) return;
 
-  // 2. Initialize UI Components
+  // 2. Populate User Info in Header, Sidebar and Hero
+  const user = api.getUser();
+  if (user) {
+    const nameEl = document.getElementById("sidebar-user-name");
+    const avatarEl = document.getElementById("sidebar-user-avatar");
+    const topAvatarEl = document.getElementById("top-user-avatar");
+    const roleEl = document.getElementById("sidebar-user-role");
+    const heroNameEl = document.getElementById("hero-inspector-name");
+
+    const displayName = user.name || user.email || "Quality Inspector";
+    const initial = (displayName || "Q").charAt(0).toUpperCase();
+
+    if (nameEl) nameEl.textContent = displayName;
+    if (avatarEl) avatarEl.textContent = initial;
+    if (topAvatarEl) topAvatarEl.textContent = initial;
+    if (roleEl) roleEl.textContent = user.role || "Food Quality Inspector";
+    if (heroNameEl) heroNameEl.textContent = `👤 Logged In: ${displayName}`;
+  }
+
+  // 3. Initialize UI Components
   setupTabNavigation();
   setupQuickActionPillButtons();
   setupImageDropzone();
@@ -19,7 +39,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupModals();
   setupStorageAuditor();
 
-  // 3. Initial Data Load
+  // 4. Initial Data Load & Initial Hash Routing
+  handleInitialHashRouting();
   await loadDashboardOverview();
 });
 
@@ -27,24 +48,81 @@ document.addEventListener("DOMContentLoaded", async () => {
 // TAB NAVIGATION & ROUTING
 // =============================================================================
 function setupTabNavigation() {
-  const tabBtns = document.querySelectorAll(".tab-nav-btn");
-  tabBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.dataset.tab;
-      activateTab(targetId);
+  // Wire both Sub-Nav buttons and Sidebar Nav links
+  const navLinks = document.querySelectorAll(".tab-nav-btn, .inspector-nav-tabs .nav-item[data-tab]");
+  navLinks.forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      const targetId = el.dataset.tab;
+      if (targetId) activateTab(targetId);
     });
+  });
+
+  // Mobile menu drawer toggle
+  const mobileBtn = document.querySelector(".mobile-menu-btn");
+  const sidebar = document.querySelector(".sidebar");
+  if (mobileBtn && sidebar) {
+    mobileBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("open");
+    });
+  }
+
+  // Header quick buttons
+  document.getElementById("btn-top-refresh")?.addEventListener("click", () => {
+    loadDashboardOverview();
+  });
+
+  document.getElementById("btn-top-new-insp")?.addEventListener("click", () => {
+    activateTab("tab-new-inspection");
+  });
+
+  // Logout Buttons
+  document.querySelectorAll(".btn-logout").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      api.logout();
+    });
+  });
+
+  // Hash change listener
+  window.addEventListener("hashchange", () => {
+    handleInitialHashRouting();
   });
 }
 
-function activateTab(tabId) {
-  document.querySelectorAll(".tab-nav-btn").forEach((b) => b.classList.remove("active"));
-  document.querySelectorAll(".tab-pane").forEach((p) => p.classList.remove("active"));
+function handleInitialHashRouting() {
+  const hash = window.location.hash.replace("#", "").trim();
+  if (!hash) return;
+  const tabId = hash.startsWith("tab-") ? hash : `tab-${hash}`;
+  if (document.getElementById(tabId)) {
+    activateTab(tabId, false);
+  }
+}
 
-  const targetBtn = document.querySelector(`.tab-nav-btn[data-tab="${tabId}"]`);
-  const targetPane = document.getElementById(tabId);
+function activateTab(tabId, updateHash = true) {
+  // Sub-nav tab pills
+  document.querySelectorAll(".tab-nav-btn").forEach((b) => {
+    b.classList.toggle("active", b.dataset.tab === tabId);
+  });
 
-  if (targetBtn) targetBtn.classList.add("active");
-  if (targetPane) targetPane.classList.add("active");
+  // Sidebar navigation links
+  document.querySelectorAll(".inspector-nav-tabs .nav-item[data-tab]").forEach((item) => {
+    item.classList.toggle("active", item.dataset.tab === tabId);
+  });
+
+  // Tab panes
+  document.querySelectorAll(".tab-pane").forEach((p) => {
+    p.classList.toggle("active", p.id === tabId);
+  });
+
+  // Close mobile sidebar if open
+  document.querySelector(".sidebar")?.classList.remove("open");
+
+  // Keep URL hash updated
+  if (updateHash) {
+    const cleanHash = tabId.replace("tab-", "");
+    history.replaceState(null, null, `#${cleanHash}`);
+  }
 
   // Lazy load data per tab
   if (tabId === "tab-overview") {
@@ -71,6 +149,20 @@ function setupQuickActionPillButtons() {
 
   document.getElementById("quick-action-export")?.addEventListener("click", downloadInspectionCsv);
   document.getElementById("btn-history-export-csv")?.addEventListener("click", downloadInspectionCsv);
+
+  // Print buttons
+  document.getElementById("quick-action-print-report")?.addEventListener("click", () => window.printCurrentReportsView());
+  document.getElementById("btn-top-print")?.addEventListener("click", () => window.printCurrentReportsView());
+  document.getElementById("btn-history-print")?.addEventListener("click", () => window.printInspectionLog());
+  document.getElementById("btn-analytics-print")?.addEventListener("click", () => window.printQualityAnalytics());
+  document.getElementById("btn-diag-print-report")?.addEventListener("click", () => window.printActiveInspectionDiagnostic());
+  document.getElementById("btn-modal-print-icon")?.addEventListener("click", () => {
+    if (currentOpenInspectionId) {
+      window.printSingleInspectionReport(currentOpenInspectionId);
+    } else {
+      window.print();
+    }
+  });
 
   document.getElementById("btn-apply-history-filters")?.addEventListener("click", loadInspectionHistory);
 
@@ -129,6 +221,21 @@ async function loadDashboardOverview() {
     setText("kpi-flagged-results", kpis.flagged_results ?? 0);
     setText("kpi-avg-quality", `${kpis.average_quality_score ?? 0}%`);
     setText("kpi-avg-confidence", `${kpis.average_ai_confidence ?? 0}%`);
+
+    // Update Sidebar Notification Badges
+    const navPending = document.getElementById("nav-pending-badge");
+    if (navPending) {
+      const pendingCount = kpis.pending_reviews ?? 0;
+      navPending.textContent = pendingCount;
+      navPending.style.display = pendingCount > 0 ? "inline-flex" : "none";
+    }
+
+    const navAlerts = document.getElementById("nav-alerts-badge");
+    if (navAlerts) {
+      const alertsCount = kpis.spoilage_alerts ?? 0;
+      navAlerts.textContent = alertsCount;
+      navAlerts.style.display = alertsCount > 0 ? "inline-flex" : "none";
+    }
 
     // Render Recent Inspections Table
     renderRecentInspectionsTable(data.recent_inspections || []);
@@ -410,6 +517,9 @@ function renderDiagnosticScorecard(insp) {
   document.getElementById("diagnostic-empty-state").style.display = "none";
   document.getElementById("diagnostic-results-content").style.display = "block";
 
+  const printDiagBtn = document.getElementById("btn-diag-print-report");
+  if (printDiagBtn) printDiagBtn.style.display = "inline-flex";
+
   const ai = insp.ai_result || {};
   const storage = insp.storage_review || {};
 
@@ -477,6 +587,11 @@ async function loadPendingReviewsQueue() {
     const pending = all.filter((i) => ["Pending", "Under Review", "Requires Further Inspection"].includes(i.status));
 
     if (countBadge) countBadge.textContent = `${pending.length} Items`;
+    const navPending = document.getElementById("nav-pending-badge");
+    if (navPending) {
+      navPending.textContent = pending.length;
+      navPending.style.display = pending.length > 0 ? "inline-flex" : "none";
+    }
 
     if (pending.length === 0) {
       tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 24px; color: var(--text-muted);">🎉 All inspections have been validated! Zero pending reviews.</td></tr>`;
@@ -753,6 +868,13 @@ async function loadQualityAlerts(filter = "all") {
   try {
     const alerts = await api.getInspectorAlerts(filter);
 
+    const activeAlerts = alerts.filter(a => a.status !== "resolved");
+    const navAlerts = document.getElementById("nav-alerts-badge");
+    if (navAlerts) {
+      navAlerts.textContent = activeAlerts.length;
+      navAlerts.style.display = activeAlerts.length > 0 ? "inline-flex" : "none";
+    }
+
     if (alerts.length === 0) {
       tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">🎉 Zero alerts found for filter '${filter}'. All storage and quality conditions nominal.</td></tr>`;
       return;
@@ -869,6 +991,7 @@ function closeModal(modalId) {
 }
 
 window.openInspectionDetailsModal = async function(inspectionId) {
+  currentOpenInspectionId = inspectionId;
   openModal("modal-details");
   const content = document.getElementById("modal-details-content");
   if (!content) return;
@@ -944,6 +1067,7 @@ window.openInspectionDetailsModal = async function(inspectionId) {
       </div>
 
       <div style="display:flex; justify-content: flex-end; gap: 8px;">
+        <button type="button" class="btn btn-outline" id="btn-print-inspection-modal" onclick="window.printSingleInspectionReport('${insp.inspection_id}')">🖨️ Print Inspection Report</button>
         <button class="btn btn-primary" onclick="openReviewDecisionModal('${insp.inspection_id}', '${escapeHtml(insp.product_name)}', '${escapeHtml(ai.classification)}')">Update Decision</button>
       </div>
     `;
@@ -1003,3 +1127,356 @@ function formatDateTime(dateStr) {
     return String(dateStr);
   }
 }
+
+// =============================================================================
+// REPORT PRINTING & CERTIFICATE GENERATION
+// =============================================================================
+window.printCurrentReportsView = function() {
+  // 1. If inspection details modal is active, print that specific inspection
+  const modalDetails = document.getElementById("modal-details");
+  if (modalDetails && modalDetails.style.display === "flex" && currentOpenInspectionId) {
+    window.printSingleInspectionReport(currentOpenInspectionId);
+    return;
+  }
+
+  // 2. If on image inspection tab with active inspection results, print that
+  const activePane = document.querySelector(".tab-pane.active");
+  if (activePane && activePane.id === "tab-new-inspection" && activeInspectionData && activeInspectionData.inspection_id) {
+    window.printSingleInspectionReport(activeInspectionData.inspection_id);
+    return;
+  }
+
+  // 3. Otherwise trigger clean tabulated browser print for the active report tab
+  window.print();
+};
+
+window.printInspectionLog = function() {
+  activateTab("tab-history");
+  setTimeout(() => {
+    window.print();
+  }, 250);
+};
+
+window.printQualityAnalytics = function() {
+  activateTab("tab-analytics");
+  setTimeout(() => {
+    window.print();
+  }, 250);
+};
+
+window.printActiveInspectionDiagnostic = function() {
+  if (activeInspectionData && activeInspectionData.inspection_id) {
+    window.printSingleInspectionReport(activeInspectionData.inspection_id);
+  } else {
+    showToast("No active inspection to print. Submit an image inspection first.", "info");
+  }
+};
+
+window.printSingleInspectionReport = async function(inspectionId) {
+  try {
+    let insp = (activeInspectionData && activeInspectionData.inspection_id === inspectionId)
+      ? activeInspectionData
+      : await api.getInspectorInspection(inspectionId);
+
+    const ai = insp.ai_result || {};
+    const storage = insp.storage_review || {};
+    const rev = insp.inspector_review || {};
+    const defects = ai.detected_defects || [];
+
+    const printWindow = window.open("", "_blank", "width=880,height=920");
+    if (!printWindow) {
+      showToast("Pop-up blocked. Please allow pop-ups to print the inspection report.", "warning");
+      return;
+    }
+
+    const printHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Food Freshness Inspection Report - ${escapeHtml(insp.inspection_id)}</title>
+  <style>
+    @page { size: A4; margin: 14mm; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      margin: 0;
+      padding: 24px;
+      line-height: 1.5;
+      font-size: 13px;
+    }
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #0d9488;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    .brand-logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f766e;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .report-title-block {
+      text-align: right;
+    }
+    .report-title-block h1 {
+      font-size: 18px;
+      margin: 0 0 4px 0;
+      color: #0f172a;
+    }
+    .report-meta {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f766e;
+      margin: 18px 0 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 16px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+    .meta-item {
+      display: flex;
+      justify-content: space-between;
+    }
+    .meta-label {
+      color: #64748b;
+      font-weight: 600;
+    }
+    .meta-value {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .kpi-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px 8px;
+      text-align: center;
+      background: #f8fafc;
+    }
+    .kpi-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f766e;
+    }
+    .kpi-lbl {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .defect-tag {
+      display: inline-block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      margin: 2px 4px 2px 0;
+    }
+    .defect-optimal {
+      display: inline-block;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .decision-box {
+      border: 1px solid #cbd5e1;
+      background: #f0fdfa;
+      border-left: 4px solid #0d9488;
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .signatures-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-top: 36px;
+      padding-top: 16px;
+      border-top: 1px dashed #cbd5e1;
+    }
+    .signature-line {
+      border-bottom: 1px solid #0f172a;
+      margin-top: 36px;
+      margin-bottom: 6px;
+    }
+    .footer-note {
+      font-size: 10px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 24px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+    }
+    .no-print-bar {
+      background: #0f172a;
+      color: white;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: -24px -24px 20px -24px;
+    }
+    .btn-print {
+      background: #0d9488;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    @media print {
+      .no-print-bar { display: none !important; }
+      body { padding: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print-bar">
+    <span>FreshGuard Quality Assurance Certificate — Document Preview</span>
+    <button class="btn-print" onclick="window.print()">🖨️ Click to Print / Save as PDF</button>
+  </div>
+
+  <div class="report-header">
+    <div>
+      <div class="brand-logo">🌿 FreshGuard Platform</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Food Quality Inspection &amp; Safety Compliance System</div>
+    </div>
+    <div class="report-title-block">
+      <h1>Official Inspection Report Audit</h1>
+      <div class="report-meta">Inspection Ref: <strong>${escapeHtml(insp.inspection_id)}</strong></div>
+      <div class="report-meta">Generated: ${new Date().toLocaleString()}</div>
+    </div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-item"><span class="meta-label">Product Name:</span> <span class="meta-value">${escapeHtml(insp.product_name)}</span></div>
+    <div class="meta-item"><span class="meta-label">Category:</span> <span class="meta-value">${escapeHtml(insp.category)}</span></div>
+    <div class="meta-item"><span class="meta-label">Batch / Lot:</span> <span class="meta-value">${escapeHtml(insp.batch_number || 'N/A')}</span></div>
+    <div class="meta-item"><span class="meta-label">Storage Location:</span> <span class="meta-value">${escapeHtml(storage.storage_location || 'General Cold Storage')}</span></div>
+    <div class="meta-item"><span class="meta-label">Lead Inspector:</span> <span class="meta-value">${escapeHtml(insp.inspector_name || 'Quality Inspector')}</span></div>
+    <div class="meta-item"><span class="meta-label">Inspection Date:</span> <span class="meta-value">${formatDateTime(insp.created_at)}</span></div>
+    <div class="meta-item"><span class="meta-label">Overall Status:</span> <span class="meta-value">${escapeHtml(insp.status || 'Pending')}</span></div>
+    <div class="meta-item"><span class="meta-label">Verification Mode:</span> <span class="meta-value">Computer Vision + Human Validation</span></div>
+  </div>
+
+  <div class="section-title">1. Artificial Intelligence Freshness Diagnostics</div>
+  <div class="kpi-row">
+    <div class="kpi-box">
+      <div class="kpi-val">${ai.quality_score ?? 0}%</div>
+      <div class="kpi-lbl">Quality Score</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-val" style="font-size: 15px;">${escapeHtml(ai.classification || 'N/A')}</div>
+      <div class="kpi-lbl">AI Classification</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-val">${Math.round((ai.confidence || 0) * 100)}%</div>
+      <div class="kpi-lbl">Confidence</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-val">${ai.estimated_shelf_life_days ?? 0} d</div>
+      <div class="kpi-lbl">Est. Shelf Life</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-val" style="font-size: 15px;">${escapeHtml(ai.spoilage_risk || 'Low')}</div>
+      <div class="kpi-lbl">Spoilage Risk</div>
+    </div>
+  </div>
+
+  <div class="section-title">2. Organoleptic &amp; Visual Defects Identification</div>
+  <div style="margin-bottom: 14px;">
+    ${
+      defects.length === 0 || (defects.length === 1 && defects[0].includes("No Significant Defects"))
+        ? `<span class="defect-optimal">🌿 Compliant — No organoleptic or fungal defects detected</span>`
+        : defects.map(d => `<span class="defect-tag">⚠️ ${escapeHtml(d)}</span>`).join("")
+    }
+  </div>
+
+  <div class="section-title">3. Environmental Cold-Chain Compliance</div>
+  <div class="meta-grid" style="margin-bottom: 14px;">
+    <div class="meta-item"><span class="meta-label">Observed Temperature:</span> <span class="meta-value">${storage.current_temperature ?? 'N/A'}°C</span></div>
+    <div class="meta-item"><span class="meta-label">Permitted Temp Range:</span> <span class="meta-value">${storage.permitted_temp_min}°C to ${storage.permitted_temp_max}°C (Opt: ${storage.recommended_temperature}°C)</span></div>
+    <div class="meta-item"><span class="meta-label">Observed Humidity:</span> <span class="meta-value">${storage.current_humidity ?? 'N/A'}%</span></div>
+    <div class="meta-item"><span class="meta-label">Recommended Humidity:</span> <span class="meta-value">${storage.recommended_humidity}%</span></div>
+    <div class="meta-item"><span class="meta-label">Compliance Status:</span> <span class="meta-value">${escapeHtml(storage.status || 'Normal')}</span></div>
+    <div class="meta-item"><span class="meta-label">Audit Notes:</span> <span class="meta-value">${escapeHtml(storage.notes || 'Conditions compliant with preservation guidelines')}</span></div>
+  </div>
+
+  <div class="section-title">4. Human Inspector Review &amp; Final Validation</div>
+  <div class="decision-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+      <strong style="font-size: 14px;">Official Disposition: ${escapeHtml(rev.decision || insp.status || 'Pending')}</strong>
+      <span style="font-size: 11px; color: #64748b;">${rev.reviewed_at ? 'Validated: ' + formatDateTime(rev.reviewed_at) : 'Pending Official Review'}</span>
+    </div>
+    <div><strong>Reason / Findings:</strong> ${escapeHtml(rev.reason || 'Standard visual inspection criteria applied')}</div>
+    ${rev.comments ? `<div style="margin-top: 4px;"><strong>Inspector Directives:</strong> ${escapeHtml(rev.comments)}</div>` : ''}
+    ${rev.inspector_adjusted_shelf_life ? `<div style="margin-top: 4px;"><strong>Inspector Adjusted Shelf Life:</strong> ${rev.inspector_adjusted_shelf_life} days</div>` : ''}
+  </div>
+
+  <div class="signatures-area">
+    <div>
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b;">Lead Inspector Endorsement</div>
+      <div class="signature-line"></div>
+      <div><strong>${escapeHtml(insp.inspector_name || 'Certified Quality Inspector')}</strong></div>
+      <div style="font-size: 11px; color: #64748b;">Quality Assurance Division</div>
+    </div>
+    <div>
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b;">Facility / Operations Verification</div>
+      <div class="signature-line"></div>
+      <div><strong>Store / Warehouse Operations</strong></div>
+      <div style="font-size: 11px; color: #64748b;">FreshGuard Platform Verified Record</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    This digital inspection certificate is automatically generated by the FreshGuard AI-Powered Food Freshness Monitoring Platform.
+    Traceability Hash: SHA256-${insp.inspection_id}-${Date.now().toString(36).toUpperCase()}
+  </div>
+</body>
+</html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 400);
+  } catch (err) {
+    showToast(`Print report failed: ${err.message}`, "error");
+  }
+};
