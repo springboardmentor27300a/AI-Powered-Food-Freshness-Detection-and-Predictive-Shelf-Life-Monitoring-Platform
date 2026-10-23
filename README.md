@@ -1,4 +1,4 @@
-# Food Freshness Monitoring Platform — Milestone 4 (Final Milestone)
+# Food Freshness Monitoring Platform —
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI_0.115-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![MongoDB Atlas](https://img.shields.io/badge/Database-MongoDB_Atlas-47A248.svg?style=flat&logo=mongodb)](https://www.mongodb.com)
