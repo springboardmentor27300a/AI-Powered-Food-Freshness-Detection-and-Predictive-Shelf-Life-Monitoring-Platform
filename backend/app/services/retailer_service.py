@@ -1544,10 +1544,12 @@ class RetailerService:
             notif_col.insert_many(notifs)
 
         # Sync real-time alerts
-        cls._sync_realtime_alerts(current_user)
+        cls._evaluate_and_sync_inventory_alerts(current_user)
 
         return {
             "success": True,
             "message": f"Seeded {len(inserted_ids)} demo products and telemetry.",
             "inserted_count": len(inserted_ids),
         }
+
+    _sync_realtime_alerts = _evaluate_and_sync_inventory_alerts

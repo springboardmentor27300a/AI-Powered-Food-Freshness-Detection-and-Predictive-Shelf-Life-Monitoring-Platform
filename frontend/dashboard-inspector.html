@@ -1228,6 +1228,98 @@
             </div>
 
           </div>
+
+          <!-- Tabular Data 1: Category Quality & Compliance Summary Matrix -->
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div>
+                <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">📋 Category-Wise Quality Assurance &amp; Compliance Summary</h3>
+                <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">
+                  Aggregated defect rates, average quality scores, and certification compliance findings by food vertical.
+                </p>
+              </div>
+              <span class="badge" style="background:#f0fdfa; color:#0d9488; border:1px solid #ccfbf1; font-weight:700;">
+                Live Quality Audit
+              </span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                  <tr style="background: #f8fafc;">
+                    <th style="padding: 10px 14px;">Food Category</th>
+                    <th style="text-align: center; padding: 10px 14px;">Inspected Batches</th>
+                    <th style="text-align: center; padding: 10px 14px; color:#10b981;">Fresh Pass Rate (%)</th>
+                    <th style="text-align: center; padding: 10px 14px; color:#ef4444;">Flawed / Quarantined (%)</th>
+                    <th style="text-align: center; padding: 10px 14px;">Average Quality Score</th>
+                    <th style="text-align: center; padding: 10px 14px;">Risk Grade</th>
+                    <th style="padding: 10px 14px;">Regulatory Finding</th>
+                  </tr>
+                </thead>
+                <tbody id="table-inspector-category-analytics-tbody">
+                  <tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">Generating category quality matrix...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabular Data 2: Recent Inspected Batches Quality Register -->
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h3 class="card-title" style="font-size: 1.05rem; margin: 0;">📑 Recent Quality Inspections Audit Register</h3>
+                <p class="card-subtitle" style="font-size: 0.82rem; margin-top: 4px;">
+                  Real-time inspection ledger with multi-spectral defect metrics, scores, and authoritative inspector dispositions.
+                </p>
+              </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 16px; margin: 0 16px 14px 16px;">
+              <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                <div style="position:relative; min-width:220px; flex: 1;">
+                  <input type="text" id="insp-rep-search" class="form-control" placeholder="Search product or inspection ref..." style="padding-left:32px; font-size:13px; height:36px;" oninput="renderInspectorRecentAnalyticsTable()">
+                  <span style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none;">🔍</span>
+                </div>
+
+                <select id="insp-rep-filter-cat" class="form-control" style="width:auto; font-size:13px; height:36px;" onchange="renderInspectorRecentAnalyticsTable()">
+                  <option value="all">All Categories</option>
+                  <option value="Fruits">Fruits</option>
+                  <option value="Vegetables">Vegetables</option>
+                  <option value="Dairy">Dairy</option>
+                  <option value="Meat">Meat</option>
+                  <option value="Fish">Fish &amp; Seafood</option>
+                  <option value="Bakery">Bakery</option>
+                </select>
+
+                <select id="insp-rep-filter-decision" class="form-control" style="width:auto; font-size:13px; height:36px;" onchange="renderInspectorRecentAnalyticsTable()">
+                  <option value="all">All Dispositions</option>
+                  <option value="Approved">Approved / Certified</option>
+                  <option value="Quarantined">Quarantined / Flagged</option>
+                  <option value="Pending">Pending Review</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                  <tr style="background: #f8fafc;">
+                    <th style="padding: 10px 14px;">Inspection Ref</th>
+                    <th style="padding: 10px 14px;">Food Product</th>
+                    <th style="padding: 10px 14px;">Category</th>
+                    <th style="text-align: center; padding: 10px 14px; min-width: 140px;">Quality Score</th>
+                    <th style="text-align: center; padding: 10px 14px;">AI Classification</th>
+                    <th style="text-align: center; padding: 10px 14px;">Inspector Decision</th>
+                    <th style="padding: 10px 14px;">Certified Date</th>
+                  </tr>
+                </thead>
+                <tbody id="table-inspector-recent-analytics-tbody">
+                  <tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">Loading inspection records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- =================================================================== -->

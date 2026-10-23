@@ -463,6 +463,9 @@
         <a href="#audit" class="nav-item warehouse-nav-link" data-target="audit">
           <span>📜</span> Audit Logs
         </a>
+        <a href="#reports" class="nav-item warehouse-nav-link" data-target="reports">
+          <span>📊</span> Quality Reports
+        </a>
 
         <div class="nav-section-title">Account</div>
         <a href="profile.html" class="nav-item"><span>👤</span> Profile & Security</a>
@@ -524,7 +527,7 @@
         </div>
       </section>
 
-      <!-- 9 Explicit Navigation Section Tabs -->
+      <!-- 10 Explicit Navigation Section Tabs -->
       <div class="warehouse-nav-bar">
         <button class="warehouse-nav-btn active" data-target="overview">🏭 1. Storage Overview</button>
         <button class="warehouse-nav-btn" data-target="zones">❄️ 2. Storage Zone Management</button>
@@ -535,6 +538,7 @@
         <button class="warehouse-nav-btn" data-target="alerts">⚠️ 7. Storage Alerts</button>
         <button class="warehouse-nav-btn" data-target="shelflife">⏳ 8. Shelf-Life Monitoring</button>
         <button class="warehouse-nav-btn" data-target="audit">📜 9. Audit Logs</button>
+        <button class="warehouse-nav-btn" data-target="reports">📊 10. Quality Reports</button>
       </div>
 
       <!-- ============================================================== -->
@@ -938,6 +942,300 @@
             </table>
           </div>
         </section>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- SECTION 10: QUALITY & COMPLIANCE REPORTS                      -->
+      <!-- ============================================================== -->
+      <div class="warehouse-section-panel" id="panel-reports">
+        <!-- Reports Header Banner -->
+        <div class="card" style="margin-bottom: 22px; padding: 22px 26px; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <h2 style="font-size: 1.35rem; font-weight: 800; margin: 0; color: var(--text-main);">📊 Storage Quality &amp; Cold-Chain Compliance Reports</h2>
+                <span class="warehouse-badge" style="background:#ecfdf5; color:#047857; border-color:#a7f3d0;">
+                  <span class="pulse-dot" style="background:#10b981;"></span> Live Telemetry Audit
+                </span>
+              </div>
+              <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
+                Comprehensive facility-wide cold-chain telemetry, thermal setpoint compliance, multi-zone quality distributions, and FEFO inventory lifespan audit.
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-outline btn-sm" id="btn-wh-reports-refresh" onclick="warehouseApp.loadReportsSection()">
+                🔄 Refresh Report Data
+              </button>
+              <button class="btn btn-outline btn-sm" id="btn-wh-reports-csv" onclick="warehouseApp.exportReportsCsv()">
+                📥 Export Quality CSV
+              </button>
+              <button class="btn btn-primary btn-sm" id="btn-wh-reports-print" onclick="warehouseApp.printReportsSection()">
+                🖨️ Print Quality Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Executive Storage Quality KPIs -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#e0f2fe; color:#0284c7;">📦</div>
+            <div class="stat-content">
+              <div class="stat-label">Monitored Lots</div>
+              <div class="stat-value" id="wh-rep-kpi-total">--</div>
+              <div class="stat-sub">Active inventory batches</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#dcfce7; color:#166534;">❄️</div>
+            <div class="stat-content">
+              <div class="stat-label">Cold-Chain Compliance</div>
+              <div class="stat-value" id="wh-rep-kpi-compliance" style="color:#16a34a;">--%</div>
+              <div class="stat-sub">Chambers in setpoint bounds</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ccfbf1; color:#0d9488;">✨</div>
+            <div class="stat-content">
+              <div class="stat-label">Fresh &amp; Optimal Lots</div>
+              <div class="stat-value" id="wh-rep-kpi-fresh-pct" style="color:#0d9488;">--%</div>
+              <div class="stat-sub">High freshness grade</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7; color:#b45309;">⚠️</div>
+            <div class="stat-content">
+              <div class="stat-label">At Risk / Near Expiry</div>
+              <div class="stat-value" id="wh-rep-kpi-at-risk" style="color:#d97706;">--</div>
+              <div class="stat-sub">Urgent shelf-life attention</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#f0fdf4; color:#15803d;">🌡️</div>
+            <div class="stat-content">
+              <div class="stat-label">Mean Storage Temp</div>
+              <div class="stat-value" id="wh-rep-kpi-avg-temp">--°C</div>
+              <div class="stat-sub">Weighted across cold chambers</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fee2e2; color:#991b1b;">🚚</div>
+            <div class="stat-content">
+              <div class="stat-label">Expedited FEFO Lots</div>
+              <div class="stat-value" id="wh-rep-kpi-fefo" style="color:#dc2626;">--</div>
+              <div class="stat-sub">First-Expiry dispatch priority</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Responsive Quality Charts -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 20px; margin-bottom: 24px;">
+          <!-- Chart 1: Freshness Classification Breakdown -->
+          <div class="card" style="padding: 20px; background:#fff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;">
+                <span>🍩</span> Freshness Classification Distribution
+              </h3>
+              <span style="font-size:12px; color:var(--text-muted);">Current facility inventory</span>
+            </div>
+            <div style="height: 260px; position: relative;">
+              <canvas id="chart-wh-freshness-dist"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Category Average Quality Score -->
+          <div class="card" style="padding: 20px; background:#fff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;">
+                <span>📊</span> Category Average Quality Score (%)
+              </h3>
+              <span style="font-size:12px; color:var(--text-muted);">Quality benchmarking</span>
+            </div>
+            <div style="height: 260px; position: relative;">
+              <canvas id="chart-wh-category-quality"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: Cold Storage Chamber Temperature Compliance -->
+          <div class="card" style="padding: 20px; background:#fff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;">
+                <span>❄️</span> Chamber Temperature vs Target Setpoint (°C)
+              </h3>
+              <span style="font-size:12px; color:var(--text-muted);">Modbus telemetry bounds</span>
+            </div>
+            <div style="height: 260px; position: relative;">
+              <canvas id="chart-wh-zone-compliance"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: Storage Expiry Lifespan Timeline -->
+          <div class="card" style="padding: 20px; background:#fff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:15px; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;">
+                <span>⏳</span> Expiry Horizon &amp; FEFO Urgency Timeline
+              </h3>
+              <span style="font-size:12px; color:var(--text-muted);">Days remaining distribution</span>
+            </div>
+            <div style="height: 260px; position: relative;">
+              <canvas id="chart-wh-expiry-timeline"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabular Data 1: Chamber & Storage Zone Quality Matrix -->
+        <div class="card" style="margin-bottom: 24px; padding: 22px; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 2px 0; color: var(--text-main);">
+                ❄️ Cold-Chain Storage Chamber &amp; Zone Quality Matrix
+              </h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+                Live environmental readings, setpoint adherence, lot capacities, and aggregated food quality health across facility zones.
+              </p>
+            </div>
+            <span class="badge" style="background:#f1f5f9; color:#475569; font-size:12px; padding:6px 12px;">
+              Automated Telemetry Matrix
+            </span>
+          </div>
+
+          <div class="table-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <thead>
+                <tr style="background: #f8fafc;">
+                  <th style="padding: 10px 14px;">Chamber / Storage Zone</th>
+                  <th style="padding: 10px 14px;">Assigned Category</th>
+                  <th style="text-align: center; padding: 10px 14px;">Target Temp</th>
+                  <th style="text-align: center; padding: 10px 14px;">Current Temp</th>
+                  <th style="text-align: center; padding: 10px 14px;">Relative Humidity</th>
+                  <th style="text-align: center; padding: 10px 14px;">Cold-Chain Status</th>
+                  <th style="text-align: center; padding: 10px 14px;">Active Lots</th>
+                  <th style="text-align: center; padding: 10px 14px;">Stored Units</th>
+                  <th style="text-align: center; padding: 10px 14px;">Avg Quality</th>
+                  <th style="text-align: center; padding: 10px 14px;">Thermal Risk</th>
+                </tr>
+              </thead>
+              <tbody id="wh-zone-matrix-tbody">
+                <tr><td colspan="10" style="text-align:center; padding:24px; color:var(--text-muted);">Loading storage zone matrix...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tabular Data 2: Warehouse Quality & Expiry Audit Register -->
+        <div class="card" style="padding: 22px; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 2px 0; color: var(--text-main);">
+                📋 Granular Warehouse Food Quality &amp; Expiry Audit Register
+              </h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+                Traceable batch logs with computed freshness indices, remaining days until expiration, and prioritized FEFO dispatch instructions.
+              </p>
+            </div>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;">
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+              <!-- Search -->
+              <div style="position:relative; min-width:240px; flex: 1;">
+                <input type="text" id="wh-rep-search" class="form-control" placeholder="Search batch lot ID or product name..." style="padding-left:34px; font-size:13px; height:36px;">
+                <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none;">🔍</span>
+              </div>
+
+              <!-- Category Filter -->
+              <select id="wh-rep-filter-cat" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                <option value="all">All Categories</option>
+                <option value="Dairy">Dairy</option>
+                <option value="Meat">Meat</option>
+                <option value="Fish">Fish &amp; Seafood</option>
+                <option value="Fruits">Fruits</option>
+                <option value="Vegetables">Vegetables</option>
+                <option value="Bakery">Bakery</option>
+                <option value="Grains">Grains</option>
+              </select>
+
+              <!-- Zone Filter -->
+              <select id="wh-rep-filter-zone" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                <option value="all">All Storage Zones</option>
+              </select>
+
+              <!-- Status Filter -->
+              <select id="wh-rep-filter-status" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                <option value="all">All Freshness Statuses</option>
+                <option value="Fresh">Fresh</option>
+                <option value="Slightly Fresh">Slightly Fresh</option>
+                <option value="Near Expiry">Near Expiry / At Risk</option>
+                <option value="Expired">Expired</option>
+              </select>
+
+              <!-- Urgency Filter -->
+              <select id="wh-rep-filter-urgency" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                <option value="all">All Expiry Horizons</option>
+                <option value="critical">Critical (&le; 3 Days)</option>
+                <option value="urgent">Urgent (4 - 7 Days)</option>
+                <option value="safe">Safe (&gt; 7 Days)</option>
+                <option value="expired">Expired</option>
+              </select>
+
+              <!-- Sort Filter -->
+              <select id="wh-rep-filter-sort" class="form-control" style="width:auto; font-size:13px; height:36px;">
+                <option value="expiry_asc">Expiry Date (Soonest first)</option>
+                <option value="expiry_desc">Expiry Date (Furthest first)</option>
+                <option value="quality_asc">Quality Score (Lowest first)</option>
+                <option value="quality_desc">Quality Score (Highest first)</option>
+                <option value="name_asc">Product Name (A - Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="table-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow-x: auto;">
+            <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <thead>
+                <tr style="background: #f8fafc;">
+                  <th style="padding: 10px 14px;">Lot / Batch ID</th>
+                  <th style="padding: 10px 14px;">Product Name</th>
+                  <th style="padding: 10px 14px;">Category</th>
+                  <th style="padding: 10px 14px;">Storage Zone</th>
+                  <th style="text-align: center; padding: 10px 14px;">Stock Units</th>
+                  <th style="text-align: center; padding: 10px 14px; min-width: 140px;">Quality Score</th>
+                  <th style="text-align: center; padding: 10px 14px;">Freshness Status</th>
+                  <th style="padding: 10px 14px;">Expiry Date</th>
+                  <th style="text-align: center; padding: 10px 14px;">Days Left</th>
+                  <th style="text-align: center; padding: 10px 14px;">FEFO Action</th>
+                </tr>
+              </thead>
+              <tbody id="wh-reports-table-tbody">
+                <tr><td colspan="10" style="text-align:center; padding:24px; color:var(--text-muted);">Loading warehouse quality audit records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; gap:10px; font-size:13px; color:#64748b;">
+            <div id="wh-rep-page-info">Showing 0 of 0 items</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label style="display:flex; align-items:center; gap:6px; margin:0;">
+                <span>Per page:</span>
+                <select id="wh-rep-per-page" class="form-control" style="width:auto; padding:2px 8px; height:30px; font-size:12px;">
+                  <option value="10">10</option>
+                  <option value="25" selected>25</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <button class="btn btn-secondary btn-sm" id="wh-rep-btn-prev" disabled>◀ Prev</button>
+              <span id="wh-rep-page-num" style="font-weight:700; color:#1e293b;">Page 1 of 1</span>
+              <button class="btn btn-secondary btn-sm" id="wh-rep-btn-next" disabled>Next ▶</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       </main>

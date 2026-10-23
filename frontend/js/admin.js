@@ -1237,19 +1237,110 @@ async function loadSystemConfigData() {
 // =============================================================================
 // MODULE 8: ANALYTICS & EXPORT
 // =============================================================================
+let adminReportsInventory = [];
+let adminReportsFiltered = [];
+let adminReportsPage = 1;
+let adminReportsPerPage = 25;
+
 function setupReportsEvents() {
   document.getElementById("btn-reports-export-csv")?.addEventListener("click", handleExportCsv);
+  document.getElementById("btn-admin-reports-print")?.addEventListener("click", () => window.print());
+  document.getElementById("btn-admin-reports-inventory-csv")?.addEventListener("click", handleExportAdminInventoryCsv);
+
+  // Filter events
+  const searchEl = document.getElementById("admin-rep-search");
+  if (searchEl) searchEl.addEventListener("input", () => { adminReportsPage = 1; renderAdminInventoryAuditTable(); });
+
+  const catEl = document.getElementById("admin-rep-filter-cat");
+  if (catEl) catEl.addEventListener("change", () => { adminReportsPage = 1; renderAdminInventoryAuditTable(); });
+
+  const statusEl = document.getElementById("admin-rep-filter-status");
+  if (statusEl) statusEl.addEventListener("change", () => { adminReportsPage = 1; renderAdminInventoryAuditTable(); });
+
+  const urgencyEl = document.getElementById("admin-rep-filter-urgency");
+  if (urgencyEl) urgencyEl.addEventListener("change", () => { adminReportsPage = 1; renderAdminInventoryAuditTable(); });
+
+  const sortEl = document.getElementById("admin-rep-filter-sort");
+  if (sortEl) sortEl.addEventListener("change", () => { adminReportsPage = 1; renderAdminInventoryAuditTable(); });
+
+  const perPageEl = document.getElementById("admin-rep-per-page");
+  if (perPageEl) perPageEl.addEventListener("change", (e) => {
+    adminReportsPerPage = parseInt(e.target.value) || 25;
+    adminReportsPage = 1;
+    renderAdminInventoryAuditTable();
+  });
+
+  const prevBtn = document.getElementById("admin-rep-btn-prev");
+  if (prevBtn) prevBtn.addEventListener("click", () => {
+    if (adminReportsPage > 1) {
+      adminReportsPage--;
+      renderAdminInventoryAuditTable();
+    }
+  });
+
+  const nextBtn = document.getElementById("admin-rep-btn-next");
+  if (nextBtn) nextBtn.addEventListener("click", () => {
+    const totalPages = Math.ceil((adminReportsFiltered.length || 1) / adminReportsPerPage);
+    if (adminReportsPage < totalPages) {
+      adminReportsPage++;
+      renderAdminInventoryAuditTable();
+    }
+  });
 }
 
 async function loadReportsData() {
   try {
-    const analytics = await api.getAdminAnalytics();
+    const [analytics, inventory] = await Promise.all([
+      api.getAdminAnalytics().catch(() => ({})),
+      api.getInventory().catch(() => []),
+    ]);
 
-    // Chart 1: Users by Role
+    adminReportsInventory = inventory || [];
+
+    // 1. Executive Platform KPIs
+    const totalLots = adminReportsInventory.length;
+    const catSet = new Set(adminReportsInventory.map(it => it.category || "General"));
+    
+    let freshCount = 0;
+    let atRiskCount = 0;
+    const now = new Date();
+
+    adminReportsInventory.forEach(it => {
+      const score = typeof it.quality_score === "number" ? it.quality_score : 80;
+      const status = (it.freshness_status || "").toLowerCase();
+      let days = 99;
+      if (it.expiry_date) {
+        days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      }
+
+      if (score >= 75 || status.includes("fresh")) freshCount++;
+      if (days <= 3 || status.includes("spoil") || status.includes("risk") || status.includes("expired")) atRiskCount++;
+    });
+
+    const freshRatio = totalLots > 0 ? Math.round((freshCount / totalLots) * 100) : (analytics.freshness_metrics?.fresh || 90);
+
+    const kpiTotal = document.getElementById("admin-rep-kpi-total");
+    const kpiFresh = document.getElementById("admin-rep-kpi-fresh-pct");
+    const kpiAtRisk = document.getElementById("admin-rep-kpi-at-risk");
+    const kpiCats = document.getElementById("admin-rep-kpi-cat-count");
+
+    if (kpiTotal) kpiTotal.textContent = totalLots;
+    if (kpiFresh) kpiFresh.textContent = `${freshRatio}%`;
+    if (kpiAtRisk) kpiAtRisk.textContent = atRiskCount;
+    if (kpiCats) kpiCats.textContent = catSet.size || 6;
+
+    // 2. Charts (4 total)
     renderUsersByRoleChart(analytics.user_metrics?.roles_distribution || {});
-
-    // Chart 2: Freshness Metrics
     renderFreshnessRatioChart(analytics.freshness_metrics || {});
+    renderCategoryQualityChart(adminReportsInventory);
+    renderCategorySpoilageRiskChart(adminReportsInventory);
+
+    // 3. Tabular Data 1: Category Quality Compliance & Spoilage Matrix
+    renderCategoryQualityTable(adminReportsInventory);
+
+    // 4. Tabular Data 2: System-Wide Inventory Quality Audit Log
+    adminReportsPage = 1;
+    renderAdminInventoryAuditTable();
 
   } catch (err) {
     console.error("Failed to load platform analytics:", err);
@@ -1319,6 +1410,351 @@ function renderFreshnessRatioChart(freshnessMetrics) {
       }
     }
   });
+}
+
+function renderCategoryQualityChart(inventory) {
+  const canvas = document.getElementById("chart-category-quality");
+  if (!canvas) return;
+
+  if (charts["cat-quality"]) charts["cat-quality"].destroy();
+
+  const catMap = {};
+  inventory.forEach(it => {
+    const c = it.category || "General";
+    if (!catMap[c]) catMap[c] = { sum: 0, count: 0 };
+    catMap[c].sum += (typeof it.quality_score === "number" ? it.quality_score : 80);
+    catMap[c].count++;
+  });
+
+  const labels = Object.keys(catMap).length > 0 ? Object.keys(catMap) : ["Fruits", "Vegetables", "Dairy", "Meat", "Fish", "Bakery"];
+  const data = labels.map(l => catMap[l] ? Math.round(catMap[l].sum / catMap[l].count) : 85);
+
+  charts["cat-quality"] = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Avg Quality Score (%)",
+        data: data,
+        backgroundColor: "#6366f1",
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { min: 0, max: 100, ticks: { callback: v => v + "%" } }
+      }
+    }
+  });
+}
+
+function renderCategorySpoilageRiskChart(inventory) {
+  const canvas = document.getElementById("chart-category-spoilage-risk");
+  if (!canvas) return;
+
+  if (charts["spoilage-risk"]) charts["spoilage-risk"].destroy();
+
+  let critical = 0, warning = 0, safe = 0;
+  const now = new Date();
+
+  inventory.forEach(it => {
+    let days = 99;
+    if (it.expiry_date) {
+      days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    const score = typeof it.quality_score === "number" ? it.quality_score : 80;
+
+    if (days <= 3 || score < 60) critical++;
+    else if (days <= 7 || score < 75) warning++;
+    else safe++;
+  });
+
+  charts["spoilage-risk"] = new Chart(canvas, {
+    type: "doughnut",
+    data: {
+      labels: ["Critical Risk (≤ 3d / Score < 60)", "Moderate Warning (4 - 7d)", "Safe & Optimal (> 7d)"],
+      datasets: [{
+        data: [critical, warning, safe],
+        backgroundColor: ["#ef4444", "#f59e0b", "#10b981"],
+        borderWidth: 2,
+        borderColor: "#ffffff",
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function renderCategoryQualityTable(inventory) {
+  const tbody = document.getElementById("table-category-quality-tbody");
+  if (!tbody) return;
+
+  const catMap = {};
+  const now = new Date();
+
+  inventory.forEach(it => {
+    const cat = it.category || "General";
+    if (!catMap[cat]) {
+      catMap[cat] = {
+        batches: 0,
+        units: 0,
+        fresh: 0,
+        atRisk: 0,
+        expired: 0,
+        scoreSum: 0,
+      };
+    }
+    const b = catMap[cat];
+    b.batches++;
+    b.units += (parseFloat(it.quantity) || 1);
+    const score = typeof it.quality_score === "number" ? it.quality_score : 80;
+    b.scoreSum += score;
+
+    let days = 99;
+    if (it.expiry_date) {
+      days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    const status = (it.freshness_status || "").toLowerCase();
+
+    if (days < 0 || status.includes("expired")) b.expired++;
+    else if (days <= 3 || score < 65 || status.includes("risk") || status.includes("near")) b.atRisk++;
+    else b.fresh++;
+  });
+
+  const categories = Object.keys(catMap);
+  if (categories.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">No inventory records available.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = categories.map(cat => {
+    const b = catMap[cat];
+    const avgScore = Math.round(b.scoreSum / b.batches);
+    const freshPct = Math.round((b.fresh / b.batches) * 100);
+    const atRiskPct = Math.round((b.atRisk / b.batches) * 100);
+    const expiredPct = Math.round((b.expired / b.batches) * 100);
+
+    let healthBadge = `<span class="status-pill active" style="background:#ecfdf5; color:#047857;">Healthy</span>`;
+    if (expiredPct > 15 || avgScore < 60) {
+      healthBadge = `<span class="status-pill inactive" style="background:#fee2e2; color:#991b1b;">High Risk</span>`;
+    } else if (atRiskPct > 20 || avgScore < 75) {
+      healthBadge = `<span class="status-pill" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a;">Warning</span>`;
+    }
+
+    return `
+      <tr style="border-bottom: 1px solid var(--border-color);">
+        <td style="padding:10px 14px; font-weight:700;">${escapeHtml(cat)}</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:600;">${b.batches}</td>
+        <td style="text-align:center; padding:10px 14px;">${b.units.toFixed(1)}</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:700; color:#16a34a;">${freshPct}%</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:700; color:#d97706;">${atRiskPct}%</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:700; color:#dc2626;">${expiredPct}%</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:700; color:${avgScore >= 80 ? '#16a34a' : avgScore >= 60 ? '#d97706' : '#dc2626'};">${avgScore}%</td>
+        <td style="text-align:center; padding:10px 14px;">${healthBadge}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderAdminInventoryAuditTable() {
+  const tbody = document.getElementById("table-inventory-audit-tbody");
+  if (!tbody) return;
+
+  const items = adminReportsInventory || [];
+  const searchVal = (document.getElementById("admin-rep-search")?.value || "").toLowerCase().trim();
+  const catVal = document.getElementById("admin-rep-filter-cat")?.value || "all";
+  const statusVal = document.getElementById("admin-rep-filter-status")?.value || "all";
+  const urgencyVal = document.getElementById("admin-rep-filter-urgency")?.value || "all";
+  const sortVal = document.getElementById("admin-rep-filter-sort")?.value || "expiry_asc";
+
+  const now = new Date();
+
+  // Filter
+  let filtered = items.filter(it => {
+    if (searchVal) {
+      const name = (it.food_name || "").toLowerCase();
+      const id = String(it.id || it._id || "").toLowerCase();
+      const cat = (it.category || "").toLowerCase();
+      if (!name.includes(searchVal) && !id.includes(searchVal) && !cat.includes(searchVal)) {
+        return false;
+      }
+    }
+
+    if (catVal !== "all" && it.category !== catVal) return false;
+
+    if (statusVal !== "all") {
+      const s = (it.freshness_status || "").toLowerCase();
+      if (!s.includes(statusVal.toLowerCase())) return false;
+    }
+
+    let days = 99;
+    if (it.expiry_date) {
+      days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    if (urgencyVal === "critical" && (days > 3 || days < 0)) return false;
+    if (urgencyVal === "warning" && (days <= 3 || days > 7)) return false;
+    if (urgencyVal === "safe" && days <= 7) return false;
+    if (urgencyVal === "expired" && days >= 0) return false;
+
+    return true;
+  });
+
+  // Sort
+  filtered.sort((a, b) => {
+    if (sortVal === "expiry_asc") return new Date(a.expiry_date || 0) - new Date(b.expiry_date || 0);
+    if (sortVal === "expiry_desc") return new Date(b.expiry_date || 0) - new Date(a.expiry_date || 0);
+    if (sortVal === "score_asc") return (a.quality_score || 0) - (b.quality_score || 0);
+    if (sortVal === "score_desc") return (b.quality_score || 0) - (a.quality_score || 0);
+    if (sortVal === "name_asc") return (a.food_name || "").localeCompare(b.food_name || "");
+    return 0;
+  });
+
+  adminReportsFiltered = filtered;
+
+  // Pagination
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / adminReportsPerPage) || 1;
+  if (adminReportsPage > totalPages) adminReportsPage = totalPages;
+  if (adminReportsPage < 1) adminReportsPage = 1;
+
+  const startIdx = (adminReportsPage - 1) * adminReportsPerPage;
+  const pageItems = filtered.slice(startIdx, startIdx + adminReportsPerPage);
+
+  const pageInfo = document.getElementById("admin-rep-page-info");
+  const pageNum = document.getElementById("admin-rep-page-num");
+  const prevBtn = document.getElementById("admin-rep-btn-prev");
+  const nextBtn = document.getElementById("admin-rep-btn-next");
+
+  if (pageInfo) pageInfo.textContent = `Showing ${pageItems.length > 0 ? startIdx + 1 : 0} - ${startIdx + pageItems.length} of ${totalItems} records`;
+  if (pageNum) pageNum.textContent = `Page ${adminReportsPage} of ${totalPages}`;
+  if (prevBtn) prevBtn.disabled = adminReportsPage <= 1;
+  if (nextBtn) nextBtn.disabled = adminReportsPage >= totalPages;
+
+  if (pageItems.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:24px; color:var(--text-muted);">No inventory records match your selected criteria.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = pageItems.map(it => {
+    const lotId = it.batch_number || (it.id ? String(it.id).substring(0, 8).toUpperCase() : "LOT-INV-001");
+    const name = it.food_name || "Food Product";
+    const cat = it.category || "General";
+    const loc = it.storage_location || "Central Storage Hub";
+    const units = `${it.quantity || 1} ${it.unit || 'units'}`;
+    const score = typeof it.quality_score === "number" ? Math.round(it.quality_score) : 85;
+    const scoreColor = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : "#ef4444";
+
+    let days = 99;
+    if (it.expiry_date) {
+      days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    const daysColor = days < 0 ? "#dc2626" : days <= 3 ? "#ea580c" : days <= 7 ? "#d97706" : "#16a34a";
+    const daysText = days < 0 ? `${Math.abs(days)}d expired` : `${days} days`;
+    const expiryStr = it.expiry_date ? new Date(it.expiry_date).toLocaleDateString() : "--";
+
+    // Freshness status badge
+    let statusBadge = `<span class="status-pill active">Fresh</span>`;
+    const s = (it.freshness_status || "").toLowerCase();
+    if (s.includes("expired") || days < 0) {
+      statusBadge = `<span class="status-pill inactive">Expired</span>`;
+    } else if (s.includes("near") || s.includes("risk") || days <= 3) {
+      statusBadge = `<span class="status-pill" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a;">Near Expiry</span>`;
+    } else if (s.includes("slightly") || score < 80) {
+      statusBadge = `<span class="status-pill" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd;">Slightly Fresh</span>`;
+    }
+
+    // Audit action guidance
+    let actionBadge = `<span class="badge" style="background:#f1f5f9; color:#475569;">Compliant</span>`;
+    if (days < 0) {
+      actionBadge = `<span class="badge" style="background:#fee2e2; color:#991b1b; font-weight:700;">Quarantine / Audit</span>`;
+    } else if (days <= 3) {
+      actionBadge = `<span class="badge" style="background:#fef3c7; color:#b45309; font-weight:600;">Expedite Stock</span>`;
+    }
+
+    return `
+      <tr style="border-bottom: 1px solid var(--border-color);">
+        <td style="padding:10px 14px; font-family:monospace; font-weight:700; color:#4f46e5;">#${escapeHtml(lotId)}</td>
+        <td style="padding:10px 14px; font-weight:600;">${escapeHtml(name)}</td>
+        <td style="padding:10px 14px;"><span class="badge" style="background:#f8fafc; border:1px solid #e2e8f0;">${escapeHtml(cat)}</span></td>
+        <td style="padding:10px 14px; font-size:12px; color:#475569;">${escapeHtml(loc)}</td>
+        <td style="text-align:center; padding:10px 14px;">${units}</td>
+        <td style="padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+              <div style="width:${score}%; height:100%; background:${scoreColor};"></div>
+            </div>
+            <span style="font-size:12px; font-weight:700; color:${scoreColor}; min-width:32px;">${score}%</span>
+          </div>
+        </td>
+        <td style="text-align:center; padding:10px 14px;">${statusBadge}</td>
+        <td style="padding:10px 14px; font-size:12px;">${expiryStr}</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:700; color:${daysColor};">${daysText}</td>
+        <td style="text-align:center; padding:10px 14px;">${actionBadge}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function handleExportAdminInventoryCsv() {
+  const items = adminReportsFiltered && adminReportsFiltered.length > 0 ? adminReportsFiltered : adminReportsInventory;
+  if (!items || items.length === 0) {
+    showToast("No inventory records to export.", "warning");
+    return;
+  }
+
+  const now = new Date();
+  const headers = ["Batch/Item ID", "Product Name", "Category", "Storage Location", "Quantity", "Unit", "Quality Score (%)", "Freshness Status", "Expiry Date", "Days Remaining", "Storage Temp (°C)"];
+  const rows = items.map(it => {
+    const lotId = it.batch_number || it.id || "";
+    const name = it.food_name || "";
+    const cat = it.category || "";
+    const loc = it.storage_location || "";
+    const qty = it.quantity || 0;
+    const unit = it.unit || "";
+    const score = it.quality_score || 0;
+    const status = it.freshness_status || "";
+    const expiry = it.expiry_date || "";
+    let days = 99;
+    if (it.expiry_date) {
+      days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    const temp = it.storage_temperature || "";
+
+    return [
+      `"${lotId}"`,
+      `"${name.replace(/"/g, '""')}"`,
+      `"${cat}"`,
+      `"${loc.replace(/"/g, '""')}"`,
+      qty,
+      `"${unit}"`,
+      score,
+      `"${status}"`,
+      `"${expiry}"`,
+      days,
+      temp
+    ].join(",");
+  });
+
+  const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `platform_inventory_quality_audit_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast("Platform inventory audit CSV exported successfully.", "success");
 }
 
 // =============================================================================

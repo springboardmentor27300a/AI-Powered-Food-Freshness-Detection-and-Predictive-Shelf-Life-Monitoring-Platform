@@ -13,6 +13,15 @@ class WarehouseApp {
     this.cachedInventory = [];
     this.alerts = [];
     this.auditLogs = [];
+    this.reportsCharts = {
+      freshness: null,
+      category: null,
+      zone: null,
+      expiry: null,
+    };
+    this.reportsPage = 1;
+    this.reportsPerPage = 25;
+    this.reportsFiltered = [];
   }
 
   async init() {
@@ -104,6 +113,49 @@ class WarehouseApp {
     const invFilter = document.getElementById("inventory-category-filter");
     if (invSearch) invSearch.addEventListener("input", () => this.renderInventoryTable());
     if (invFilter) invFilter.addEventListener("change", () => this.renderInventoryTable());
+
+    // Reports search & filter listeners
+    const whSearch = document.getElementById("wh-rep-search");
+    if (whSearch) whSearch.addEventListener("input", () => { this.reportsPage = 1; this.renderWarehouseReportsTable(); });
+
+    const whCat = document.getElementById("wh-rep-filter-cat");
+    if (whCat) whCat.addEventListener("change", () => { this.reportsPage = 1; this.renderWarehouseReportsTable(); });
+
+    const whZone = document.getElementById("wh-rep-filter-zone");
+    if (whZone) whZone.addEventListener("change", () => { this.reportsPage = 1; this.renderWarehouseReportsTable(); });
+
+    const whStatus = document.getElementById("wh-rep-filter-status");
+    if (whStatus) whStatus.addEventListener("change", () => { this.reportsPage = 1; this.renderWarehouseReportsTable(); });
+
+    const whUrgency = document.getElementById("wh-rep-filter-urgency");
+    if (whUrgency) whUrgency.addEventListener("change", () => { this.reportsPage = 1; this.renderWarehouseReportsTable(); });
+
+    const whSort = document.getElementById("wh-rep-filter-sort");
+    if (whSort) whSort.addEventListener("change", () => { this.reportsPage = 1; this.renderWarehouseReportsTable(); });
+
+    const whPerPage = document.getElementById("wh-rep-per-page");
+    if (whPerPage) whPerPage.addEventListener("change", (e) => {
+      this.reportsPerPage = parseInt(e.target.value) || 25;
+      this.reportsPage = 1;
+      this.renderWarehouseReportsTable();
+    });
+
+    const whPrev = document.getElementById("wh-rep-btn-prev");
+    if (whPrev) whPrev.addEventListener("click", () => {
+      if (this.reportsPage > 1) {
+        this.reportsPage--;
+        this.renderWarehouseReportsTable();
+      }
+    });
+
+    const whNext = document.getElementById("wh-rep-btn-next");
+    if (whNext) whNext.addEventListener("click", () => {
+      const totalPages = Math.ceil((this.reportsFiltered.length || 1) / this.reportsPerPage);
+      if (this.reportsPage < totalPages) {
+        this.reportsPage++;
+        this.renderWarehouseReportsTable();
+      }
+    });
   }
 
   switchSection(sectionId) {
@@ -139,6 +191,7 @@ class WarehouseApp {
         alerts: "Storage Alerts",
         shelflife: "Shelf-Life Monitoring",
         audit: "Audit Logs",
+        reports: "Storage Quality & Cold-Chain Compliance Reports",
       };
       titleEl.textContent = titles[sectionId] || "Warehouse Command";
     }
@@ -146,6 +199,8 @@ class WarehouseApp {
     // If switching to history, ensure chart is rendered
     if (sectionId === "history") {
       this.loadHistoryChart(this.selectedZoneId);
+    } else if (sectionId === "reports") {
+      this.loadReportsSection();
     }
 
     window.location.hash = sectionId;
@@ -912,10 +967,515 @@ class WarehouseApp {
       .join("");
   }
 
-  openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add("active");
+  // =========================================================================
+  // SECTION 10: QUALITY & COMPLIANCE REPORTS CONTROLLER
+  // =========================================================================
+  async loadReportsSection() {
+    try {
+      if (!this.cachedInventory || this.cachedInventory.length === 0) {
+        await this.loadInventoryData();
+      }
+      if (!this.zones || this.zones.length === 0) {
+        this.zones = await api.getWarehouseZones().catch(() => []);
+      }
+
+      const items = this.cachedInventory || [];
+      const zones = this.zones || [];
+
+      // 1. Populate Zone Filter dropdown if not done
+      const zoneSelect = document.getElementById("wh-rep-filter-zone");
+      if (zoneSelect && zoneSelect.options.length <= 1) {
+        const zoneOptions = zones.map(z => `<option value="${escapeHtml(z.zone_name || z.zone_id)}">${escapeHtml(z.zone_name || z.zone_id)}</option>`).join("");
+        zoneSelect.innerHTML = `<option value="all">All Storage Zones</option>` + zoneOptions;
+      }
+
+      // 2. Compute Executive KPIs
+      const totalLots = items.length;
+      const compliantZonesCount = zones.filter(z => z.compliance_status === "compliant" || Math.abs((z.current_temperature || 0) - (z.target_temperature || 0)) <= 2.0).length;
+      const complianceRate = zones.length > 0 ? Math.round((compliantZonesCount / zones.length) * 100) : 100;
+
+      let freshCount = 0;
+      let atRiskCount = 0;
+      let fefoCount = 0;
+
+      items.forEach(item => {
+        const days = this.computeDaysRemaining(item.expiry_date);
+        const score = typeof item.quality_score === "number" ? item.quality_score : 80;
+        const status = (item.freshness_status || "").toLowerCase();
+
+        if (score >= 75 || status.includes("fresh")) {
+          freshCount++;
+        }
+        if (days <= 3 || status.includes("expiry") || status.includes("risk") || status.includes("spoil")) {
+          atRiskCount++;
+        }
+        if (days <= 3 || score < 60) {
+          fefoCount++;
+        }
+      });
+
+      const freshPct = totalLots > 0 ? Math.round((freshCount / totalLots) * 100) : 0;
+      const avgTemp = zones.length > 0 ? (zones.reduce((sum, z) => sum + (parseFloat(z.current_temperature) || 0), 0) / zones.length).toFixed(1) : "3.4";
+
+      // Update KPI DOM
+      const kpiTotal = document.getElementById("wh-rep-kpi-total");
+      const kpiComp = document.getElementById("wh-rep-kpi-compliance");
+      const kpiFresh = document.getElementById("wh-rep-kpi-fresh-pct");
+      const kpiAtRisk = document.getElementById("wh-rep-kpi-at-risk");
+      const kpiAvgTemp = document.getElementById("wh-rep-kpi-avg-temp");
+      const kpiFefo = document.getElementById("wh-rep-kpi-fefo");
+
+      if (kpiTotal) kpiTotal.textContent = totalLots;
+      if (kpiComp) kpiComp.textContent = `${complianceRate}%`;
+      if (kpiFresh) kpiFresh.textContent = `${freshPct}%`;
+      if (kpiAtRisk) kpiAtRisk.textContent = atRiskCount;
+      if (kpiAvgTemp) kpiAvgTemp.textContent = `${avgTemp}°C`;
+      if (kpiFefo) kpiFefo.textContent = fefoCount;
+
+      // 3. Render 4 Chart.js Visualizations
+      this.renderWarehouseReportsCharts(items, zones);
+
+      // 4. Render Chamber & Zone Quality Matrix Table
+      this.renderWarehouseZoneMatrix(items, zones);
+
+      // 5. Render Filterable Quality & Expiry Audit Table
+      this.reportsPage = 1;
+      this.renderWarehouseReportsTable();
+
+    } catch (err) {
+      console.error("Error loading warehouse reports:", err);
+      if (typeof showToast === "function") showToast("Error loading warehouse reports: " + err.message, "danger");
+    }
   }
+
+  computeDaysRemaining(expiryDateStr) {
+    if (!expiryDateStr) return 99;
+    const exp = new Date(expiryDateStr);
+    const now = new Date();
+    const diff = exp.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+
+  renderWarehouseReportsCharts(items, zones) {
+    if (typeof Chart === "undefined") return;
+
+    // --- Chart 1: Freshness Distribution (Doughnut) ---
+    const ctxFreshness = document.getElementById("chart-wh-freshness-dist");
+    if (ctxFreshness) {
+      if (this.reportsCharts.freshness) this.reportsCharts.freshness.destroy();
+
+      let fresh = 0, slightlyFresh = 0, nearExpiry = 0, expired = 0;
+      items.forEach(it => {
+        const s = (it.freshness_status || "").toLowerCase();
+        const days = this.computeDaysRemaining(it.expiry_date);
+        if (days < 0 || s.includes("expired")) expired++;
+        else if (days <= 3 || s.includes("near") || s.includes("risk")) nearExpiry++;
+        else if (s.includes("slightly") || (it.quality_score >= 60 && it.quality_score < 80)) slightlyFresh++;
+        else fresh++;
+      });
+
+      this.reportsCharts.freshness = new Chart(ctxFreshness, {
+        type: "doughnut",
+        data: {
+          labels: ["Fresh (Optimal)", "Slightly Fresh", "Near Expiry / At Risk", "Expired"],
+          datasets: [{
+            data: [fresh, slightlyFresh, nearExpiry, expired],
+            backgroundColor: ["#10b981", "#38bdf8", "#f59e0b", "#ef4444"],
+            borderWidth: 2,
+            borderColor: "#ffffff",
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 12 } } },
+          },
+        },
+      });
+    }
+
+    // --- Chart 2: Category Average Quality Score (Bar) ---
+    const ctxCategory = document.getElementById("chart-wh-category-quality");
+    if (ctxCategory) {
+      if (this.reportsCharts.category) this.reportsCharts.category.destroy();
+
+      const catMap = {};
+      items.forEach(it => {
+        const cat = it.category || "General";
+        if (!catMap[cat]) catMap[cat] = { sum: 0, count: 0 };
+        catMap[cat].sum += (typeof it.quality_score === "number" ? it.quality_score : 80);
+        catMap[cat].count++;
+      });
+
+      const catLabels = Object.keys(catMap).length > 0 ? Object.keys(catMap) : ["Dairy", "Meat", "Fish", "Fruits", "Vegetables", "Bakery"];
+      const catData = catLabels.map(c => catMap[c] ? Math.round(catMap[c].sum / catMap[c].count) : 85);
+
+      this.reportsCharts.category = new Chart(ctxCategory, {
+        type: "bar",
+        data: {
+          labels: catLabels,
+          datasets: [{
+            label: "Average Quality Score (%)",
+            data: catData,
+            backgroundColor: "#0284c7",
+            borderRadius: 6,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+          },
+          scales: {
+            y: { min: 0, max: 100, ticks: { callback: v => v + "%" } },
+          },
+        },
+      });
+    }
+
+    // --- Chart 3: Storage Zone Temperature vs Target Bounds (Bar) ---
+    const ctxZone = document.getElementById("chart-wh-zone-compliance");
+    if (ctxZone) {
+      if (this.reportsCharts.zone) this.reportsCharts.zone.destroy();
+
+      const zoneLabels = zones.map(z => z.zone_name ? z.zone_name.replace("Chamber ", "Ch ") : z.zone_id);
+      const targetTemps = zones.map(z => parseFloat(z.target_temperature) || 0);
+      const currentTemps = zones.map(z => parseFloat(z.current_temperature) || 0);
+
+      this.reportsCharts.zone = new Chart(ctxZone, {
+        type: "bar",
+        data: {
+          labels: zoneLabels.length > 0 ? zoneLabels : ["Ch A: Deep Freeze", "Ch B: Dairy", "Ch C: Fresh Produce", "Ch D: Dry Pantry"],
+          datasets: [
+            {
+              label: "Target Setpoint (°C)",
+              data: targetTemps.length > 0 ? targetTemps : [-18.0, 4.0, 7.0, 18.0],
+              backgroundColor: "rgba(148, 163, 184, 0.6)",
+              borderRadius: 4,
+            },
+            {
+              label: "Current Sensor (°C)",
+              data: currentTemps.length > 0 ? currentTemps : [-17.6, 3.8, 6.9, 18.2],
+              backgroundColor: "#0d9488",
+              borderRadius: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom" },
+          },
+          scales: {
+            y: { ticks: { callback: v => v + "°C" } },
+          },
+        },
+      });
+    }
+
+    // --- Chart 4: Storage Expiry Lifespan Timeline (Bar) ---
+    const ctxExpiry = document.getElementById("chart-wh-expiry-timeline");
+    if (ctxExpiry) {
+      if (this.reportsCharts.expiry) this.reportsCharts.expiry.destroy();
+
+      let crit = 0, urgent = 0, safe = 0, stable = 0;
+      items.forEach(it => {
+        const days = this.computeDaysRemaining(it.expiry_date);
+        if (days <= 3) crit++;
+        else if (days <= 7) urgent++;
+        else if (days <= 14) safe++;
+        else stable++;
+      });
+
+      this.reportsCharts.expiry = new Chart(ctxExpiry, {
+        type: "bar",
+        data: {
+          labels: ["Critical (≤ 3 Days)", "Urgent (4 - 7 Days)", "Safe (8 - 14 Days)", "Stable (> 14 Days)"],
+          datasets: [{
+            label: "Stored Food Batches",
+            data: [crit, urgent, safe, stable],
+            backgroundColor: ["#dc2626", "#ea580c", "#16a34a", "#2563eb"],
+            borderRadius: 6,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } },
+          },
+        },
+      });
+    }
+  }
+
+  renderWarehouseZoneMatrix(items, zones) {
+    const tbody = document.getElementById("wh-zone-matrix-tbody");
+    if (!tbody) return;
+
+    if (!zones || zones.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:20px; color:var(--text-muted);">No storage zones configured.</td></tr>`;
+      return;
+    }
+
+    const html = zones.map(z => {
+      const zName = z.zone_name || z.zone_id;
+      // Match items in zone
+      const zoneItems = items.filter(it => {
+        const loc = (it.storage_location || "").toLowerCase();
+        const zn = (z.zone_name || "").toLowerCase();
+        const zid = (z.zone_id || "").toLowerCase();
+        return loc.includes(zn) || loc.includes(zid) || (z.category && (it.category || "").toLowerCase() === z.category.toLowerCase());
+      });
+
+      const totalUnits = zoneItems.reduce((acc, it) => acc + (parseFloat(it.quantity) || 1), 0);
+      const activeLots = zoneItems.length;
+      const avgQuality = activeLots > 0 ? Math.round(zoneItems.reduce((acc, it) => acc + (typeof it.quality_score === "number" ? it.quality_score : 80), 0) / activeLots) : 88;
+
+      const diff = Math.abs((parseFloat(z.current_temperature) || 0) - (parseFloat(z.target_temperature) || 0));
+      const isCompliant = diff <= 2.0;
+      const riskLevel = diff <= 1.0 ? "Low" : diff <= 2.5 ? "Moderate" : "High Alert";
+      const riskColor = diff <= 1.0 ? "#16a34a" : diff <= 2.5 ? "#d97706" : "#dc2626";
+
+      return `
+        <tr style="border-bottom: 1px solid var(--border-color);">
+          <td style="padding:12px 14px;"><strong>${escapeHtml(zName)}</strong><div style="font-size:11px; color:#64748b;">${escapeHtml(z.zone_id)}</div></td>
+          <td style="padding:12px 14px;"><span class="badge" style="background:#f1f5f9; color:#334155;">${escapeHtml(z.category || "Multi-Category")}</span></td>
+          <td style="text-align:center; padding:12px 14px;"><strong>${z.target_temperature !== undefined ? z.target_temperature + "°C" : "--"}</strong></td>
+          <td style="text-align:center; padding:12px 14px; font-weight:700; color:${isCompliant ? '#16a34a' : '#dc2626'};">
+            ${z.current_temperature !== undefined ? z.current_temperature + "°C" : "--"}
+          </td>
+          <td style="text-align:center; padding:12px 14px;">${z.humidity !== undefined ? z.humidity + "%" : "85%"}</td>
+          <td style="text-align:center; padding:12px 14px;">
+            <span class="chamber-status-badge ${isCompliant ? 'status-optimal' : 'status-warning'}">
+              ${isCompliant ? '✓ In Bounds' : '⚠️ Deviating'}
+            </span>
+          </td>
+          <td style="text-align:center; padding:12px 14px; font-weight:700;">${activeLots}</td>
+          <td style="text-align:center; padding:12px 14px;">${totalUnits.toFixed(1)}</td>
+          <td style="text-align:center; padding:12px 14px; font-weight:700; color:${avgQuality >= 80 ? '#16a34a' : avgQuality >= 60 ? '#d97706' : '#dc2626'};">
+            ${avgQuality}%
+          </td>
+          <td style="text-align:center; padding:12px 14px;">
+            <span style="font-weight:700; color:${riskColor};">${riskLevel}</span>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    tbody.innerHTML = html;
+  }
+
+  renderWarehouseReportsTable() {
+    const tbody = document.getElementById("wh-reports-table-tbody");
+    if (!tbody) return;
+
+    const items = this.cachedInventory || [];
+    const searchVal = (document.getElementById("wh-rep-search")?.value || "").toLowerCase().trim();
+    const catVal = document.getElementById("wh-rep-filter-cat")?.value || "all";
+    const zoneVal = document.getElementById("wh-rep-filter-zone")?.value || "all";
+    const statusVal = document.getElementById("wh-rep-filter-status")?.value || "all";
+    const urgencyVal = document.getElementById("wh-rep-filter-urgency")?.value || "all";
+    const sortVal = document.getElementById("wh-rep-filter-sort")?.value || "expiry_asc";
+
+    // Filtering
+    let filtered = items.filter(it => {
+      // Search
+      if (searchVal) {
+        const name = (it.food_name || "").toLowerCase();
+        const id = String(it.id || it._id || "").toLowerCase();
+        const batch = (it.batch_number || "").toLowerCase();
+        if (!name.includes(searchVal) && !id.includes(searchVal) && !batch.includes(searchVal)) {
+          return false;
+        }
+      }
+
+      // Category
+      if (catVal !== "all" && it.category !== catVal) {
+        return false;
+      }
+
+      // Zone
+      if (zoneVal !== "all") {
+        const loc = (it.storage_location || "").toLowerCase();
+        const zv = zoneVal.toLowerCase();
+        if (!loc.includes(zv)) return false;
+      }
+
+      // Freshness Status
+      if (statusVal !== "all") {
+        const s = (it.freshness_status || "").toLowerCase();
+        const sv = statusVal.toLowerCase();
+        if (!s.includes(sv)) return false;
+      }
+
+      // Urgency
+      const days = this.computeDaysRemaining(it.expiry_date);
+      if (urgencyVal === "critical" && (days > 3 || days < 0)) return false;
+      if (urgencyVal === "urgent" && (days <= 3 || days > 7)) return false;
+      if (urgencyVal === "safe" && days <= 7) return false;
+      if (urgencyVal === "expired" && days >= 0) return false;
+
+      return true;
+    });
+
+    // Sorting
+    filtered.sort((a, b) => {
+      if (sortVal === "expiry_asc") return new Date(a.expiry_date || 0) - new Date(b.expiry_date || 0);
+      if (sortVal === "expiry_desc") return new Date(b.expiry_date || 0) - new Date(a.expiry_date || 0);
+      if (sortVal === "quality_asc") return (a.quality_score || 0) - (b.quality_score || 0);
+      if (sortVal === "quality_desc") return (b.quality_score || 0) - (a.quality_score || 0);
+      if (sortVal === "name_asc") return (a.food_name || "").localeCompare(b.food_name || "");
+      return 0;
+    });
+
+    this.reportsFiltered = filtered;
+
+    // Pagination
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / this.reportsPerPage) || 1;
+    if (this.reportsPage > totalPages) this.reportsPage = totalPages;
+    if (this.reportsPage < 1) this.reportsPage = 1;
+
+    const startIdx = (this.reportsPage - 1) * this.reportsPerPage;
+    const pageItems = filtered.slice(startIdx, startIdx + this.reportsPerPage);
+
+    // Update pagination controls
+    const pageInfo = document.getElementById("wh-rep-page-info");
+    const pageNum = document.getElementById("wh-rep-page-num");
+    const prevBtn = document.getElementById("wh-rep-btn-prev");
+    const nextBtn = document.getElementById("wh-rep-btn-next");
+
+    if (pageInfo) pageInfo.textContent = `Showing ${pageItems.length > 0 ? startIdx + 1 : 0} - ${startIdx + pageItems.length} of ${totalItems} lots`;
+    if (pageNum) pageNum.textContent = `Page ${this.reportsPage} of ${totalPages}`;
+    if (prevBtn) prevBtn.disabled = this.reportsPage <= 1;
+    if (nextBtn) nextBtn.disabled = this.reportsPage >= totalPages;
+
+    if (pageItems.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:24px; color:var(--text-muted);">No warehouse lots match your selected filters.</td></tr>`;
+      return;
+    }
+
+    const html = pageItems.map(it => {
+      const lotId = it.batch_number || (it.id ? String(it.id).substring(0, 8).toUpperCase() : "LOT-WH-001");
+      const name = it.food_name || "Food Product";
+      const cat = it.category || "General";
+      const zone = it.storage_location || "Central Cold Hub";
+      const qty = `${it.quantity || 1} ${it.unit || 'units'}`;
+      const score = typeof it.quality_score === "number" ? Math.round(it.quality_score) : 85;
+      const days = this.computeDaysRemaining(it.expiry_date);
+      const expiryStr = it.expiry_date ? new Date(it.expiry_date).toLocaleDateString() : "--";
+
+      // Score bar color
+      const scoreColor = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : "#ef4444";
+
+      // Freshness Status Badge
+      let statusBadge = `<span class="badge" style="background:#ecfdf5; color:#047857;">Fresh</span>`;
+      const s = (it.freshness_status || "").toLowerCase();
+      if (s.includes("expired") || days < 0) {
+        statusBadge = `<span class="badge" style="background:#fef2f2; color:#b91c1c;">Expired</span>`;
+      } else if (s.includes("near") || s.includes("risk") || days <= 3) {
+        statusBadge = `<span class="badge" style="background:#fffbeb; color:#b45309;">Near Expiry</span>`;
+      } else if (s.includes("slightly") || score < 80) {
+        statusBadge = `<span class="badge" style="background:#f0f9ff; color:#0369a1;">Slightly Fresh</span>`;
+      }
+
+      // FEFO Action Guidance
+      let fefoAction = `<span class="badge" style="background:#f1f5f9; color:#475569;">Normal FIFO</span>`;
+      if (days < 0) {
+        fefoAction = `<span class="badge" style="background:#fee2e2; color:#991b1b; font-weight:700;">Quarantine / Dispose</span>`;
+      } else if (days <= 2) {
+        fefoAction = `<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">🚨 Expedite Immediate</span>`;
+      } else if (days <= 5) {
+        fefoAction = `<span class="badge" style="background:#fef3c7; color:#b45309; font-weight:600;">⚡ Prioritize Dispatch</span>`;
+      }
+
+      const daysColor = days < 0 ? "#dc2626" : days <= 3 ? "#ea580c" : days <= 7 ? "#d97706" : "#16a34a";
+      const daysText = days < 0 ? `${Math.abs(days)}d expired` : `${days} days`;
+
+      return `
+        <tr style="border-bottom: 1px solid var(--border-color);">
+          <td style="padding:10px 14px; font-family:monospace; font-weight:700; color:#0284c7;">#${escapeHtml(lotId)}</td>
+          <td style="padding:10px 14px; font-weight:600;">${escapeHtml(name)}</td>
+          <td style="padding:10px 14px;"><span class="badge" style="background:#f8fafc; border:1px solid #e2e8f0;">${escapeHtml(cat)}</span></td>
+          <td style="padding:10px 14px; font-size:12px; color:#475569;">${escapeHtml(zone)}</td>
+          <td style="text-align:center; padding:10px 14px;">${qty}</td>
+          <td style="padding:10px 14px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                <div style="width:${score}%; height:100%; background:${scoreColor};"></div>
+              </div>
+              <span style="font-size:12px; font-weight:700; color:${scoreColor}; min-width:32px;">${score}%</span>
+            </div>
+          </td>
+          <td style="text-align:center; padding:10px 14px;">${statusBadge}</td>
+          <td style="padding:10px 14px; font-size:12px;">${expiryStr}</td>
+          <td style="text-align:center; padding:10px 14px; font-weight:700; color:${daysColor};">${daysText}</td>
+          <td style="text-align:center; padding:10px 14px;">${fefoAction}</td>
+        </tr>
+      `;
+    }).join("");
+
+    tbody.innerHTML = html;
+  }
+
+  exportReportsCsv() {
+    const items = this.reportsFiltered && this.reportsFiltered.length > 0 ? this.reportsFiltered : (this.cachedInventory || []);
+    if (items.length === 0) {
+      if (typeof showToast === "function") showToast("No items available to export.", "warning");
+      return;
+    }
+
+    const headers = ["Lot/Batch ID", "Product Name", "Category", "Storage Zone", "Quantity", "Unit", "Quality Score (%)", "Freshness Status", "Expiry Date", "Days Left", "Storage Temp (°C)"];
+    const rows = items.map(it => {
+      const lotId = it.batch_number || it.id || "";
+      const name = it.food_name || "";
+      const cat = it.category || "";
+      const zone = it.storage_location || "";
+      const qty = it.quantity || 0;
+      const unit = it.unit || "";
+      const score = it.quality_score || 0;
+      const status = it.freshness_status || "";
+      const expiry = it.expiry_date || "";
+      const days = this.computeDaysRemaining(it.expiry_date);
+      const temp = it.storage_temperature || "";
+
+      return [
+        `"${lotId}"`,
+        `"${name.replace(/"/g, '""')}"`,
+        `"${cat}"`,
+        `"${zone.replace(/"/g, '""')}"`,
+        qty,
+        `"${unit}"`,
+        score,
+        `"${status}"`,
+        `"${expiry}"`,
+        days,
+        temp
+      ].join(",");
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `warehouse_quality_compliance_report_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    if (typeof showToast === "function") showToast("Warehouse Quality CSV exported successfully.", "success");
+  }
+
+  printReportsSection() {
+    window.print();
+  }
+
 
   closeModal(modalId) {
     const modal = document.getElementById(modalId);

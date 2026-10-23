@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const viewParam = urlParams.get("view");
   const hashParam = window.location.hash.replace("#", "");
   const targetView = viewParam || hashParam;
-  if (targetView && ["overview", "scanner", "shelf-life", "recommendations", "alerts", "history"].includes(targetView)) {
+  if (targetView && ["overview", "scanner", "shelf-life", "recommendations", "alerts", "history", "reports"].includes(targetView)) {
     switchConsumerView(targetView);
   }
 });
@@ -877,7 +877,7 @@ function switchConsumerView(viewName) {
   });
 
   // Update Sections
-  const views = ["overview", "scanner", "shelf-life", "recommendations", "alerts", "history"];
+  const views = ["overview", "scanner", "shelf-life", "recommendations", "alerts", "history", "reports"];
   views.forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) {
@@ -908,6 +908,8 @@ function switchConsumerView(viewName) {
     loadConsumerAlerts();
   } else if (viewName === "history") {
     loadConsumerScanHistory();
+  } else if (viewName === "reports") {
+    loadConsumerReportsView();
   }
 
   // Smooth scroll to top of view
@@ -2192,4 +2194,348 @@ async function seedDatasetItems() {
 
 window.seedDatasetItems = seedDatasetItems;
 window.loadOverviewData = loadDashboardData;
+
+// =============================================================================
+// 8. CONSUMER QUALITY REPORTS CONTROLLER (GRAPHS & TABULAR DATA)
+// =============================================================================
+let consumerReportsCharts = { freshness: null, shelfLife: null };
+
+async function loadConsumerReportsView() {
+  try {
+    if (!allRecentItems || allRecentItems.length === 0) {
+      allRecentItems = await api.getInventory({ sort_by: "expiry_date", sort_order: "asc" }).catch(() => []);
+    }
+
+    const items = allRecentItems || [];
+    const now = new Date();
+
+    // 1. Compute KPIs
+    const totalCount = items.length;
+    let freshCount = 0;
+    let expiringCount = 0;
+    let expiredCount = 0;
+
+    items.forEach(it => {
+      const score = typeof it.quality_score === "number" ? it.quality_score : 85;
+      const status = (it.freshness_status || "").toLowerCase();
+      let days = 99;
+      if (it.expiry_date) {
+        days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      }
+
+      if (days < 0 || status.includes("expired") || status.includes("spoil")) {
+        expiredCount++;
+      } else if (days <= 7) {
+        expiringCount++;
+      } else if (score >= 75 || status.includes("fresh")) {
+        freshCount++;
+      }
+    });
+
+    const kpiTotal = document.getElementById("consumer-rep-kpi-total");
+    const kpiFresh = document.getElementById("consumer-rep-kpi-fresh");
+    const kpiExp = document.getElementById("consumer-rep-kpi-expiring");
+    const kpiExpired = document.getElementById("consumer-rep-kpi-expired");
+
+    if (kpiTotal) kpiTotal.textContent = totalCount;
+    if (kpiFresh) kpiFresh.textContent = freshCount;
+    if (kpiExp) kpiExp.textContent = expiringCount;
+    if (kpiExpired) kpiExpired.textContent = expiredCount;
+
+    // 2. Render Charts
+    renderConsumerReportsCharts(items);
+
+    // 3. Render Tabular Data 1: Category Freshness & Optimum Storage Conditions
+    renderConsumerCategoryStorageMatrix(items);
+
+    // 4. Render Tabular Data 2: Pantry Freshness & Expiry Audit Register
+    renderConsumerReportsTable();
+
+  } catch (err) {
+    console.error("Failed to load consumer reports view:", err);
+    showToast("Error loading quality reports: " + err.message, "error");
+  }
+}
+
+function renderConsumerReportsCharts(items) {
+  if (typeof Chart === "undefined") return;
+
+  const now = new Date();
+
+  // --- Chart 1: Pantry Freshness Distribution (Doughnut) ---
+  const ctxFreshness = document.getElementById("chart-consumer-freshness-dist");
+  if (ctxFreshness) {
+    if (consumerReportsCharts.freshness) consumerReportsCharts.freshness.destroy();
+
+    let fresh = 0, slightlyFresh = 0, nearExpiry = 0, expired = 0;
+    items.forEach(it => {
+      let days = 99;
+      if (it.expiry_date) {
+        days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      }
+      const s = (it.freshness_status || "").toLowerCase();
+      const score = typeof it.quality_score === "number" ? it.quality_score : 80;
+
+      if (days < 0 || s.includes("expired") || s.includes("spoil")) expired++;
+      else if (days <= 3 || s.includes("near") || s.includes("risk")) nearExpiry++;
+      else if (days <= 7 || s.includes("slightly") || score < 80) slightlyFresh++;
+      else fresh++;
+    });
+
+    consumerReportsCharts.freshness = new Chart(ctxFreshness, {
+      type: "doughnut",
+      data: {
+        labels: ["Fresh & Peak", "Slightly Fresh", "Near Expiry (≤ 3d)", "Expired"],
+        datasets: [{
+          data: [fresh, slightlyFresh, nearExpiry, expired],
+          backgroundColor: ["#10b981", "#38bdf8", "#f59e0b", "#ef4444"],
+          borderWidth: 2,
+          borderColor: "#ffffff",
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } },
+        },
+      },
+    });
+  }
+
+  // --- Chart 2: Shelf-Life Days Remaining by Category (Bar) ---
+  const ctxShelfLife = document.getElementById("chart-consumer-shelf-life-bars");
+  if (ctxShelfLife) {
+    if (consumerReportsCharts.shelfLife) consumerReportsCharts.shelfLife.destroy();
+
+    const catDaysMap = {};
+    items.forEach(it => {
+      const cat = it.category || "General";
+      let days = 7;
+      if (it.expiry_date) {
+        days = Math.max(0, Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+      }
+      if (!catDaysMap[cat]) catDaysMap[cat] = { totalDays: 0, count: 0 };
+      catDaysMap[cat].totalDays += days;
+      catDaysMap[cat].count++;
+    });
+
+    const labels = Object.keys(catDaysMap).length > 0 ? Object.keys(catDaysMap) : ["Fruits", "Vegetables", "Dairy", "Meat", "Fish", "Bakery"];
+    const data = labels.map(l => catDaysMap[l] ? Math.round(catDaysMap[l].totalDays / catDaysMap[l].count) : 5);
+
+    consumerReportsCharts.shelfLife = new Chart(ctxShelfLife, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Avg Days Remaining",
+          data: data,
+          backgroundColor: "#0d9488",
+          borderRadius: 6,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: v => v + " d" } },
+        },
+      },
+    });
+  }
+}
+
+function renderConsumerCategoryStorageMatrix(items) {
+  const tbody = document.getElementById("consumer-category-storage-tbody");
+  if (!tbody) return;
+
+  const storageStandards = [
+    { cat: "Fruits", temp: "4.0°C - 8.0°C", loc: "Crisper Drawer (Low Humidity)", tip: "Keep ethylene producers like apples separate from bananas and leafy greens." },
+    { cat: "Vegetables", temp: "2.0°C - 5.0°C", loc: "Crisper Drawer (High Humidity)", tip: "Avoid washing leafy greens before refrigeration to prevent microbial growth." },
+    { cat: "Dairy", temp: "2.0°C - 4.0°C", loc: "Middle / Lower Refrigerator Shelf", tip: "Never store milk or cream on refrigerator door bins due to temperature fluctuation." },
+    { cat: "Meat", temp: "0.0°C - 2.0°C", loc: "Bottom Meat Chiller Shelf", tip: "Store in sealed, leak-proof containers; freeze if not preparing within 48 hours." },
+    { cat: "Fish", temp: "-1.0°C - 1.0°C", loc: "Deep Chiller / Direct Crushed Ice", tip: "Consume fresh fish within 24 to 48 hours to preserve volatile flavor compounds." },
+    { cat: "Bakery", temp: "18.0°C - 22.0°C", loc: "Dry Bread Bin (Ambient)", tip: "Do not refrigerate bread as starch retrogradation accelerates staling below 10°C." },
+    { cat: "Grains", temp: "15.0°C - 20.0°C", loc: "Airtight Pantry Containers", tip: "Keep protected from humidity, sunlight, and pantry pests." },
+    { cat: "Packaged Food", temp: "15.0°C - 22.0°C", loc: "Dry Storage Cupboard", tip: "Inspect seals and follow Manufacturer Best-By guidance." }
+  ];
+
+  tbody.innerHTML = storageStandards.map(std => {
+    const catItems = (items || []).filter(it => (it.category || "").toLowerCase() === std.cat.toLowerCase());
+    const count = catItems.length;
+
+    let healthPill = `<span class="badge" style="background:#f1f5f9; color:#64748b;">No Items</span>`;
+    if (count > 0) {
+      const avgScore = Math.round(catItems.reduce((sum, it) => sum + (typeof it.quality_score === "number" ? it.quality_score : 80), 0) / count);
+      if (avgScore >= 80) {
+        healthPill = `<span class="badge" style="background:#ecfdf5; color:#047857;">✓ Optimal (${avgScore}%)</span>`;
+      } else if (avgScore >= 60) {
+        healthPill = `<span class="badge" style="background:#fffbeb; color:#b45309;">⚠️ Moderate (${avgScore}%)</span>`;
+      } else {
+        healthPill = `<span class="badge" style="background:#fef2f2; color:#b91c1c;">🚨 At Risk (${avgScore}%)</span>`;
+      }
+    }
+
+    return `
+      <tr style="border-bottom: 1px solid var(--border-color);">
+        <td style="padding:10px 14px; font-weight:700;">${escapeHtml(std.cat)}</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:600;">${count}</td>
+        <td style="text-align:center; padding:10px 14px;">${healthPill}</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:700; color:#0284c7;">${std.temp}</td>
+        <td style="padding:10px 14px; font-size:12px; color:#334155;">${std.loc}</td>
+        <td style="padding:10px 14px; font-size:12px; color:#64748b;">${std.tip}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderConsumerReportsTable() {
+  const tbody = document.getElementById("consumer-reports-table-tbody");
+  if (!tbody) return;
+
+  const items = allRecentItems || [];
+  const searchVal = (document.getElementById("consumer-rep-search")?.value || "").toLowerCase().trim();
+  const catVal = document.getElementById("consumer-rep-filter-cat")?.value || "all";
+  const statusVal = document.getElementById("consumer-rep-filter-status")?.value || "all";
+
+  const now = new Date();
+
+  const filtered = items.filter(it => {
+    if (searchVal) {
+      const name = (it.food_name || "").toLowerCase();
+      const cat = (it.category || "").toLowerCase();
+      if (!name.includes(searchVal) && !cat.includes(searchVal)) return false;
+    }
+
+    if (catVal !== "all" && it.category !== catVal) return false;
+
+    if (statusVal !== "all") {
+      let days = 99;
+      if (it.expiry_date) {
+        days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      }
+      const s = (it.freshness_status || "").toLowerCase();
+      if (statusVal === "Fresh" && (!s.includes("fresh") || days <= 3)) return false;
+      if (statusVal === "Slightly Fresh" && !s.includes("slightly")) return false;
+      if (statusVal === "Near Expiry" && (days > 3 || days < 0)) return false;
+      if (statusVal === "Expired" && (days >= 0 && !s.includes("expired"))) return false;
+    }
+
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:24px; color:var(--text-muted);">No pantry items match your search and filter criteria.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(it => {
+    const name = it.food_name || "Food Product";
+    const cat = it.category || "General";
+    const loc = it.storage_location || "Home Refrigerator";
+    const qty = `${it.quantity || 1} ${it.unit || 'units'}`;
+    const score = typeof it.quality_score === "number" ? Math.round(it.quality_score) : 85;
+    const scoreColor = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : "#ef4444";
+
+    let days = 99;
+    if (it.expiry_date) {
+      days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    const daysColor = days < 0 ? "#dc2626" : days <= 3 ? "#ea580c" : days <= 7 ? "#d97706" : "#16a34a";
+    const daysText = days < 0 ? `${Math.abs(days)}d expired` : `${days} days`;
+    const expiryStr = it.expiry_date ? new Date(it.expiry_date).toLocaleDateString() : "--";
+
+    // Freshness status badge
+    let statusBadge = `<span class="badge" style="background:#ecfdf5; color:#047857;">Fresh</span>`;
+    const s = (it.freshness_status || "").toLowerCase();
+    if (s.includes("expired") || days < 0) {
+      statusBadge = `<span class="badge" style="background:#fef2f2; color:#b91c1c;">Expired</span>`;
+    } else if (s.includes("near") || s.includes("risk") || days <= 3) {
+      statusBadge = `<span class="badge" style="background:#fffbeb; color:#b45309;">Near Expiry</span>`;
+    } else if (s.includes("slightly") || score < 80) {
+      statusBadge = `<span class="badge" style="background:#f0f9ff; color:#0369a1;">Slightly Fresh</span>`;
+    }
+
+    // Recommendation
+    let rec = `Safe to consume. Maintain current storage conditions.`;
+    if (days < 0) {
+      rec = `<span style="color:#dc2626; font-weight:700;">Do not consume. Discard or compost immediately.</span>`;
+    } else if (days <= 2) {
+      rec = `<span style="color:#ea580c; font-weight:600;">Plan meal for today! Freeze leftovers to preserve freshness.</span>`;
+    } else if (days <= 5) {
+      rec = `Consume in upcoming meals before quality degrades.`;
+    }
+
+    return `
+      <tr style="border-bottom: 1px solid var(--border-color);">
+        <td style="padding:10px 14px; font-weight:700;">${escapeHtml(name)}</td>
+        <td style="padding:10px 14px;"><span class="badge" style="background:#f8fafc; border:1px solid #e2e8f0;">${escapeHtml(cat)}</span></td>
+        <td style="padding:10px 14px; font-size:12px; color:#475569;">${escapeHtml(loc)}</td>
+        <td style="text-align:center; padding:10px 14px;">${qty}</td>
+        <td style="padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+              <div style="width:${score}%; height:100%; background:${scoreColor};"></div>
+            </div>
+            <span style="font-size:12px; font-weight:700; color:${scoreColor}; min-width:32px;">${score}%</span>
+          </div>
+        </td>
+        <td style="text-align:center; padding:10px 14px;">${statusBadge}</td>
+        <td style="padding:10px 14px; font-size:12px;">${expiryStr}</td>
+        <td style="text-align:center; padding:10px 14px; font-weight:700; color:${daysColor};">${daysText}</td>
+        <td style="padding:10px 14px; font-size:12px;">${rec}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function exportConsumerReportCsv() {
+  const items = allRecentItems || [];
+  if (items.length === 0) {
+    showToast("No pantry items available to export.", "warning");
+    return;
+  }
+
+  const now = new Date();
+  const headers = ["Food Name", "Category", "Storage Location", "Quantity", "Unit", "Quality Score (%)", "Freshness Status", "Expiry Date", "Days Remaining"];
+  const rows = items.map(it => {
+    let days = 99;
+    if (it.expiry_date) {
+      days = Math.ceil((new Date(it.expiry_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    return [
+      `"${(it.food_name || "").replace(/"/g, '""')}"`,
+      `"${it.category || ""}"`,
+      `"${(it.storage_location || "").replace(/"/g, '""')}"`,
+      it.quantity || 1,
+      `"${it.unit || ""}"`,
+      it.quality_score || 80,
+      `"${it.freshness_status || ""}"`,
+      `"${it.expiry_date || ""}"`,
+      days
+    ].join(",");
+  });
+
+  const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `consumer_pantry_freshness_report_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast("Pantry freshness CSV exported successfully.", "success");
+}
+
+function printConsumerReport() {
+  window.print();
+}
+
+window.loadConsumerReportsView = loadConsumerReportsView;
+window.renderConsumerReportsTable = renderConsumerReportsTable;
+window.exportConsumerReportCsv = exportConsumerReportCsv;
+window.printConsumerReport = printConsumerReport;
 

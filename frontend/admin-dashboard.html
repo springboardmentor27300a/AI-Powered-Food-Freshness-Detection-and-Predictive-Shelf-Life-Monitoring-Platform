@@ -1280,30 +1280,258 @@
     <!-- TAB 8: ANALYTICS & EXPORT                                             -->
     <!-- ===================================================================== -->
     <section class="tab-pane" id="pane-reports">
-      <div class="section-header">
+      <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
         <div>
-          <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 4px;">Platform-Wide Analytics & Intelligence</h2>
+          <h2 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 4px;">Platform-Wide Analytics &amp; Intelligence</h2>
           <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0;">
-            Aggregated system metrics across user demographics, quality distributions, and inventory tiers.
+            Comprehensive cross-tenant quality auditing, category compliance matrices, AI freshness distributions, and inventory telemetry exports.
           </p>
         </div>
-        <button class="btn btn-primary" id="btn-reports-export-csv" style="display: inline-flex; align-items: center; gap: 6px;">
-          📥 Download Users CSV Export
-        </button>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-outline" id="btn-admin-reports-print" style="display: inline-flex; align-items: center; gap: 6px;">
+            🖨️ Print Quality Report
+          </button>
+          <button class="btn btn-outline" id="btn-admin-reports-inventory-csv" style="display: inline-flex; align-items: center; gap: 6px;">
+            📥 Download Quality Audit CSV
+          </button>
+          <button class="btn btn-primary" id="btn-reports-export-csv" style="display: inline-flex; align-items: center; gap: 6px;">
+            👥 Export Users CSV
+          </button>
+        </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-        <div class="card" style="padding: 20px; background:#fff; border-radius: var(--radius-md); border:1px solid var(--border-color);">
-          <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 16px;">User Distribution by Assigned Role</h3>
-          <div style="height: 280px; position: relative;">
+      <!-- Executive KPI Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#e0f2fe; color:#0284c7;">📦</div>
+          <div class="stat-content">
+            <div class="stat-label">Total Platform Inventory</div>
+            <div class="stat-value" id="admin-rep-kpi-total">--</div>
+            <div class="stat-sub">Tracked food batches</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dcfce7; color:#166534;">✨</div>
+          <div class="stat-content">
+            <div class="stat-label">Fresh &amp; Optimal Ratio</div>
+            <div class="stat-value" id="admin-rep-kpi-fresh-pct" style="color:#16a34a;">--%</div>
+            <div class="stat-sub">High freshness quality</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fee2e2; color:#991b1b;">⚠️</div>
+          <div class="stat-content">
+            <div class="stat-label">Quarantined / At Risk</div>
+            <div class="stat-value" id="admin-rep-kpi-at-risk" style="color:#dc2626;">--</div>
+            <div class="stat-sub">Action required immediately</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#f3e8ff; color:#7e22ce;">🏢</div>
+          <div class="stat-content">
+            <div class="stat-label">Monitored Categories</div>
+            <div class="stat-value" id="admin-rep-kpi-cat-count" style="color:#6d28d9;">--</div>
+            <div class="stat-sub">Active supply verticals</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Analytics Charts in 2x2 Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px; margin-bottom: 24px;">
+        <!-- Chart 1: User Distribution -->
+        <div class="card" style="padding: 20px; background:#fff; border-radius: var(--radius-md); border:1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin:0; display:flex; align-items:center; gap:8px;">
+              <span>👥</span> User Distribution by Assigned Role
+            </h3>
+            <span style="font-size:12px; color:var(--text-muted);">Platform RBAC</span>
+          </div>
+          <div style="height: 260px; position: relative;">
             <canvas id="chart-users-by-role"></canvas>
           </div>
         </div>
 
-        <div class="card" style="padding: 20px; background:#fff; border-radius: var(--radius-md); border:1px solid var(--border-color);">
-          <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 16px;">Food Freshness Quality Health</h3>
-          <div style="height: 280px; position: relative;">
+        <!-- Chart 2: Freshness Ratio -->
+        <div class="card" style="padding: 20px; background:#fff; border-radius: var(--radius-md); border:1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin:0; display:flex; align-items:center; gap:8px;">
+              <span>🍩</span> Platform Food Freshness Health
+            </h3>
+            <span style="font-size:12px; color:var(--text-muted);">Global ratio</span>
+          </div>
+          <div style="height: 260px; position: relative;">
             <canvas id="chart-freshness-ratio"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Category Average Quality Score -->
+        <div class="card" style="padding: 20px; background:#fff; border-radius: var(--radius-md); border:1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin:0; display:flex; align-items:center; gap:8px;">
+              <span>📈</span> Category Quality Score Index (%)
+            </h3>
+            <span style="font-size:12px; color:var(--text-muted);">Vertical breakdown</span>
+          </div>
+          <div style="height: 260px; position: relative;">
+            <canvas id="chart-category-quality"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4: Spoilage & Risk Distribution -->
+        <div class="card" style="padding: 20px; background:#fff; border-radius: var(--radius-md); border:1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin:0; display:flex; align-items:center; gap:8px;">
+              <span>🚨</span> Spoilage Risk &amp; Shelf-Life Vulnerability
+            </h3>
+            <span style="font-size:12px; color:var(--text-muted);">Critical threshold</span>
+          </div>
+          <div style="height: 260px; position: relative;">
+            <canvas id="chart-category-spoilage-risk"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabular Data 1: Category Quality Compliance & Spoilage Matrix -->
+      <div class="card" style="margin-bottom: 24px; padding: 22px; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 2px 0; color: var(--text-main);">
+              🏢 Category Quality Compliance &amp; Spoilage Matrix
+            </h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+              Aggregated platform intelligence across food categories to identify high-risk product lines and cold-chain compliance.
+            </p>
+          </div>
+          <span class="badge" style="background:#f1f5f9; color:#475569; font-size:12px; padding:6px 12px;">
+            Cross-Sector Intelligence
+          </span>
+        </div>
+
+        <div class="table-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow-x: auto;">
+          <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="background: #f8fafc;">
+                <th style="padding: 10px 14px;">Category / Vertical</th>
+                <th style="text-align: center; padding: 10px 14px;">Active Batches</th>
+                <th style="text-align: center; padding: 10px 14px;">Total Stored Units</th>
+                <th style="text-align: center; padding: 10px 14px; color:#16a34a;">Fresh (%)</th>
+                <th style="text-align: center; padding: 10px 14px; color:#d97706;">At Risk (%)</th>
+                <th style="text-align: center; padding: 10px 14px; color:#dc2626;">Expired (%)</th>
+                <th style="text-align: center; padding: 10px 14px;">Avg Quality</th>
+                <th style="text-align: center; padding: 10px 14px;">Compliance Health</th>
+              </tr>
+            </thead>
+            <tbody id="table-category-quality-tbody">
+              <tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Generating category quality matrix...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tabular Data 2: System-Wide Inventory Quality Audit Log -->
+      <div class="card" style="padding: 22px; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 2px 0; color: var(--text-main);">
+              📋 System-Wide Inventory Quality Audit Register
+            </h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+              Granular multi-tenant food records with real-time freshness classification, quality scores, days remaining, and governance guidance.
+            </p>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;">
+          <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+            <!-- Search -->
+            <div style="position:relative; min-width:240px; flex: 1;">
+              <input type="text" id="admin-rep-search" class="form-control" placeholder="Search product name, category, or batch ID..." style="padding-left:34px; font-size:13px; height:36px;">
+              <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none;">🔍</span>
+            </div>
+
+            <!-- Category -->
+            <select id="admin-rep-filter-cat" class="form-control" style="width:auto; font-size:13px; height:36px;">
+              <option value="all">All Categories</option>
+              <option value="Fruits">Fruits</option>
+              <option value="Vegetables">Vegetables</option>
+              <option value="Dairy">Dairy</option>
+              <option value="Meat">Meat</option>
+              <option value="Fish">Fish &amp; Seafood</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Grains">Grains</option>
+            </select>
+
+            <!-- Freshness -->
+            <select id="admin-rep-filter-status" class="form-control" style="width:auto; font-size:13px; height:36px;">
+              <option value="all">All Freshness Statuses</option>
+              <option value="Fresh">Fresh Only</option>
+              <option value="Slightly Fresh">Slightly Fresh</option>
+              <option value="Near Expiry">Near Expiry / At Risk</option>
+              <option value="Expired">Expired</option>
+            </select>
+
+            <!-- Urgency -->
+            <select id="admin-rep-filter-urgency" class="form-control" style="width:auto; font-size:13px; height:36px;">
+              <option value="all">All Expiry Horizons</option>
+              <option value="critical">Critical (≤ 3 Days)</option>
+              <option value="warning">Warning (4 – 7 Days)</option>
+              <option value="safe">Safe (> 7 Days)</option>
+              <option value="expired">Expired</option>
+            </select>
+
+            <!-- Sort -->
+            <select id="admin-rep-filter-sort" class="form-control" style="width:auto; font-size:13px; height:36px;">
+              <option value="expiry_asc">Expiry Date (Soonest first)</option>
+              <option value="expiry_desc">Expiry Date (Furthest first)</option>
+              <option value="score_asc">Quality Score (Lowest first)</option>
+              <option value="score_desc">Quality Score (Highest first)</option>
+              <option value="name_asc">Product Name (A – Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow-x: auto;">
+          <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="background: #f8fafc;">
+                <th style="padding: 10px 14px;">Item &amp; Batch ID</th>
+                <th style="padding: 10px 14px;">Product Name</th>
+                <th style="padding: 10px 14px;">Category</th>
+                <th style="padding: 10px 14px;">Storage Zone / Facility</th>
+                <th style="text-align: center; padding: 10px 14px;">Stock Units</th>
+                <th style="text-align: center; padding: 10px 14px; min-width: 140px;">Quality Score</th>
+                <th style="text-align: center; padding: 10px 14px;">Freshness Status</th>
+                <th style="padding: 10px 14px;">Expiry Date</th>
+                <th style="text-align: center; padding: 10px 14px;">Days Left</th>
+                <th style="text-align: center; padding: 10px 14px;">Audit Action</th>
+              </tr>
+            </thead>
+            <tbody id="table-inventory-audit-tbody">
+              <tr><td colspan="10" style="text-align:center; padding:24px; color:var(--text-muted);">Loading platform inventory audit records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; gap:10px; font-size:13px; color:#64748b;">
+          <div id="admin-rep-page-info">Showing 0 of 0 items</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label style="display:flex; align-items:center; gap:6px; margin:0;">
+              <span>Per page:</span>
+              <select id="admin-rep-per-page" class="form-control" style="width:auto; padding:2px 8px; height:30px; font-size:12px;">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+            <button class="btn btn-secondary btn-sm" id="admin-rep-btn-prev" disabled>◀ Prev</button>
+            <span id="admin-rep-page-num" style="font-weight:700; color:#1e293b;">Page 1 of 1</span>
+            <button class="btn btn-secondary btn-sm" id="admin-rep-btn-next" disabled>Next ▶</button>
           </div>
         </div>
       </div>
